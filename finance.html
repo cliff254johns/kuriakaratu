@@ -259,12 +259,7 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
     <form id="loginForm">
       <div class="form-group">
         <label><i class="fas fa-user"></i> Select User</label>
-        <select id="loginEmailSelect" required>
-          <option value="">— Select a user —</option>
-          <option value="admin@kuriakaratu.com">admin@kuriakaratu.com</option>
-          <option value="developer@kuriakaratu.com">developer@kuriakaratu.com</option>
-          <option value="clerk@kuriakaratu.com">clerk@kuriakaratu.com</option>
-        </select>
+        <input type="email" id="loginEmailSelect" placeholder="you@kuriakaratu.com" autocomplete="username" required>
       </div>
       <div class="form-group">
         <label><i class="fas fa-lock"></i> Password</label>
@@ -272,12 +267,6 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
       </div>
       <div class="login-error" id="loginError"></div>
       <button type="submit" class="btn" id="loginSubmitBtn"><i class="fas fa-sign-in-alt"></i> Sign In</button>
-      <div class="default-creds">
-        <strong>Default Users:</strong><br>
-        <code>admin@kuriakaratu.com</code> / <code>admin123</code><br>
-        <code>developer@kuriakaratu.com</code> / <code>dev123</code><br>
-        <code>clerk@kuriakaratu.com</code> / <code>clerk123</code>
-      </div>
     </form>
   </div>
 </div>
@@ -765,12 +754,9 @@ var unsubs = {};
 var chartsInitialized = false;
 var chartInstances = {};
 
-/* ---------- Hardcoded users ---------- */
-var HARDCODED = [
-  { email:'admin@kuriakaratu.com', password:'admin123', role:'admin' },
-  { email:'developer@kuriakaratu.com', password:'dev123', role:'developer' },
-  { email:'clerk@kuriakaratu.com', password:'clerk123', role:'clerk' }
-];
+/* ---------- Authentication ---------- */
+// Finance is restricted to an authenticated admin profile.
+// Client-side fallback credentials and offline role bypasses are intentionally disabled.
 
 /* ============================================================
    LOGIN
@@ -789,40 +775,33 @@ function showApp(email, role){
 
 function handleLogin(email, password){
   return new Promise(function(resolve){
-    if (!email || !password) { resolve({ ok:false, msg:'Select user and enter password.' }); return; }
-    if (fbOK && auth) {
-      var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('TIMEOUT')); }, 10000); });
-      Promise.race([ auth.signInWithEmailAndPassword(email, password), timeout ])
-        .then(function(cred){
-          var user = cred.user;
-          var role = 'clerk';
-          var hc = HARDCODED.find(function(u){ return u.email === email; });
-          if (hc) role = hc.role;
-          db.collection('users').doc(user.uid).get().then(function(doc){
-            if (doc.exists && doc.data().role) role = doc.data().role;
-          }).catch(function(){}).finally(function(){
-            resolve({ ok:true, email: email, role: role });
-          });
-        })
-        .catch(function(err){
-          var isTimeout = err.message === 'TIMEOUT';
-          var isNet = err.code === 'auth/network-request-failed';
-          var isInvalid = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/invalid-email'].indexOf(err.code) !== -1;
-          var hc = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
-          if (hc && (isTimeout || isNet || isInvalid)) {
-            resolve({ ok:true, email: email, role: hc.role, offline:true });
-            return;
-          }
-          if (isTimeout) resolve({ ok:false, msg:'Connection timed out.' });
-          else if (isNet) resolve({ ok:false, msg:'Network error.' });
-          else if (isInvalid) resolve({ ok:false, msg:'Invalid credentials.' });
-          else resolve({ ok:false, msg: err.message || 'Login failed.' });
-        });
+    if (!email || !password) {
+      resolve({ ok:false, msg:'Enter your institutional email and password.' });
       return;
     }
-    var hc2 = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
-    if (hc2) resolve({ ok:true, email: email, role: hc2.role, offline:true });
-    else resolve({ ok:false, msg:'Login unavailable.' });
+    if (!fbOK || !auth || !db) {
+      resolve({ ok:false, msg:'Finance login is unavailable. Connect to the firm Firebase service and try again.' });
+      return;
+    }
+    auth.signInWithEmailAndPassword(email, password).then(function(cred){
+      return db.collection('users').doc(cred.user.uid).get().then(function(profile){
+        if (!profile.exists || profile.data().role !== 'admin') {
+          return auth.signOut().then(function(){
+            resolve({ ok:false, msg:'Access denied. Finance is available to authorised administrators only.' });
+          });
+        }
+        resolve({ ok:true, email: cred.user.email || email, role:'admin' });
+      }).catch(function(error){
+        return auth.signOut().catch(function(){}).then(function(){
+          resolve({ ok:false, msg:'Unable to verify your administrator permissions. Access has been denied.' });
+        });
+      });
+    }).catch(function(error){
+      var code = error && error.code;
+      if (code === 'auth/network-request-failed') resolve({ ok:false, msg:'Network error. Connect and try again.' });
+      else if (code === 'auth/too-many-requests') resolve({ ok:false, msg:'Too many attempts. Please wait before trying again.' });
+      else resolve({ ok:false, msg:'Invalid email or password.' });
+    });
   });
 }
 
@@ -2258,14 +2237,17 @@ document.addEventListener('DOMContentLoaded', function(){
   if (fbOK && auth) {
     auth.onAuthStateChanged(function(user){
       if (user && !currentUserEmail) {
-        var email = user.email;
-        var role = 'clerk';
-        var hc = HARDCODED.find(function(u){ return u.email === email; });
-        if (hc) role = hc.role;
-        db.collection('users').doc(user.uid).get().then(function(doc){
-          if (doc.exists && doc.data().role) role = doc.data().role;
-        }).catch(function(){}).finally(function(){
-          showApp(email, role);
+        db.collection('users').doc(user.uid).get().then(function(profile){
+          if (profile.exists && profile.data().role === 'admin') {
+            showApp(user.email || '', 'admin');
+          } else {
+            return auth.signOut().then(function(){
+              $('loginError').textContent = 'Access denied. Finance is restricted to administrators.';
+            });
+          }
+        }).catch(function(){
+          auth.signOut().catch(function(){});
+          $('loginError').textContent = 'Unable to verify administrator permissions.';
         });
       }
     });
