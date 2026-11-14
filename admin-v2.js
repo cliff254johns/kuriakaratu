@@ -96,6 +96,16 @@
         mobileCards:    localStorage.getItem('kk_v2_mobilecards')!== 'off',
     };
 
+    // Remove legacy drafts created by the unsafe pre-hardening autosave.
+    try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('kk_draft_')) localStorage.removeItem(key);
+        }
+    } catch (e) {
+        console.warn('[KKv2] Could not clear legacy local drafts:', e);
+    }
+
     // ============================================================
     // 2. DOM READY GATE
     // ============================================================
@@ -107,8 +117,12 @@
         }
     }
 
-      onReady(() => {
-        console.log('[KKv2] Booting enhancement layer v' + KK.version);
+      let v2Booted = false;
+    function bootV2ForAdmin() {
+        const state = getState();
+        if (v2Booted || !state.currentUser || !state.isAdmin) return;
+        v2Booted = true;
+        console.log('[KKv2] Booting enhancement layer v' + KK.version + ' for admin');
 
         // Apply the Clio design theme to the body
         // (Can be overridden by adding class="kk-material" manually)
@@ -131,6 +145,14 @@
         try { initPagination(); }     catch (e) { console.warn('[KKv2] pagination:', e); }
 
         console.log('[KKv2] Ready.');
+    }
+    onReady(() => {
+        window.addEventListener('kk:admin-authenticated', bootV2ForAdmin);
+        window.addEventListener('kk:admin-logout', () => {
+            document.documentElement.classList.remove('kk-v2');
+            document.body.classList.remove('kk-clio');
+        });
+        bootV2ForAdmin();
     });
 
     // ============================================================
