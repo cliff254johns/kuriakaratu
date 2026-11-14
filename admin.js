@@ -2067,6 +2067,7 @@ document.getElementById('loginForm').addEventListener('submit', async function (
 
         // ----- Apply role-based UI, log the login, load the logo, start listeners -----
         applyRoleGating();
+        window.dispatchEvent(new Event('kk:admin-authenticated'));
         await logActivity('User Login', `Logged in as ${currentUserRole}`);
         await loadCompanyLogoFromFirestore();
         initApp();
@@ -2108,6 +2109,7 @@ if (logoutBtnEl) logoutBtnEl.addEventListener('click', async function() {
         currentUser = null;
         currentUserEmail = '';
         currentUserRole = 'clerk';
+        window.dispatchEvent(new Event('kk:admin-logout'));
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginOverlay').classList.remove('hidden');
         document.getElementById('loginError').textContent = '';
@@ -5927,23 +5929,7 @@ setTimeout(() => { if (currentUser && isFullAccess()) { updateAccidentSummary();
 console.log('Kuria Karatu & Company Advocates System Loaded');
 })();
 
-// Explicit read-only state bridge for optional enhancement modules.
-// Top-level let declarations are not window properties in classic scripts.
-window.KKAdminState = Object.freeze({
-    get cases() { return casesData; },
-    get clients() { return clientsData; },
-    get documents() { return documentsData; },
-    get tasks() { return tasksData; },
-    get invoices() { return invoicesData; },
-    get receipts() { return receiptsData; },
-    get accidents() { return accidentClientsData; },
-    get users() { return usersData; },
-    get currentUser() { return currentUser; },
-    get currentUserEmail() { return currentUserEmail; },
-    get currentUserRole() { return currentUserRole; },
-    get isFullAccess() { return isFullAccess(); },
-    get isAdmin() { return currentUserRole === 'admin'; }
-});
+
 
 // Read-only state bridge consumed by admin-v2.js.
 window.KKAdminState = Object.freeze({
