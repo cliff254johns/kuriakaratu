@@ -149,8 +149,9 @@
     onReady(() => {
         window.addEventListener('kk:admin-authenticated', bootV2ForAdmin);
         window.addEventListener('kk:admin-logout', () => {
-            document.documentElement.classList.remove('kk-v2');
-            document.body.classList.remove('kk-clio');
+            // Reload the admin shell after logout so v2-only UI and cached in-memory
+            // references cannot remain in a subsequent clerk session.
+            setTimeout(() => window.location.reload(), 120);
         });
         bootV2ForAdmin();
     });
