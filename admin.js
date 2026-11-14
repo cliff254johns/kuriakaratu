@@ -5927,9 +5927,6 @@ loadCompanyLogoFromFirestore();
 setTimeout(() => { if (currentUser && isFullAccess()) { updateAccidentSummary(); } }, 1500);
 
 console.log('Kuria Karatu & Company Advocates System Loaded');
-})();
-
-
 
 // Read-only state bridge consumed by admin-v2.js.
 window.KKAdminState = Object.freeze({
@@ -5947,3 +5944,8 @@ window.KKAdminState = Object.freeze({
     get isFullAccess() { return isFullAccess(); },
     get isAdmin() { return currentUserRole === 'admin'; }
 });
+})();
+
+
+
+
