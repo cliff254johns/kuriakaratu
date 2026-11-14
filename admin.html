@@ -26,6 +26,7 @@
 
     <!-- ⬇⬇⬇ THIS LINE IS MISSING ⬇⬇⬇ -->
     <link rel="stylesheet" href="admin.css" />
+    <link rel="stylesheet" href="admin-v2.css" />
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -140,6 +141,12 @@
             <button class="nav-item" data-page="settings" data-filter="" data-subfilter=""><i class="fas fa-cog"></i><span>Settings</span></button>
             <button class="nav-item admin-only" data-page="users" data-filter="" data-subfilter=""><i class="fas fa-user-shield"></i><span>Users</span></button>
             <button class="nav-item admin-only" data-page="portal" data-filter="" data-subfilter=""><i class="fas fa-user-check"></i><span>Portal Requests</span><span class="badge red" id="portalRequestsBadge" style="display:none;margin-left:auto;">0</span></button>
+            <div class="nav-section-label admin-only" data-requires-role="admin">INSTITUTIONAL APPLICATIONS</div>
+            <a class="nav-item admin-only" data-requires-role="admin" href="finance.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-coins"></i><span>Finance Application</span></a>
+            <a class="nav-item admin-only" data-requires-role="admin" href="track.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-scale-balanced"></i><span>Practice Tracker</span></a>
+            <a class="nav-item admin-only" data-requires-role="admin" href="client.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-user-lock"></i><span>Client Portal</span></a>
+            <a class="nav-item admin-only" data-requires-role="admin" href="generator.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-signature"></i><span>Document Generator</span></a>
+            <a class="nav-item admin-only" data-requires-role="admin" href="index.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-globe"></i><span>Public Website</span></a>
         </nav>
         <div class="bottom">
             <div class="contact-line"><i class="fas fa-map-pin"></i><span>Ntugi House, 1st flr rm 10, Meru Town</span></div>
@@ -1476,6 +1483,7 @@
 </aside>
       <script src="admin.js"></script>
     <script src="sidebar-counters.js"></script>
+    <script src="admin-v2.js"></script>
       
 </body>
 </html>
