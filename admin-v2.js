@@ -35,20 +35,30 @@
     KK.version = '2.0.0';
 
     // Aliases to admin.js globals (read via getter so we always see fresh data)
-    const getState = () => ({
-        cases: window.casesData || [],
-        clients: window.clientsData || [],
-        documents: window.documentsData || [],
-        tasks: window.tasksData || [],
-        invoices: window.invoicesData || [],
-        receipts: window.receiptsData || [],
-        accidents: window.accidentClientsData || [],
-        users: window.usersData || [],
-        currentUser: window.currentUser,
-        currentUserEmail: window.currentUserEmail,
-        currentUserRole: window.currentUserRole,
-        isFullAccess: typeof window.isFullAccess === 'function' ? window.isFullAccess() : false,
-    });
+    const getState = () => {
+        const state = window.KKAdminState;
+        if (!state) return {
+            cases: [], clients: [], documents: [], tasks: [], invoices: [],
+            receipts: [], accidents: [], users: [], currentUser: null,
+            currentUserEmail: '', currentUserRole: 'clerk',
+            isFullAccess: false, isAdmin: false
+        };
+        return {
+            cases: state.cases || [],
+            clients: state.clients || [],
+            documents: state.documents || [],
+            tasks: state.tasks || [],
+            invoices: state.invoices || [],
+            receipts: state.receipts || [],
+            accidents: state.accidents || [],
+            users: state.users || [],
+            currentUser: state.currentUser || null,
+            currentUserEmail: state.currentUserEmail || '',
+            currentUserRole: state.currentUserRole || 'clerk',
+            isFullAccess: !!state.isFullAccess,
+            isAdmin: !!state.isAdmin
+        };
+    };
 
     const db = firebase.firestore();
     const $  = (id) => document.getElementById(id);
@@ -1684,34 +1694,60 @@ function debounce(fn, ms) {
         // that can be enabled per form via data-attribute
         $$('form[data-kk-steps]').forEach(form => transformToMultiStep(form));
 
-        // Autosave every form
-        $$('form').forEach(form => {
-            if (form.dataset.kkAutosave) return;
-            form.dataset.kkAutosave = '1';
+        // Draft autosave is opt-in. Legal, client, identity, financial and
+        // authentication forms are never captured by default.
+        $('form[data-kk-autosave="safe"]').forEach(form => {
+            if (form.dataset.kkAutosaveInitialized) return;
+            form.dataset.kkAutosaveInitialized = '1';
             attachAutosave(form);
         });
     }
 
     function attachAutosave(form) {
         const key = 'kk_draft_' + (form.id || 'anon');
-        // Restore prompt
-        const saved = localStorage.getItem(key);
+        const safeFields = () => Array.from(form.elements).filter(el =>
+            el && el.name &&
+            el.dataset && el.dataset.kkDraftSafe === 'true' &&
+            !['password', 'file', 'hidden'].includes(String(el.type || '').toLowerCase()) &&
+            !/(password|secret|token|auth|email|phone|address|client|case|matter|party|claim|payment|amount|bank|mpesa|idnumber|nationalid|passport|dob|birth|medical|diagnos|note|description|document|file)/i.test(el.name + ' ' + (el.id || ''))
+        );
+        const readSafeDraft = () => {
+            const data = {};
+            safeFields().forEach(el => {
+                if (typeof el.value === 'string') data[el.name] = el.value;
+            });
+            data._savedAt = new Date().toISOString();
+            return data;
+        };
+        // Old v2 drafts may contain sensitive form values; discard rather than restore.
+        let saved = null;
+        try { saved = localStorage.getItem(key); } catch (e) {}
         if (saved) {
             try {
                 const draft = JSON.parse(saved);
-                if (draft.savedAt && (Date.now() - new Date(draft.savedAt).getTime()) < 7 * 24 * 3600 * 1000) {
-                    showDraftBanner(form, key, draft);
+                const allowed = new Set(safeFields().map(el => el.name));
+                const safeDraft = Object.fromEntries(Object.entries(draft).filter(([name]) =>
+                    name.startsWith('_') || allowed.has(name)
+                ));
+                if (draft._savedAt && Object.keys(safeDraft).some(name => !name.startsWith('_')) &&
+                    (Date.now() - new Date(draft._savedAt).getTime()) < 24 * 60 * 60 * 1000) {
+                    showDraftBanner(form, key, safeDraft);
+                } else {
+                    localStorage.removeItem(key);
                 }
-            } catch (e) {}
+            } catch (e) { try { localStorage.removeItem(key); } catch (_) {} }
         }
-        // Save on input
         form.addEventListener('input', () => {
-            const data = {};
-            new FormData(form).forEach((v, k) => { if (typeof v === 'string') data[k] = v; });
-            data._savedAt = new Date().toISOString();
+            const data = readSafeDraft();
+            if (Object.keys(data).length <= 1) {
+                try { localStorage.removeItem(key); } catch (e) {}
+                return;
+            }
             try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
         });
-        form.addEventListener('submit', () => { localStorage.removeItem(key); });
+        form.addEventListener('submit', () => {
+            try { localStorage.removeItem(key); } catch (e) {}
+        });
     }
 
     function showDraftBanner(form, key, draft) {
@@ -1734,8 +1770,12 @@ function debounce(fn, ms) {
         banner.querySelector('[data-draft="restore"]').addEventListener('click', () => {
             Object.keys(draft).forEach(k => {
                 if (k.startsWith('_')) return;
-                const input = form.querySelector(`[name="${k}"]`) || form.querySelector(`#${k}`);
-                if (input) input.value = draft[k];
+                const input = form.elements.namedItem(k);
+                if (input && input.dataset && input.dataset.kkDraftSafe === 'true' &&
+                    !['password', 'file', 'hidden'].includes(String(input.type || '').toLowerCase()) &&
+                    !/(password|secret|token|auth|email|phone|address|client|case|matter|party|claim|payment|amount|bank|mpesa|idnumber|nationalid|passport|dob|birth|medical|diagnos|note|description|document|file)/i.test(k)) {
+                    input.value = draft[k];
+                }
             });
             banner.remove();
             util.toast('Draft restored.', 'info');
