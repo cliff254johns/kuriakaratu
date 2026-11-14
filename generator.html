@@ -20,6 +20,17 @@
    Editorial × Legal Grade × Split-View Studio
    ============================================================ */
 
+#generatorAuthGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.25rem;background:linear-gradient(135deg,#071a31,#123c65)}
+#generatorAuthGate[hidden]{display:none}
+.generator-auth-card{width:min(100%,430px);padding:2rem;border-radius:22px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.28);color:#10243a}
+.generator-auth-icon{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:#e8f1fb;color:#1a5fb0;font-size:1.5rem;margin-bottom:1rem}
+.generator-auth-card h1{font-size:1.45rem;margin-bottom:.45rem}
+.generator-auth-card p{color:#52677d;margin-bottom:1rem}
+.generator-auth-card form{display:grid;gap:.6rem}
+.generator-auth-card label{font-size:.82rem;font-weight:650}
+.generator-auth-card input{width:100%;padding:.8rem;border:1px solid #cbd8e5;border-radius:10px;font:inherit}
+.generator-auth-card button{margin-top:.5rem;padding:.85rem;border:0;border-radius:10px;background:#155da6;color:#fff;font-weight:700}
+#generatorAuthError{min-height:1.2rem;color:#b42318;font-size:.85rem}
 :root{
   --ink:            #0b1220;
   --navy:           #0f1f3d;
@@ -929,6 +940,21 @@ button{ cursor:pointer; border:none; background:none; }
 </head>
 
 <body>
+<div id="generatorAuthGate" role="dialog" aria-modal="true" aria-labelledby="generatorAuthTitle">
+  <div class="generator-auth-card">
+    <div class="generator-auth-icon"><i class="fas fa-scale-balanced"></i></div>
+    <h1 id="generatorAuthTitle">Institutional sign in</h1>
+    <p>Document Generator access is restricted to authorised administrators.</p>
+    <form id="generatorAdminLogin">
+      <label for="generatorLoginEmail">Institutional email</label>
+      <input id="generatorLoginEmail" type="email" autocomplete="username" required>
+      <label for="generatorLoginPassword">Password</label>
+      <input id="generatorLoginPassword" type="password" autocomplete="current-password" required>
+      <button type="submit">Sign in securely</button>
+      <p id="generatorAuthError" role="alert"></p>
+    </form>
+  </div>
+</div>
 <div id="genApp">
 
   <!-- ============================================================
