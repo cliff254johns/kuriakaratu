@@ -762,8 +762,13 @@ var chartInstances = {};
    LOGIN
    ============================================================ */
 function showApp(email, role){
+  if (role !== 'admin') {
+    if (auth) auth.signOut().catch(function(){});
+    $('loginError').textContent = 'Access denied. Finance is restricted to administrators.';
+    return;
+  }
   currentUserEmail = email;
-  currentUserRole = role || 'clerk';
+  currentUserRole = 'admin';
   $('loginOverlay').classList.add('hidden');
   $('appHeader').style.display = 'flex';
   $('appContent').style.display = 'block';
@@ -846,6 +851,7 @@ function setupLogout(){
     });
     chartInstances = {}; chartsInitialized = false;
     currentUserEmail = '';
+    currentUserRole = 'clerk';
     $('loginOverlay').classList.remove('hidden');
     $('appHeader').style.display = 'none';
     $('appContent').style.display = 'none';
