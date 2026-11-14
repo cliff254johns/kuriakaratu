@@ -454,84 +454,42 @@ auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => console
 
 let isSeeding = false;
 
-const DEFAULT_USERS = [
-    { email: 'admin@kuriakaratu.com', password: 'admin123', role: 'admin' },
-   
-    { email: 'clerk@kuriakaratu.com', password: 'clerk123', role: 'clerk' }
-];
-
+// Staff accounts must be provisioned by a trusted administrator through Firebase
+// Authentication / a protected backend. Never create accounts or ship passwords
+// from this public client bundle.
 let authStateReady = false;
 auth.onAuthStateChanged(user => {
-    if (isSeeding) return;
-    if (!authStateReady) return;  // wait until seeding is done
+    if (!authStateReady) return;
     const overlay = document.getElementById('loginOverlay');
     const app = document.getElementById('mainApp');
-    if (user) {
-        auth.signOut().catch(err => console.warn('SignOut error:', err));
-    } else {
-        if (overlay) overlay.classList.remove('hidden');
+    if (!user) {
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            overlay.style.display = '';
+        }
         if (app) app.style.display = 'none';
     }
 });
-// Start seeding immediately after handler is attached
-seedDefaultUsers().catch(err => console.error('seedDefaultUsers failed:', err));
 
-// Watchdog: never leave the user stuck on "loading users"
-setTimeout(() => {
-    const loadingEl = document.getElementById('loginLoading');
-    if (loadingEl && loadingEl.style.display !== 'none') {
-        loadingEl.style.display = 'none';
-    }
-    const sel = document.getElementById('loginEmailSelect');
-    if (sel && (!sel.options.length || sel.options.length <= 1)) {
-        usersData = DEFAULT_USERS.map(u => ({ id: u.email, email: u.email, role: u.role }));
-        populateLoginDropdown();
-    }
-}, 8000);
-async function seedDefaultUsers() {
-    isSeeding = true;
+// Populate the email suggestion list only. Authentication remains Firebase
+// Email/Password; an empty/blocked users collection never grants fallback access.
+(async function initializeStaffLogin() {
+    authStateReady = true;
     const loadingEl = document.getElementById('loginLoading');
     if (loadingEl) loadingEl.style.display = 'block';
-
     try {
-        // 1. Try to read existing users (may be blocked by rules — that's OK)
-        const existing = new Set();
-        try {
-            const snap = await db.collection('users').get();
-            snap.forEach(d => { const e = d.data().email; if (e) existing.add(e); });
-        } catch (e) {
-            console.warn('Cannot read users collection (rules?):', e.code || e.message);
-        }
-
-        // 2. Create only the ones that are missing
-        for (const u of DEFAULT_USERS) {
-            if (existing.has(u.email)) continue;
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(u.email, u.password);
-                await db.collection('users').doc(cred.user.uid).set({
-                    email: u.email, role: u.role,
-                    createdAt: getDateTime(), lastLogin: null
-                });
-                await auth.signOut();
-            } catch (err) {
-                console.warn('Seed skipped for', u.email, err.code || err.message);
-            }
-        }
-    } catch (err) {
-        console.error('Error seeding users:', err);
-    } finally {
-        try { if (auth.currentUser) await auth.signOut(); } catch (e) {}
-        isSeeding = false;
-
-        if (loadingEl) loadingEl.style.display = 'none';
-
         await loadUsersForLogin();
+    } finally {
+        if (loadingEl) loadingEl.style.display = 'none';
         const overlay = document.getElementById('loginOverlay');
         const app = document.getElementById('mainApp');
-        if (overlay) overlay.classList.remove('hidden');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            overlay.style.display = '';
+        }
         if (app) app.style.display = 'none';
     }
-}
+})();
 
 /* ============================================================
    GLOBAL LOGO PROPAGATION
@@ -634,12 +592,7 @@ async function loadUsersForLogin() {
         console.warn('Failed to load users from Firestore:', e.code || e.message);
     }
 
-    // Fallback: if Firestore gave us nothing, still let the admin in.
-    if (!usersData.length) {
-        usersData = DEFAULT_USERS.map(u => ({ id: u.email, email: u.email, role: u.role }));
-        console.warn('Using DEFAULT_USERS fallback for the login dropdown.');
-    }
-
+    // If rules prevent listing users, the email field remains manually editable.
     populateLoginDropdown();
 }
 
@@ -1957,6 +1910,9 @@ async function updateLastLogin(email) {
 
 function applyRoleGating() {
     const isFull = isFullAccess();
+    document.querySelectorAll('[data-requires-role="admin"]').forEach(el => {
+        el.style.display = currentUserRole === 'admin' ? (el.tagName === 'A' ? 'flex' : '') : 'none';
+    });
 
     // Admin/developer-only nav items
     document.querySelectorAll('.admin-only').forEach(el => {
@@ -5969,5 +5925,39 @@ loadCompanyLogoFromFirestore();
 setTimeout(() => { if (currentUser && isFullAccess()) { updateAccidentSummary(); } }, 1500);
 
 console.log('Kuria Karatu & Company Advocates System Loaded');
-})();      
-   
+})();
+
+// Explicit read-only state bridge for optional enhancement modules.
+// Top-level let declarations are not window properties in classic scripts.
+window.KKAdminState = Object.freeze({
+    get cases() { return casesData; },
+    get clients() { return clientsData; },
+    get documents() { return documentsData; },
+    get tasks() { return tasksData; },
+    get invoices() { return invoicesData; },
+    get receipts() { return receiptsData; },
+    get accidents() { return accidentClientsData; },
+    get users() { return usersData; },
+    get currentUser() { return currentUser; },
+    get currentUserEmail() { return currentUserEmail; },
+    get currentUserRole() { return currentUserRole; },
+    get isFullAccess() { return isFullAccess(); },
+    get isAdmin() { return currentUserRole === 'admin'; }
+});
+
+// Read-only state bridge consumed by admin-v2.js.
+window.KKAdminState = Object.freeze({
+    get cases() { return casesData; },
+    get clients() { return clientsData; },
+    get documents() { return documentsData; },
+    get tasks() { return tasksData; },
+    get invoices() { return invoicesData; },
+    get receipts() { return receiptsData; },
+    get accidents() { return accidentClientsData; },
+    get users() { return usersData; },
+    get currentUser() { return currentUser; },
+    get currentUserEmail() { return currentUserEmail; },
+    get currentUserRole() { return currentUserRole; },
+    get isFullAccess() { return isFullAccess(); },
+    get isAdmin() { return currentUserRole === 'admin'; }
+});
