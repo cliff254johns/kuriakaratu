@@ -346,16 +346,76 @@
         }
     }
 
-    /* Reuse the admin session if possible. Anonymous fallback otherwise. */
+    /* Only an authenticated administrator may use the institutional generator. */
     async function initFirebaseAuth() {
-        if (!State.firebaseReady) return null;
-        return new Promise(resolve => {
-            const unsub = State.fb.auth.onAuthStateChanged(user => {
-                State.fb.user = user || null;
-                unsub();
-                resolve(State.fb.user);
-            });
+        if (!State.firebaseReady) {
+            showGeneratorAuthGate('Firebase authentication is unavailable. Connect to the institutional service.');
+            return null;
+        }
+        const gate = document.getElementById('generatorAuthGate');
+        const form = document.getElementById('generatorAdminLogin');
+        const errorEl = document.getElementById('generatorAuthError');
+        const setError = message => { if (errorEl) errorEl.textContent = message || ''; };
+        const verify = async user => {
+            if (!user) { State.fb.user = null; if (gate) gate.hidden = false; return null; }
+            try {
+                const profile = await State.fb.db.collection('users').doc(user.uid).get();
+                if (!profile.exists || profile.data().role !== 'admin') {
+                    await State.fb.auth.signOut();
+                    State.fb.user = null;
+                    setError('Access denied. The document generator is restricted to authorised administrators.');
+                    if (gate) gate.hidden = false;
+                    return null;
+                }
+                State.fb.user = user;
+                if (gate) gate.hidden = true;
+                return user;
+            } catch (error) {
+                await State.fb.auth.signOut().catch(() => {});
+                State.fb.user = null;
+                setError('Unable to verify administrator permissions. Access has been denied.');
+                if (gate) gate.hidden = false;
+                return null;
+            }
+        };
+        const existing = await new Promise(resolve => {
+            const unsub = State.fb.auth.onAuthStateChanged(user => { unsub(); resolve(user || null); });
         });
+        const verified = await verify(existing);
+        if (verified) return verified;
+        if (form && !form.dataset.bound) {
+            form.dataset.bound = '1';
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                const email = document.getElementById('generatorLoginEmail').value.trim();
+                const password = document.getElementById('generatorLoginPassword').value;
+                const submit = form.querySelector('button[type="submit"]');
+                setError('');
+                if (submit) submit.disabled = true;
+                try {
+                    const credential = await State.fb.auth.signInWithEmailAndPassword(email, password);
+                    const admin = await verify(credential.user);
+                    if (admin) {
+                        await Promise.all([fetchClients(), fetchCases(), syncCountersFromFirestore(), loadLogoFromFirestore()]);
+                        document.dispatchEvent(new CustomEvent('kk-docgen-ready', {
+                            detail: { firebaseReady: true, signedIn: true, role: 'admin' }
+                        }));
+                    }
+                } catch (error) {
+                    setError('Sign-in failed. Check your institutional credentials and try again.');
+                } finally {
+                    if (submit) submit.disabled = false;
+                }
+            });
+        }
+        return null;
+    }
+
+    function showGeneratorAuthGate(message) {
+        const gate = document.getElementById('generatorAuthGate');
+        const error = document.getElementById('generatorAuthError');
+        if (gate) gate.hidden = false;
+        if (error && message) error.textContent = message;
     }
 
     /* ==========================================================
