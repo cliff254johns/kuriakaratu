@@ -1,0 +1,1553 @@
+/* ============================================================
+   KK ADVOCATES v2 — Design System & Enhanced UX
+   Layered on top of admin.html. Never overrides core styles
+   destructively — only extends.
+   ============================================================ */
+
+:root {
+    /* ---------- Design Tokens ---------- */
+    /* State colors (RAG) — ONLY for status/health */
+    --kk-state-success: #16a34a;
+    --kk-state-success-bg: #dcfce7;
+    --kk-state-warning: #d97706;
+    --kk-state-warning-bg: #fef3c7;
+    --kk-state-danger: #dc2626;
+    --kk-state-danger-bg: #fee2e2;
+    --kk-state-info: #2563eb;
+    --kk-state-info-bg: #dbeafe;
+    --kk-state-neutral: #475569;
+    --kk-state-neutral-bg: #f1f5f9;
+
+    /* Category colors (pastel, consistent saturation) — for labels/types */
+    --kk-cat-1: #6366f1; --kk-cat-1-bg: #e0e7ff;
+    --kk-cat-2: #8b5cf6; --kk-cat-2-bg: #ede9fe;
+    --kk-cat-3: #ec4899; --kk-cat-3-bg: #fce7f3;
+    --kk-cat-4: #14b8a6; --kk-cat-4-bg: #ccfbf1;
+    --kk-cat-5: #f97316; --kk-cat-5-bg: #ffedd5;
+    --kk-cat-6: #0ea5e9; --kk-cat-6-bg: #e0f2fe;
+    --kk-cat-7: #84cc16; --kk-cat-7-bg: #ecfccb;
+    --kk-cat-8: #a855f7; --kk-cat-8-bg: #f3e8ff;
+
+    /* Surface & spacing */
+    --kk-rail-w: 64px;
+    --kk-panel-w: 260px;
+    --kk-radius-sm: 6px;
+    --kk-radius-md: 10px;
+    --kk-radius-lg: 16px;
+    --kk-shadow-sm: 0 1px 2px rgba(15,23,42,0.06);
+    --kk-shadow-md: 0 4px 12px rgba(15,23,42,0.08);
+    --kk-shadow-lg: 0 12px 40px rgba(15,23,42,0.12);
+    --kk-transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode ready */
+@media (prefers-color-scheme: dark) {
+    :root.kk-dark-ready {
+        --kk-surface: #0f172a;
+        --kk-surface-alt: #1e293b;
+        --kk-text: #f1f5f9;
+        --kk-text-muted: #94a3b8;
+    }
+}
+
+/* ============================================================
+   TWO-TIER NAVIGATION
+   Replaces the flat sidebar with: icon rail + contextual panel
+   ============================================================ */
+
+.kk-nav-v2 {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+/* Slim icon rail */
+.kk-rail {
+    width: var(--kk-rail-w);
+    background: #0b1220;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    border-right: 1px solid #1e293b;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+.kk-rail::-webkit-scrollbar { display: none; }
+
+.kk-rail-btn {
+    width: 44px; height: 44px;
+    border-radius: var(--kk-radius-md);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem;
+    transition: var(--kk-transition);
+    position: relative;
+}
+.kk-rail-btn:hover { background: #1e293b; color: #e2e8f0; }
+.kk-rail-btn.active {
+    background: #1e3a5f;
+    color: #60a5fa;
+}
+.kk-rail-btn.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 25%; bottom: 25%;
+    width: 3px;
+    background: #60a5fa;
+    border-radius: 0 3px 3px 0;
+}
+.kk-rail-btn .kk-rail-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: var(--kk-state-danger);
+    color: white;
+    font-size: 0.55rem;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* Contextual panel */
+.kk-panel {
+    width: var(--kk-panel-w);
+    background: #0f172a;
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 1rem 0.5rem;
+    gap: 0.15rem;
+    transition: width var(--kk-transition), opacity var(--kk-transition);
+}
+.kk-panel.collapsed { width: 0; opacity: 0; overflow: hidden; padding: 0; }
+
+.kk-panel-header {
+    padding: 0.5rem 0.85rem 0.9rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.kk-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: var(--kk-radius-sm);
+    color: #cbd5e1;
+    font-size: 0.87rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    text-align: left;
+    width: 100%;
+    transition: var(--kk-transition);
+}
+.kk-panel-item:hover { background: #1e293b; color: #f8fafc; }
+.kk-panel-item.active {
+    background: #1e3a5f;
+    color: #60a5fa;
+}
+.kk-panel-item .kk-count {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: #64748b;
+    background: #1e293b;
+    padding: 0.05rem 0.5rem;
+    border-radius: 10px;
+}
+
+/* Breadcrumbs */
+.kk-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #64748b;
+    padding: 0.3rem 0 0.5rem;
+    flex-wrap: wrap;
+}
+.kk-breadcrumbs .crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    color: #64748b;
+    text-decoration: none;
+    transition: var(--kk-transition);
+}
+.kk-breadcrumbs .crumb:hover { color: #3b82f6; }
+.kk-breadcrumbs .crumb.current { color: #1e293b; font-weight: 600; cursor: default; }
+.kk-breadcrumbs .sep { color: #cbd5e1; }
+
+/* ============================================================
+   COMMAND PALETTE (Cmd/Ctrl + K)
+   ============================================================ */
+
+.kk-palette-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    animation: kkFade 0.15s ease;
+}
+.kk-palette-overlay.open { display: flex; }
+
+@keyframes kkFade { from { opacity: 0; } to { opacity: 1; } }
+
+.kk-palette {
+    width: min(640px, 92vw);
+    background: white;
+    border-radius: var(--kk-radius-lg);
+    box-shadow: var(--kk-shadow-lg);
+    overflow: hidden;
+    animation: kkSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes kkSlide {
+    from { transform: translateY(-12px) scale(0.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.kk-palette-search {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9edf2;
+}
+.kk-palette-search i { color: #94a3b8; font-size: 1.05rem; }
+.kk-palette-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: transparent;
+    color: #1e293b;
+}
+
+.kk-palette-results {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+.kk-palette-group {
+    padding: 0.75rem 0.75rem 0.35rem;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #94a3b8;
+    font-weight: 700;
+}
+.kk-palette-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--kk-radius-sm);
+    cursor: pointer;
+    transition: var(--kk-transition);
+}
+.kk-palette-item:hover,
+.kk-palette-item.selected {
+    background: #eff6ff;
+}
+.kk-palette-item .icon {
+    width: 30px; height: 30px;
+    border-radius: var(--kk-radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    background: #e0e7ff;
+    color: #4338ca;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+.kk-palette-item .title { font-weight: 500; font-size: 0.9rem; color: #1e293b; }
+.kk-palette-item .subtitle { font-size: 0.75rem; color: #64748b; margin-top: 0.1rem; }
+.kk-palette-item .badge-type {
+    margin-left: auto;
+    font-size: 0.65rem;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 0.15rem 0.55rem;
+    border-radius: 10px;
+}
+.kk-palette-footer {
+    padding: 0.5rem 1rem;
+    border-top: 1px solid #e9edf2;
+    background: #f8fafc;
+    display: flex;
+    gap: 1rem;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+.kk-palette-footer kbd {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0.05rem 0.35rem;
+    font-family: monospace;
+    font-size: 0.7rem;
+}
+
+/* ============================================================
+   TODAY PANEL + ROLE DASHBOARDS
+   ============================================================ */
+
+.kk-today-panel {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    color: white;
+    border-radius: var(--kk-radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--kk-shadow-md);
+}
+.kk-today-headline {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.kk-today-headline .date-sub {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 400;
+    margin-left: auto;
+}
+.kk-today-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+.kk-today-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--kk-radius-md);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: var(--kk-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.kk-today-card:hover {
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-1px);
+}
+.kk-today-card .icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.kk-today-card .icon.court { background: rgba(239,68,68,0.2); color: #fca5a5; }
+.kk-today-card .icon.filing { background: rgba(245,158,11,0.2); color: #fcd34d; }
+.kk-today-card .icon.meeting { background: rgba(34,197,94,0.2); color: #86efac; }
+.kk-today-card .icon.task { background: rgba(59,130,246,0.2); color: #93c5fd; }
+.kk-today-card .kk-today-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.kk-today-card .kk-today-label {
+    font-size: 0.72rem;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+}
+
+/* Case Aging Heatmap */
+.kk-aging-wrap { margin: 1rem 0; }
+.kk-aging-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+    gap: 4px;
+}
+.kk-aging-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: var(--kk-transition);
+    background: #dcfce7;
+}
+.kk-aging-cell:hover { transform: scale(1.15); z-index: 2; box-shadow: var(--kk-shadow-md); }
+.kk-aging-cell[data-age="0"] { background: #dcfce7; }
+.kk-aging-cell[data-age="1"] { background: #fef3c7; }
+.kk-aging-cell[data-age="2"] { background: #fed7aa; }
+.kk-aging-cell[data-age="3"] { background: #fca5a5; }
+.kk-aging-cell[data-age="4"] { background: #ef4444; box-shadow: 0 0 0 2px rgba(239,68,68,0.3); }
+
+.kk-aging-legend {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.kk-aging-legend .swatch {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+}
+
+/* ============================================================
+   MULTI-STEP FORMS
+   ============================================================ */
+
+.kk-steps {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9edf2;
+    overflow-x: auto;
+}
+.kk-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 0.3rem 0;
+}
+.kk-step .num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.kk-step.active { color: #3b82f6; }
+.kk-step.active .num { background: #3b82f6; color: white; }
+.kk-step.done { color: var(--kk-state-success); }
+.kk-step.done .num { background: var(--kk-state-success); color: white; }
+.kk-step .sep { color: #cbd5e1; }
+
+.kk-step-pane { display: none; }
+.kk-step-pane.active { display: block; animation: kkFade 0.2s ease; }
+
+.kk-form-error {
+    color: var(--kk-state-danger);
+    font-size: 0.72rem;
+    margin-top: 0.2rem;
+    display: none;
+}
+.kk-form-group.has-error input,
+.kk-form-group.has-error select,
+.kk-form-group.has-error textarea {
+    border-color: var(--kk-state-danger);
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
+}
+.kk-form-group.has-error .kk-form-error { display: block; }
+
+.kk-draft-banner {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #1e40af;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.kk-draft-banner .kk-draft-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.3rem;
+}
+
+/* ============================================================
+   CONFLICT OF INTEREST
+   ============================================================ */
+
+.kk-conflict-warning {
+    background: #fee2e2;
+    border: 2px solid #dc2626;
+    border-radius: var(--kk-radius-md);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    animation: kkPulse 2s ease infinite;
+}
+@keyframes kkPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); }
+}
+.kk-conflict-warning .title {
+    font-weight: 700;
+    color: #991b1b;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.kk-conflict-warning .match {
+    background: white;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+}
+.kk-conflict-warning .match .match-type {
+    font-size: 0.65rem;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.1rem 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-right: 0.4rem;
+}
+
+/* ============================================================
+   MOBILE-FIRST CARDS (replaces tables on small screens)
+   ============================================================ */
+
+.kk-mobile-cards { display: none; }
+.kk-desktop-table { display: block; }
+
+@media (max-width: 720px) {
+    .kk-desktop-table { display: none; }
+    .kk-mobile-cards { display: flex; flex-direction: column; gap: 0.6rem; }
+    .kk-mobile-card {
+        background: white;
+        border: 1px solid #e9edf2;
+        border-radius: var(--kk-radius-md);
+        padding: 0.85rem 1rem;
+        box-shadow: var(--kk-shadow-sm);
+    }
+    .kk-mobile-card .row-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #0f172a;
+        margin-bottom: 0.2rem;
+    }
+    .kk-mobile-card .row-meta {
+        font-size: 0.75rem;
+        color: #64748b;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+    }
+    .kk-mobile-card .row-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+}
+
+/* ============================================================
+   DOCUMENT VERSIONING
+   ============================================================ */
+
+.kk-version-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+.kk-version-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: #f8fafc;
+    border: 1px solid #e9edf2;
+    font-size: 0.82rem;
+}
+.kk-version-item.current {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+.kk-version-item .vnum {
+    background: #3b82f6;
+    color: white;
+    font-weight: 700;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    min-width: 34px;
+    text-align: center;
+}
+.kk-version-item.current .vnum { background: var(--kk-state-success); }
+.kk-version-item .vmeta { flex: 1; }
+.kk-version-item .vmeta .vby { font-size: 0.7rem; color: #64748b; }
+.kk-version-item .vactions { display: flex; gap: 0.25rem; }
+
+/* ============================================================
+   ARO CALCULATOR
+   ============================================================ */
+
+.kk-aro-box {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: var(--kk-radius-md);
+    padding: 1rem;
+    margin-top: 0.75rem;
+}
+.kk-aro-box h5 {
+    font-size: 0.85rem;
+    color: #0369a1;
+    margin-bottom: 0.6rem;
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.kk-aro-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px dashed #bae6fd;
+}
+.kk-aro-row:last-child { border-bottom: none; }
+.kk-aro-row.total {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #0369a1;
+    border-top: 2px solid #0369a1;
+    padding-top: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+/* ============================================================
+   STATUTORY DEADLINE ENGINE
+   ============================================================ */
+
+.kk-deadline-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--kk-radius-md);
+    background: white;
+    border: 1px solid #e9edf2;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid var(--kk-state-success);
+}
+.kk-deadline-card.rag-warning { border-left-color: var(--kk-state-warning); background: #fffbeb; }
+.kk-deadline-card.rag-danger { border-left-color: var(--kk-state-danger); background: #fef2f2; }
+.kk-deadline-card .d-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--kk-state-success-bg);
+    color: var(--kk-state-success);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.kk-deadline-card.rag-warning .d-icon { background: var(--kk-state-warning-bg); color: var(--kk-state-warning); }
+.kk-deadline-card.rag-danger .d-icon { background: var(--kk-state-danger-bg); color: var(--kk-state-danger); }
+.kk-deadline-card .d-title { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
+.kk-deadline-card .d-meta { font-size: 0.72rem; color: #64748b; margin-top: 0.15rem; }
+.kk-deadline-card .d-countdown {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    background: var(--kk-state-success-bg);
+    color: var(--kk-state-success);
+    white-space: nowrap;
+}
+.kk-deadline-card.rag-warning .d-countdown { background: var(--kk-state-warning-bg); color: var(--kk-state-warning); }
+.kk-deadline-card.rag-danger .d-countdown { background: var(--kk-state-danger-bg); color: var(--kk-state-danger); }
+
+/* ============================================================
+   CONFLICT RESOLUTION (offline sync)
+   ============================================================ */
+
+.kk-conflict-modal {
+    background: white;
+    border-radius: var(--kk-radius-lg);
+    padding: 1.5rem;
+    max-width: 640px;
+    width: 92vw;
+}
+.kk-conflict-modal h3 { color: #991b1b; margin-bottom: 0.5rem; }
+.kk-conflict-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+.kk-conflict-field {
+    background: #f8fafc;
+    border: 1px solid #e9edf2;
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+}
+.kk-conflict-field .label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; font-weight: 600; }
+.kk-conflict-field .value { font-weight: 600; margin-top: 0.2rem; word-break: break-word; }
+.kk-conflict-field.mine { border-color: #93c5fd; background: #eff6ff; }
+.kk-conflict-field.theirs { border-color: #fcd34d; background: #fffbeb; }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+
+.kk-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    font-size: 0.78rem;
+    color: #64748b;
+    flex-wrap: wrap;
+}
+.kk-pagination .kk-page-btns {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+.kk-pagination button {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #e9edf2;
+    background: white;
+    color: #475569;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: var(--kk-transition);
+}
+.kk-pagination button:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+.kk-pagination button.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+.kk-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Toast helper for offline sync */
+.kk-sync-pill {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+    z-index: 9000;
+    box-shadow: var(--kk-shadow-md);
+}
+.kk-sync-pill.show { display: flex; }
+.kk-sync-pill.offline { background: var(--kk-state-warning); }
+.kk-sync-pill.syncing { background: var(--kk-state-info); }
+.kk-sync-pill.online { background: var(--kk-state-success); }
+.kk-sync-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: kkBlink 1.2s ease infinite;
+}
+@keyframes kkBlink { 50% { opacity: 0.3; } }
+
+/* ============================================================
+   v2 NAV — REPLACE MODE
+   Hides the legacy sidebar chrome and lets .kk-nav-v2 take over.
+   The legacy markup stays in the DOM (clerk role still
+   references it), but is visually removed.
+   ============================================================ */
+
+/* When v2 nav is active, hide the legacy brand, nav, and bottom */
+.sidebar.kk-nav-active > .brand,
+.sidebar.kk-nav-active > #sidebarNav,
+.sidebar.kk-nav-active > .bottom {
+    display: none !important;
+}
+
+/* The v2 nav container fills the whole sidebar */
+.kk-nav-v2 {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* Sidebar itself becomes a plain flex container (no padding, no scroll) */
+.sidebar.kk-nav-active {
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: relative;
+}
+
+/* On mobile, the sidebar is off-canvas — the v2 nav must respect that */
+@media (max-width: 768px) {
+    .kk-nav-v2 {
+        position: relative;
+        height: 100vh;
+        height: 100dvh;
+    }
+}
+
+/* When the panel is collapsed on narrow screens, only show the rail */
+@media (max-width: 1024px) {
+    .kk-panel { width: 200px; }
+}
+@media (max-width: 768px) {
+    .kk-panel { width: 220px; }
+}
+
+/* Fix: make sure the rail is always clickable above the overlay */
+.kk-rail { position: relative; z-index: 2; }
+.kk-panel { position: relative; z-index: 2; }
+
+/* Mobile: when sidebar is open, both rail and panel show */
+@media (max-width: 768px) {
+    .sidebar.open .kk-nav-v2 {
+        display: flex;
+    }
+    .sidebar:not(.open) .kk-nav-v2 {
+        /* off-canvas, sidebar has transform: translateX(-100%) */
+    }
+}
+
+/* ============================================================
+   CLIO / PRACTICEPANTHER DESIGN LAYER
+   Dense, professional, information-forward.
+   Replaces the Material layer when .kk-clio is on <body>.
+   ============================================================ */
+
+:root {
+    /* ---------- Clio-inspired typography ---------- */
+    --clio-font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --clio-font-mono: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+
+    /* ---------- Clio muted palette ---------- */
+    --clio-bg: #f6f7f9;
+    --clio-surface: #ffffff;
+    --clio-surface-alt: #fafbfc;
+    --clio-surface-hover: #f3f5f8;
+
+    --clio-border: #e3e6eb;
+    --clio-border-strong: #d1d6dd;
+
+    --clio-text: #1b2333;
+    --clio-text-2: #4a5468;
+    --clio-text-3: #6b7688;
+    --clio-text-muted: #8a93a3;
+
+    /* Clio's accent — a serious, muted indigo */
+    --clio-primary: #3d5afe;
+    --clio-primary-hover: #2f4fe8;
+    --clio-primary-tint: #eef1ff;
+
+    /* RAG — muted so they don't scream */
+    --clio-success: #2e7d5b;
+    --clio-success-bg: #e6f4ec;
+    --clio-warning: #b26a00;
+    --clio-warning-bg: #fdf3e2;
+    --clio-danger: #c0392b;
+    --clio-danger-bg: #fbeae8;
+    --clio-info: #1f6feb;
+    --clio-info-bg: #e8f0fe;
+
+    /* Spacing — tighter than Material */
+    --clio-radius: 6px;
+    --clio-radius-lg: 10px;
+    --clio-gap: 0.75rem;
+    --clio-gap-lg: 1.25rem;
+
+    /* Motion — fast, purposeful */
+    --clio-ease: cubic-bezier(0.2, 0, 0, 1);
+    --clio-dur-fast: 120ms;
+    --clio-dur: 180ms;
+    --clio-dur-slow: 280ms;
+}
+
+body.kk-clio {
+    font-family: var(--clio-font);
+    background: var(--clio-bg);
+    color: var(--clio-text);
+    font-size: 13.5px;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Numbers use tabular figures — critical for finance */
+body.kk-clio .value,
+body.kk-clio .ov-value,
+body.kk-clio .as-value,
+body.kk-clio .ps-value,
+body.kk-clio .es-value,
+body.kk-clio .cf-line span:last-child,
+body.kk-clio table td:has(+ .amount),
+body.kk-clio .amount {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--clio-font-mono);
+    letter-spacing: -0.02em;
+}
+
+/* ============================================================
+   CLIO SIDEBAR — dense, with live counters
+   ============================================================ */
+
+body.kk-clio .kk-rail {
+    width: 56px;
+    background: #1b2333;
+    border-right: 1px solid #10151f;
+    padding: 0.5rem 0;
+    gap: 0.15rem;
+}
+
+body.kk-clio .kk-rail-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #8a93a3;
+}
+body.kk-clio .kk-rail-btn:hover {
+    background: #2a3142;
+    color: #e5e8ee;
+}
+body.kk-clio .kk-rail-btn.active {
+    background: #2a3142;
+    color: #ffffff;
+}
+body.kk-clio .kk-rail-btn.active::before {
+    background: var(--clio-primary);
+    width: 3px;
+}
+
+body.kk-clio .kk-panel {
+    background: #1b2333;
+    color: #b8c0cf;
+    padding: 0.75rem 0.4rem;
+    gap: 0.05rem;
+    width: 248px;
+}
+
+body.kk-clio .kk-panel-header {
+    padding: 0.6rem 0.75rem 0.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: #6b7688;
+    font-weight: 600;
+}
+
+body.kk-clio .kk-panel-item {
+    padding: 0.4rem 0.7rem;
+    border-radius: 4px;
+    font-size: 12.5px;
+    font-weight: 450;
+    color: #b8c0cf;
+    gap: 0.55rem;
+    transition: background var(--clio-dur-fast) var(--clio-ease),
+                color var(--clio-dur-fast) var(--clio-ease);
+}
+body.kk-clio .kk-panel-item:hover {
+    background: #252c3d;
+    color: #ffffff;
+    transform: none; /* no Material bounce */
+}
+body.kk-clio .kk-panel-item.active {
+    background: #2a3142;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* Live counter on each submenu item */
+body.kk-clio .kk-panel-item .kk-panel-count {
+    margin-left: auto;
+    font-family: var(--clio-font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #8a93a3;
+    background: rgba(255,255,255,0.06);
+    padding: 0.1rem 0.45rem;
+    border-radius: 10px;
+    min-width: 22px;
+    text-align: center;
+    letter-spacing: 0;
+    transition: background var(--clio-dur-fast) var(--clio-ease),
+                color var(--clio-dur-fast) var(--clio-ease);
+}
+body.kk-clio .kk-panel-item:hover .kk-panel-count {
+    background: rgba(255,255,255,0.1);
+    color: #e5e8ee;
+}
+body.kk-clio .kk-panel-item.active .kk-panel-count {
+    background: rgba(61,90,254,0.25);
+    color: #ffffff;
+}
+
+/* Zero counts fade out so the eye ignores them */
+body.kk-clio .kk-panel-item .kk-panel-count.zero {
+    color: #4a5468;
+    background: transparent;
+}
+
+/* Warning/urgent counts glow */
+body.kk-clio .kk-panel-item .kk-panel-count.urgent {
+    background: var(--clio-danger);
+    color: #ffffff;
+    font-weight: 600;
+}
+body.kk-clio .kk-panel-item .kk-panel-count.warn {
+    background: var(--clio-warning);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* ============================================================
+   CLIO PAGE HEADER — title + quick actions bar
+   ============================================================ */
+
+body.kk-clio .topbar {
+    padding: 0.65rem 1.25rem;
+    background: var(--clio-surface);
+    border-bottom: 1px solid var(--clio-border);
+    gap: 0.75rem;
+}
+
+body.kk-clio .topbar .page-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--clio-text);
+}
+
+body.kk-clio .topbar .search-wrap {
+    background: var(--clio-surface-alt);
+    border-radius: 6px;
+    border: 1px solid var(--clio-border);
+    padding: 0.15rem 0.7rem;
+}
+body.kk-clio .topbar .search-wrap:focus-within {
+    border-color: var(--clio-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(61,90,254,0.12);
+}
+
+body.kk-clio .user-badge {
+    background: var(--clio-surface-alt);
+    border: 1px solid var(--clio-border);
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem 0.25rem 0.3rem;
+    font-size: 12.5px;
+}
+body.kk-clio .user-badge .user-avatar {
+    background: var(--clio-primary);
+    font-size: 11px;
+    font-weight: 600;
+    width: 26px; height: 26px;
+}
+body.kk-clio .user-badge .user-role {
+    color: var(--clio-text-3);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* ============================================================
+   CLIO PAGE HEADER ACTIONS — the "New X" toolbar
+   Injected by JS below the topbar, above the content
+   ============================================================ */
+
+.kk-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: var(--clio-surface);
+    border-bottom: 1px solid var(--clio-border);
+    flex-wrap: wrap;
+    animation: kkActionsEnter var(--clio-dur-slow) var(--clio-ease);
+}
+@keyframes kkActionsEnter {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.kk-page-actions .kk-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    background: var(--clio-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: -0.005em;
+    transition: background var(--clio-dur-fast) var(--clio-ease),
+                transform var(--clio-dur-fast) var(--clio-ease);
+}
+.kk-page-actions .kk-action-btn:hover {
+    background: var(--clio-primary-hover);
+}
+.kk-page-actions .kk-action-btn:active {
+    transform: scale(0.98);
+}
+.kk-page-actions .kk-action-btn.secondary {
+    background: transparent;
+    color: var(--clio-text-2);
+    border: 1px solid var(--clio-border-strong);
+}
+.kk-page-actions .kk-action-btn.secondary:hover {
+    background: var(--clio-surface-hover);
+    color: var(--clio-text);
+}
+
+.kk-page-actions .kk-action-spacer { flex: 1; }
+
+.kk-page-actions .kk-action-meta {
+    font-size: 11.5px;
+    color: var(--clio-text-3);
+    font-family: var(--clio-font-mono);
+}
+
+/* ============================================================
+   CLIO TABLES — dense, monospace numbers, tight rows
+   ============================================================ */
+
+body.kk-clio .content {
+    padding: 1rem 1.25rem;
+    background: var(--clio-bg);
+}
+
+body.kk-clio .table-wrap {
+    background: var(--clio-surface);
+    border-radius: var(--clio-radius-lg);
+    border: 1px solid var(--clio-border);
+    padding: 0;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    overflow: hidden;
+}
+
+body.kk-clio .table-wrap h3 {
+    padding: 0.85rem 1.25rem;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    border-bottom: 1px solid var(--clio-border);
+    background: var(--clio-surface-alt);
+    margin: 0;
+    color: var(--clio-text);
+}
+body.kk-clio .table-wrap h3 i {
+    color: var(--clio-primary);
+    margin-right: 0.4rem;
+}
+
+body.kk-clio table {
+    font-size: 12.5px;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 600px;
+    width: 100%;
+}
+
+body.kk-clio table thead th,
+body.kk-clio table tr:first-child th {
+    padding: 0.55rem 1rem;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--clio-text-3);
+    background: var(--clio-surface-alt);
+    border-bottom: 1px solid var(--clio-border);
+    text-align: left;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+body.kk-clio table tbody td,
+body.kk-clio table tr td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--clio-border);
+    color: var(--clio-text);
+    vertical-align: middle;
+    line-height: 1.4;
+    transition: background var(--clio-dur-fast) var(--clio-ease);
+}
+
+body.kk-clio table tbody tr:hover td,
+body.kk-clio table tr:hover td {
+    background: var(--clio-surface-hover);
+}
+body.kk-clio table tbody tr:last-child td {
+    border-bottom: none;
+}
+body.kk-clio table tbody tr.clickable-row {
+    cursor: pointer;
+}
+body.kk-clio table tbody tr.clickable-row:hover td {
+    background: var(--clio-primary-tint);
+}
+body.kk-clio table tbody tr.clickable-row:hover td:first-child {
+    box-shadow: inset 3px 0 0 var(--clio-primary);
+}
+
+/* Monospace money columns */
+body.kk-clio table td:last-child,
+body.kk-clio table td:nth-last-child(2) {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   CLIO BADGES — small, flat, no shadow
+   ============================================================ */
+
+body.kk-clio .badge {
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    line-height: 1.6;
+    text-transform: uppercase;
+}
+body.kk-clio .badge.green   { background: var(--clio-success-bg); color: var(--clio-success); }
+body.kk-clio .badge.yellow  { background: var(--clio-warning-bg); color: var(--clio-warning); }
+body.kk-clio .badge.red     { background: var(--clio-danger-bg);  color: var(--clio-danger); }
+body.kk-clio .badge.blue    { background: var(--clio-info-bg);    color: var(--clio-info); }
+body.kk-clio .badge.gray    { background: #f0f2f5; color: var(--clio-text-2); }
+body.kk-clio .badge.purple  { background: #ede9fe; color: #5b21b6; }
+
+/* ============================================================
+   CLIO BUTTONS — flat, dense, no shadows
+   ============================================================ */
+
+body.kk-clio .btn {
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    box-shadow: none;
+    transition: background var(--clio-dur-fast) var(--clio-ease),
+                color var(--clio-dur-fast) var(--clio-ease),
+                border-color var(--clio-dur-fast) var(--clio-ease);
+    will-change: background;
+}
+body.kk-clio .btn:hover {
+    box-shadow: none;
+    transform: none;
+}
+body.kk-clio .btn:active {
+    transform: scale(0.98);
+}
+body.kk-clio .btn-primary {
+    background: var(--clio-primary);
+}
+body.kk-clio .btn-primary:hover {
+    background: var(--clio-primary-hover);
+}
+body.kk-clio .btn-sm {
+    padding: 0.25rem 0.6rem;
+    font-size: 11.5px;
+}
+body.kk-clio .btn-outline {
+    border: 1px solid var(--clio-border-strong);
+    background: var(--clio-surface);
+    color: var(--clio-text);
+}
+body.kk-clio .btn-outline:hover {
+    background: var(--clio-surface-hover);
+    border-color: var(--clio-text-3);
+}
+
+/* ============================================================
+   CLIO STAT CARDS — dense, borderless numbers
+   ============================================================ */
+
+body.kk-clio .card-grid {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+body.kk-clio .stat-card {
+    padding: 0.85rem 1rem;
+    border-radius: var(--clio-radius-lg);
+    border: 1px solid var(--clio-border);
+    background: var(--clio-surface);
+    box-shadow: none;
+    transition: border-color var(--clio-dur-fast) var(--clio-ease);
+}
+body.kk-clio .stat-card:hover {
+    box-shadow: none;
+    transform: none;
+    border-color: var(--clio-border-strong);
+}
+body.kk-clio .stat-card .label {
+    font-size: 10.5px;
+    color: var(--clio-text-3);
+    letter-spacing: 0.4px;
+    font-weight: 600;
+}
+body.kk-clio .stat-card .value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--clio-text);
+    margin-top: 0.15rem;
+    font-family: var(--clio-font-mono);
+}
+body.kk-clio .stat-card .change {
+    font-size: 10.5px;
+    color: var(--clio-success);
+    margin-top: 0.15rem;
+}
+body.kk-clio .stat-card i {
+    color: var(--clio-text-muted);
+    font-size: 1.1rem;
+    float: right;
+    opacity: 0.5;
+}
+
+/* ============================================================
+   CLIO INPUTS — tight, bordered
+   ============================================================ */
+
+body.kk-clio .form-group input,
+body.kk-clio .form-group select,
+body.kk-clio .form-group textarea,
+body.kk-clio .row-select {
+    background: var(--clio-surface);
+    border: 1px solid var(--clio-border-strong);
+    border-radius: 6px;
+    padding: 0.45rem 0.7rem;
+    font-size: 12.5px;
+    transition: border-color var(--clio-dur-fast) var(--clio-ease),
+                box-shadow var(--clio-dur-fast) var(--clio-ease);
+}
+body.kk-clio .form-group input:focus,
+body.kk-clio .form-group select:focus,
+body.kk-clio .form-group textarea:focus {
+    border-color: var(--clio-primary);
+    box-shadow: 0 0 0 3px rgba(61,90,254,0.12);
+    outline: none;
+    background: var(--clio-surface);
+}
+body.kk-clio .form-group label {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--clio-text-2);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.005em;
+}
+
+/* ============================================================
+   CLIO MODALS — clean, no glass effect
+   ============================================================ */
+
+body.kk-clio .modal-overlay {
+    background: rgba(15,23,42,0.35);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+body.kk-clio .modal {
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(15,23,42,0.15),
+                0 0 0 1px rgba(0,0,0,0.04);
+    animation: kkModalIn var(--clio-dur-slow) var(--clio-ease);
+    padding: 1.25rem;
+}
+@keyframes kkModalIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+body.kk-clio .modal .modal-header h2 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+}
+
+/* ============================================================
+   CLIO BREADCRUMBS — smaller, monospace separators
+   ============================================================ */
+
+body.kk-clio .kk-breadcrumbs {
+    padding: 0.45rem 1.25rem;
+    font-size: 11.5px;
+    color: var(--clio-text-3);
+    background: var(--clio-surface-alt);
+    border-bottom: 1px solid var(--clio-border);
+    margin: 0;
+}
+body.kk-clio .kk-breadcrumbs .crumb {
+    color: var(--clio-text-3);
+}
+body.kk-clio .kk-breadcrumbs .crumb:hover {
+    color: var(--clio-primary);
+}
+body.kk-clio .kk-breadcrumbs .crumb.current {
+    color: var(--clio-text);
+    font-weight: 500;
+}
+
+/* ============================================================
+   CLIO PAGE TRANSITION — subtle, fast
+   ============================================================ */
+
+@keyframes kkClioPageIn {
+    from { opacity: 0; transform: translateY(3px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+body.kk-clio .page.active {
+    animation: kkClioPageIn var(--clio-dur) var(--clio-ease);
+}
+
+/* ============================================================
+   CLIO ROW ENTRANCE — subtle
+   ============================================================ */
+
+@keyframes kkRowIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+body.kk-clio table tbody tr {
+    animation: kkRowIn 200ms var(--clio-ease) both;
+}
+body.kk-clio table tbody tr:nth-child(1) { animation-delay: 0ms; }
+body.kk-clio table tbody tr:nth-child(2) { animation-delay: 10ms; }
+body.kk-clio table tbody tr:nth-child(3) { animation-delay: 20ms; }
+body.kk-clio table tbody tr:nth-child(4) { animation-delay: 30ms; }
+body.kk-clio table tbody tr:nth-child(5) { animation-delay: 40ms; }
+body.kk-clio table tbody tr:nth-child(n+6) { animation-delay: 50ms; }
+
+/* ============================================================
+   CLIO COMMAND PALETTE — matches the theme
+   ============================================================ */
+
+body.kk-clio .kk-palette {
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(15,23,42,0.25);
+}
+body.kk-clio .kk-palette-search input {
+    font-size: 14px;
+}
+body.kk-clio .kk-palette-item.selected {
+    background: var(--clio-primary-tint);
+}
+/* ============================================================
+   LIVE SUBMENU COUNTERS — Clio-style panel badges
+   Works with both .kk-clio (dark) and default themes.
+   ============================================================ */
+
+/* Default (non-Clio) styling — inherits from existing panel */
+.kk-panel-item .kk-panel-count {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.15);
+    padding: 0.1rem 0.45rem;
+    border-radius: 10px;
+    min-width: 22px;
+    text-align: center;
+    letter-spacing: 0;
+    line-height: 1.5;
+    transition: background 150ms ease, color 150ms ease;
+    flex-shrink: 0;
+}
+.kk-panel-item:hover .kk-panel-count {
+    background: rgba(148, 163, 184, 0.25);
+    color: #e2e8f0;
+}
+.kk-panel-item.active .kk-panel-count {
+    background: rgba(96, 165, 250, 0.35);
+    color: #ffffff;
+}
+
+/* Zero counts — faded so they don't draw the eye */
+.kk-panel-item .kk-panel-count.zero {
+    color: #4a5468;
+    background: transparent;
+    opacity: 0.55;
+}
+.kk-panel-item:hover .kk-panel-count.zero {
+    opacity: 0.9;
+}
+
+/* Urgent counts — red */
+.kk-panel-item .kk-panel-count.urgent {
+    background: var(--kk-state-danger, #dc2626);
+    color: #ffffff;
+    font-weight: 600;
+    animation: kkCounterPulse 2.5s ease-in-out infinite;
+}
+@keyframes kkCounterPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+    50%      { box-shadow: 0 0 0 5px rgba(220, 38, 38, 0); }
+}
+
+/* Warning counts — orange */
+.kk-panel-item .kk-panel-count.warn {
+    background: var(--kk-state-warning, #d97706);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Clio-specific overrides (the Clio CSS we added earlier already
+   styles .kk-panel-item .kk-panel-count, but these help when the
+   Clio class hasn't loaded) */
+body.kk-clio .kk-panel-item .kk-panel-count {
+    background: rgba(255, 255, 255, 0.06);
+    color: #8a93a3;
+}
+body.kk-clio .kk-panel-item:hover .kk-panel-count {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e5e8ee;
+}
+body.kk-clio .kk-panel-item.active .kk-panel-count {
+    background: rgba(61, 90, 254, 0.25);
+    color: #ffffff;
+}
+body.kk-clio .kk-panel-item .kk-panel-count.zero {
+    background: transparent;
+    color: #4a5468;
+}
+body.kk-clio .kk-panel-item .kk-panel-count.urgent {
+    background: var(--clio-danger, #c0392b);
+    color: #ffffff;
+}
+body.kk-clio .kk-panel-item .kk-panel-count.warn {
+    background: var(--clio-warning, #b26a00);
+    color: #ffffff;
+}

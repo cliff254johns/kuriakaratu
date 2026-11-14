@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="KK Finance" />
+<title>KK Finance · Kuria Karatu</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;}
+body{font-family:'Segoe UI',Roboto,system-ui,sans-serif;background:#f4f7fc;color:#1e293b;display:flex;flex-direction:column;height:100vh;overflow:hidden;font-size:14px;-webkit-tap-highlight-color:transparent;}
+
+/* HEADER */
+.app-header{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:white;padding:0.75rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:10;}
+.app-header .logo{display:flex;align-items:center;gap:0.6rem;font-weight:700;font-size:1rem;}
+.app-header .logo i{font-size:1.4rem;color:#60a5fa;}
+.app-header .header-actions{display:flex;gap:0.5rem;align-items:center;}
+.sync-pill{font-size:0.65rem;color:#94a3b8;display:flex;align-items:center;gap:0.3rem;background:rgba(255,255,255,0.08);padding:0.25rem 0.6rem;border-radius:1rem;}
+.sync-pill .dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite;}
+.sync-pill.error .dot{background:#ef4444;animation:none;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.user-pill{display:flex;align-items:center;gap:0.5rem;background:rgba(255,255,255,0.12);padding:0.25rem 0.7rem 0.25rem 0.4rem;border-radius:2rem;font-size:0.72rem;border:1px solid rgba(255,255,255,0.15);}
+.user-pill .avatar{width:24px;height:24px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.65rem;}
+.user-pill .logout-btn{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.8rem;padding:0 0.15rem;}
+.user-pill .logout-btn:hover{color:#ef4444;}
+
+/* CONTENT */
+.app-content{flex:1;overflow-y:auto;padding:0.75rem 1rem 5.5rem;width:100%;}
+@media (min-width:1024px){.app-content{padding:1rem 2rem 6rem;max-width:80%;margin:0 auto;}}
+
+/* BOTTOM NAV */
+.app-nav{position:fixed;bottom:0;left:0;right:0;background:white;display:flex;justify-content:space-around;padding:0.35rem 0.2rem calc(0.35rem + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(0,0,0,0.08);border-top:1px solid #e9edf2;z-index:100;overflow-x:auto;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:0.05rem;background:none;border:none;color:#94a3b8;font-size:0.5rem;font-weight:600;cursor:pointer;padding:0.2rem 0.3rem;border-radius:0.5rem;min-width:44px;position:relative;flex-shrink:0;}
+.nav-item i{font-size:1.05rem;}
+.nav-item.active{color:#3b82f6;}
+.nav-item .nav-badge{position:absolute;top:-2px;right:2px;background:#ef4444;color:white;font-size:0.5rem;padding:0.05rem 0.3rem;border-radius:10px;font-weight:700;min-width:16px;text-align:center;}
+
+/* CARDS */
+.card{background:white;border-radius:0.85rem;padding:1rem;border:1px solid #e9edf2;box-shadow:0 1px 3px rgba(0,0,0,0.04);margin-bottom:0.75rem;}
+.card-title{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;font-weight:700;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;}
+.card-title i{color:#3b82f6;font-size:0.95rem;}
+
+/* ACCOUNT GRID */
+.account-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem;margin-bottom:0.75rem;}
+.account-card{background:white;border-radius:0.75rem;padding:0.75rem;border:1px solid #e9edf2;position:relative;overflow:hidden;cursor:pointer;}
+.account-card .acc-label{font-size:0.55rem;text-transform:uppercase;letter-spacing:0.4px;color:#64748b;font-weight:700;}
+.account-card .acc-value{font-size:1rem;font-weight:700;margin-top:0.15rem;}
+.account-card .acc-icon{position:absolute;right:0.5rem;top:0.5rem;font-size:1.2rem;opacity:0.15;}
+.account-card.master{grid-column:1/-1;background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;border:none;}
+.account-card.master .acc-label{color:#94a3b8;}
+.account-card.master .acc-value{color:white;font-size:1.6rem;}
+.account-card.master .acc-icon{opacity:0.2;color:#60a5fa;}
+.account-card.client{background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-color:#86efac;}
+.account-card.client .acc-value{color:#166534;}
+.account-card.accident{background:linear-gradient(135deg,#fee2e2,#fecaca);border-color:#fca5a5;}
+.account-card.accident .acc-value{color:#991b1b;}
+.account-card.firm{background:linear-gradient(135deg,#fef9c3,#fde68a);border-color:#fcd34d;}
+.account-card.firm .acc-value{color:#92400e;}
+.account-card.personal{background:linear-gradient(135deg,#e0f2fe,#bae6fd);border-color:#7dd3fc;}
+.account-card.personal .acc-value{color:#0369a1;}
+.account-card.misc{background:linear-gradient(135deg,#ede9fe,#ddd6fe);border-color:#c4b5fd;}
+.account-card.misc .acc-value{color:#5b21b6;}
+.account-card.salaries{background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-color:#f9a8d4;}
+.account-card.salaries .acc-value{color:#9d174d;}
+.account-card.office{background:linear-gradient(135deg,#e0e7ff,#c7d2fe);border-color:#a5b4fc;}
+.account-card.office .acc-value{color:#3730a3;}
+
+/* DASHBOARD ROW */
+.dashboard-row{display:grid;grid-template-columns:1fr;gap:0.75rem;margin-bottom:0.75rem;}
+@media (min-width:768px){.dashboard-row{grid-template-columns:1fr 1fr;}}
+
+/* ACTION GRID */
+.action-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:0.4rem;}
+.action-btn{display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding:0.6rem 0.4rem;border-radius:0.6rem;border:1px solid #e9edf2;background:white;cursor:pointer;font-size:0.62rem;font-weight:600;color:#475569;}
+.action-btn:hover{border-color:#3b82f6;background:#f0f7ff;color:#3b82f6;}
+.action-btn i{font-size:1rem;}
+.action-btn.success{background:#22c55e;color:white;border-color:#22c55e;}
+.action-btn.danger{background:#ef4444;color:white;border-color:#ef4444;}
+.action-btn.primary{background:#3b82f6;color:white;border-color:#3b82f6;}
+.action-btn.warning{background:#f59e0b;color:white;border-color:#f59e0b;}
+
+/* FORMS */
+.form-group{margin-bottom:0.6rem;}
+.form-group label{display:block;font-size:0.68rem;font-weight:600;color:#475569;margin-bottom:0.2rem;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:0.45rem 0.65rem;border:1px solid #d1d9e6;border-radius:0.45rem;font-size:0.78rem;background:white;font-family:inherit;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#3b82f6;outline:none;box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+
+/* BUTTONS */
+.btn{background:#3b82f6;border:none;color:white;padding:0.45rem 0.9rem;border-radius:0.45rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;font-size:0.72rem;justify-content:center;white-space:nowrap;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;}
+.btn-sm{padding:0.3rem 0.6rem;font-size:0.65rem;}
+.btn-xs{padding:0.15rem 0.4rem;font-size:0.58rem;}
+.btn-success{background:#22c55e;}
+.btn-success:hover{background:#16a34a;}
+.btn-danger{background:#ef4444;}
+.btn-danger:hover{background:#dc2626;}
+.btn-warning{background:#f59e0b;}
+.btn-warning:hover{background:#d97706;}
+.btn-teal{background:#14b8a6;}
+.btn-teal:hover{background:#0d9488;}
+.btn-outline{background:transparent;border:1px solid #cbd5e1;color:#1e293b;}
+.btn-outline:hover{background:#f1f5f9;}
+
+/* TABLES */
+.table-wrap{background:white;border-radius:0.85rem;padding:0.85rem;border:1px solid #e9edf2;margin-bottom:0.75rem;overflow-x:auto;}
+.table-wrap h4{font-size:0.78rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.4rem;}
+table{width:100%;border-collapse:collapse;font-size:0.7rem;min-width:500px;}
+th{text-align:left;padding:0.4rem 0.3rem;color:#475569;font-weight:700;border-bottom:2px solid #e9edf2;font-size:0.6rem;text-transform:uppercase;}
+td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;word-break:break-word;}
+
+/* BADGES */
+.badge{background:#dbeafe;color:#1e40af;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.55rem;font-weight:700;display:inline-block;white-space:nowrap;}
+.badge.green{background:#dcfce7;color:#166534;}
+.badge.yellow{background:#fef9c3;color:#854d0e;}
+.badge.red{background:#fee2e2;color:#991b1b;}
+.badge.purple{background:#e9d5ff;color:#5b21b6;}
+.badge.gray{background:#f1f5f9;color:#475569;}
+.badge.pink{background:#fce7f3;color:#9d174d;}
+.badge.indigo{background:#e0e7ff;color:#3730a3;}
+
+/* KPI */
+.kpi-compact{display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;}
+.kpi-mini{background:#f8fafc;padding:0.5rem;border-radius:0.5rem;border:1px solid #e9edf2;}
+.kpi-mini .kpi-label{font-size:0.55rem;text-transform:uppercase;color:#64748b;font-weight:700;}
+.kpi-mini .kpi-value{font-size:0.85rem;font-weight:700;margin-top:0.1rem;}
+@media (min-width:768px){.kpi-compact{grid-template-columns:repeat(6,1fr);}}
+
+/* CHARTS */
+.chart-grid{display:grid;grid-template-columns:1fr;gap:0.75rem;margin-bottom:0.75rem;}
+@media (min-width:768px){.chart-grid{grid-template-columns:1fr 1fr;}}
+@media (min-width:1200px){.chart-grid{grid-template-columns:1fr 1fr 1fr;}}
+.chart-card{background:white;border-radius:0.85rem;padding:0.85rem;border:1px solid #e9edf2;}
+.chart-card h4{font-size:0.72rem;margin-bottom:0.4rem;color:#475569;}
+.chart-card canvas{max-height:200px;width:100%!important;}
+
+/* TABS */
+.tabs{display:flex;gap:0.2rem;margin-bottom:0.75rem;overflow-x:auto;border-bottom:1px solid #e9edf2;}
+.tab-btn{padding:0.5rem 0.9rem;border:none;border-bottom:2px solid transparent;background:transparent;color:#64748b;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.tab-btn.active{color:#3b82f6;border-bottom-color:#3b82f6;background:#f0f7ff;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ENTITY CARDS */
+.entity-grid{display:grid;grid-template-columns:1fr;gap:0.6rem;}
+@media (min-width:640px){.entity-grid{grid-template-columns:1fr 1fr;}}
+@media (min-width:1024px){.entity-grid{grid-template-columns:1fr 1fr 1fr;}}
+.entity-card{background:white;border-radius:0.75rem;padding:0.85rem;border:1px solid #e9edf2;cursor:pointer;position:relative;}
+.entity-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+.entity-card.client-entity{border-left:4px solid #22c55e;}
+.entity-card.accident-entity{border-left:4px solid #ef4444;}
+.entity-card .entity-name{font-weight:700;font-size:0.85rem;display:flex;align-items:center;gap:0.4rem;}
+.entity-card .entity-meta{font-size:0.62rem;color:#64748b;margin-top:0.15rem;}
+.entity-card .entity-balance{font-size:1.05rem;font-weight:700;margin-top:0.4rem;}
+.entity-card.client-entity .entity-balance{color:#166534;}
+.entity-card.accident-entity .entity-balance{color:#991b1b;}
+.entity-card .entity-footer{display:flex;gap:0.3rem;margin-top:0.5rem;flex-wrap:wrap;}
+.entity-card .entity-footer .btn{font-size:0.6rem;padding:0.2rem 0.5rem;}
+
+/* SEARCH */
+.search-box{display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;}
+.search-box input{flex:1;min-width:180px;padding:0.5rem 0.75rem;border:1px solid #d1d9e6;border-radius:0.5rem;font-size:0.78rem;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:2rem 1rem;color:#94a3b8;}
+.empty-state i{font-size:1.8rem;margin-bottom:0.5rem;display:block;opacity:0.4;}
+.empty-state p{font-size:0.75rem;}
+
+/* INFO BANNERS */
+.info-banner{background:#e0f2fe;border-left:4px solid #0284c7;padding:0.6rem 0.8rem;border-radius:0.5rem;font-size:0.7rem;color:#075985;margin-bottom:0.75rem;}
+.info-banner.warning{background:#fef9c3;border-left-color:#f59e0b;color:#854d0e;}
+.info-banner.success{background:#dcfce7;border-left-color:#22c55e;color:#166534;}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;padding:1rem;overflow-y:auto;}
+.modal-overlay.active{display:flex;}
+.modal{background:white;border-radius:0.85rem;padding:1.25rem;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.85rem;}
+.modal .modal-header h2{font-size:0.95rem;font-weight:700;}
+.modal .modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#64748b;}
+
+/* LOGIN */
+.login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;z-index:9999;display:flex;justify-content:center;align-items:center;padding:1rem;overflow-y:auto;}
+.login-overlay.hidden{display:none;}
+.login-box{background:white;border-radius:1.25rem;padding:1.75rem;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);text-align:center;}
+.login-box .login-logo{font-size:1.5rem;font-weight:700;color:#0f172a;margin-bottom:0.25rem;}
+.login-box .login-logo i{color:#3b82f6;}
+.login-box .login-sub{color:#64748b;font-size:0.75rem;margin-bottom:1.25rem;}
+.login-box .form-group{text-align:left;}
+.login-box .btn{width:100%;justify-content:center;padding:0.6rem;font-size:0.78rem;margin-top:0.5rem;}
+.login-box .login-error{color:#ef4444;font-size:0.7rem;margin-top:0.5rem;min-height:1rem;text-align:center;}
+.login-box .default-creds{margin-top:0.5rem;font-size:0.6rem;color:#64748b;background:#f1f5f9;padding:0.4rem 0.6rem;border-radius:0.5rem;text-align:left;}
+.login-box .default-creds code{background:#e2e8f0;padding:0.1rem 0.3rem;border-radius:3px;}
+
+/* TOASTS */
+.toast-container{position:fixed;bottom:5.5rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.4rem;max-width:340px;width:calc(100% - 2rem);}
+.toast{background:#0f172a;color:#f8fafc;padding:0.65rem 1rem;border-radius:0.65rem;font-size:0.72rem;display:flex;align-items:center;gap:0.6rem;border-left:4px solid #22c55e;}
+.toast.error{border-left-color:#ef4444;}
+.toast.warning{border-left-color:#f59e0b;}
+.toast .toast-close{margin-left:auto;cursor:pointer;opacity:0.6;font-size:0.9rem;}
+
+/* MISC */
+.page{display:none;}
+.page.active{display:block;}
+.text-muted{color:#64748b;}
+.fs-small{font-size:0.65rem;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;}
+.text-center{text-align:center;}
+.loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.3rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TRANSFER / DETAIL */
+.transfer-box{background:white;border-radius:0.85rem;padding:0.85rem;border:1px solid #e9edf2;margin-bottom:0.75rem;}
+.transfer-box h4{font-size:0.78rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.4rem;}
+.transfer-row{display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;}
+.transfer-row .form-group{flex:1;min-width:110px;margin-bottom:0;}
+.transfer-arrow{display:flex;align-items:center;justify-content:center;color:#3b82f6;font-size:1rem;padding:0 0.2rem;}
+.detail-view{background:#f8fafc;border-radius:0.65rem;padding:0.85rem;border:1px solid #e9edf2;margin-bottom:0.75rem;}
+.detail-row{display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid #e9edf2;font-size:0.72rem;gap:0.5rem;}
+.detail-row:last-child{border-bottom:none;}
+.detail-row .label{color:#64748b;}
+.detail-row .value{font-weight:700;text-align:right;word-break:break-word;}
+.tx-timeline{max-height:300px;overflow-y:auto;}
+.tx-item{display:flex;justify-content:space-between;padding:0.4rem 0.5rem;border-bottom:1px solid #f1f5f9;font-size:0.68rem;gap:0.5rem;}
+.tx-item .tx-desc{flex:1;color:#475569;}
+.tx-item .tx-amt{font-weight:700;}
+.tx-item .tx-amt.credit{color:#166534;}
+.tx-item .tx-amt.debit{color:#ef4444;}
+.tx-item .tx-time{font-size:0.55rem;color:#94a3b8;display:block;}
+
+/* CHIP GROUP */
+.chip-group{display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.6rem;}
+.chip{padding:0.3rem 0.65rem;border-radius:2rem;font-size:0.65rem;font-weight:700;cursor:pointer;border:1px solid #e2e8f0;background:white;color:#475569;}
+.chip.active{background:#3b82f6;color:white;border-color:#3b82f6;}
+
+/* RESPONSIVE */
+@media (max-width:640px){
+  .entity-grid{grid-template-columns:1fr;}
+  .kpi-compact{grid-template-columns:repeat(2,1fr);}
+  .nav-item{min-width:38px;font-size:0.45rem;}
+  .nav-item i{font-size:0.95rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <div class="login-logo"><i class="fas fa-scale-balanced"></i> KK Finance</div>
+    <div class="login-sub">Kuria Karatu &amp; Company Advocates</div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label><i class="fas fa-user"></i> Select User</label>
+        <select id="loginEmailSelect" required>
+          <option value="">— Select a user —</option>
+          <option value="admin@kuriakaratu.com">admin@kuriakaratu.com</option>
+          <option value="developer@kuriakaratu.com">developer@kuriakaratu.com</option>
+          <option value="clerk@kuriakaratu.com">clerk@kuriakaratu.com</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <button type="submit" class="btn" id="loginSubmitBtn"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+      <div class="default-creds">
+        <strong>Default Users:</strong><br>
+        <code>admin@kuriakaratu.com</code> / <code>admin123</code><br>
+        <code>developer@kuriakaratu.com</code> / <code>dev123</code><br>
+        <code>clerk@kuriakaratu.com</code> / <code>clerk123</code>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="app-header" id="appHeader" style="display:none;">
+  <div class="logo"><i class="fas fa-scale-balanced"></i><span>KK Finance</span></div>
+  <div class="header-actions">
+    <div class="sync-pill" id="syncPill"><span class="dot"></span><span id="syncLabel">Live</span></div>
+    <div class="user-pill">
+      <span class="avatar" id="userAvatar">A</span>
+      <span id="userNameDisplay">Admin</span>
+      <button class="logout-btn" id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</header>
+
+<!-- CONTENT -->
+<main class="app-content" id="appContent" style="display:none;">
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="account-grid">
+      <div class="account-card master">
+        <div class="acc-label">Total Firm Revenue (Filed Cases + Paid Invoices)</div>
+        <div class="acc-value" id="totalEarned">KES 0</div>
+        <i class="fas fa-coins acc-icon"></i>
+      </div>
+      <div class="account-card client">
+        <div class="acc-label">Client Trust</div>
+        <div class="acc-value" id="clientBalanceTotal">KES 0</div>
+        <i class="fas fa-user-tie acc-icon"></i>
+      </div>
+      <div class="account-card accident">
+        <div class="acc-label">Accident Advances</div>
+        <div class="acc-value" id="accidentBalanceTotal">KES 0</div>
+        <i class="fas fa-car-crash acc-icon"></i>
+      </div>
+      <div class="account-card firm">
+        <div class="acc-label">Fees Collected</div>
+        <div class="acc-value" id="firmBalance">KES 0</div>
+        <i class="fas fa-building acc-icon"></i>
+      </div>
+      <div class="account-card personal">
+        <div class="acc-label">Outstanding Fees</div>
+        <div class="acc-value" id="personalBalance">KES 0</div>
+        <i class="fas fa-user acc-icon"></i>
+      </div>
+      <div class="account-card misc">
+        <div class="acc-label">Total Expenses</div>
+        <div class="acc-value" id="miscBalance">KES 0</div>
+        <i class="fas fa-ellipsis-h acc-icon"></i>
+      </div>
+      <div class="account-card salaries">
+        <div class="acc-label">Paid Invoices</div>
+        <div class="acc-value" id="salariesBalance">KES 0</div>
+        <i class="fas fa-users acc-icon"></i>
+      </div>
+      <div class="account-card office">
+        <div class="acc-label">Unpaid Invoices</div>
+        <div class="acc-value" id="officeBalance">KES 0</div>
+        <i class="fas fa-print acc-icon"></i>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="kpi-compact">
+        <div class="kpi-mini"><div class="kpi-label">Clients</div><div class="kpi-value" id="kpiClients">0</div></div>
+        <div class="kpi-mini"><div class="kpi-label">Accidents</div><div class="kpi-value" style="color:#ef4444;" id="kpiAccidents">0</div></div>
+        <div class="kpi-mini"><div class="kpi-label">Active Cases</div><div class="kpi-value" id="kpiActiveCases">0</div></div>
+        <div class="kpi-mini"><div class="kpi-label">Filed Cases</div><div class="kpi-value" style="color:#22c55e;" id="kpiFiledCases">0</div></div>
+        <div class="kpi-mini"><div class="kpi-label">Pending Tasks</div><div class="kpi-value" style="color:#f59e0b;" id="kpiTasks">0</div></div>
+        <div class="kpi-mini"><div class="kpi-label">Invoices</div><div class="kpi-value" style="color:#3b82f6;" id="kpiInvoices">0</div></div>
+      </div>
+    </div>
+
+    <div class="dashboard-row">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+        <div class="action-grid">
+          <button class="action-btn success" id="addClientMoneyBtn"><i class="fas fa-user-plus"></i> Client Trust</button>
+          <button class="action-btn danger" id="addAccidentMoneyBtn"><i class="fas fa-car-crash"></i> Accident Advance</button>
+          <button class="action-btn primary" id="recordPaymentBtn"><i class="fas fa-money-bill-wave"></i> Record Fee</button>
+          <button class="action-btn warning" id="addChargeBtn"><i class="fas fa-plus-circle"></i> Add Charge</button>
+          <button class="action-btn" id="refreshBtn"><i class="fas fa-sync"></i> Refresh</button>
+          <button class="action-btn" id="exportBtn"><i class="fas fa-download"></i> Export CSV</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title"><i class="fas fa-chart-pie"></i> Fee Collection Summary</div>
+        <div class="detail-view">
+          <div class="detail-row"><span class="label">Total Agreed Fees</span><span class="value" id="sumTotalFees">KES 0</span></div>
+          <div class="detail-row"><span class="label">Total Collected</span><span class="value" style="color:#166534;" id="sumPaid">KES 0</span></div>
+          <div class="detail-row"><span class="label">Outstanding Balance</span><span class="value" style="color:#ef4444;" id="sumOutstanding">KES 0</span></div>
+          <div class="detail-row"><span class="label">Accident Advances Paid</span><span class="value" style="color:#991b1b;" id="sumAccAdvances">KES 0</span></div>
+          <div class="detail-row"><span class="label">Firm Fee From Accident</span><span class="value" style="color:#92400e;" id="sumAccFees">KES 0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card"><h4><i class="fas fa-chart-pie" style="color:#3b82f6;"></i> Collection Progress</h4><canvas id="chartAccountDist"></canvas></div>
+      <div class="chart-card"><h4><i class="fas fa-chart-bar" style="color:#22c55e;"></i> Filed Case Fees by Area</h4><canvas id="chartMonthlyRevenue"></canvas></div>
+      <div class="chart-card"><h4><i class="fas fa-chart-doughnut" style="color:#f59e0b;"></i> Invoice Status</h4><canvas id="chartInvoiceStatus"></canvas></div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="flex-between" style="margin-bottom:0.5rem;">
+        <h4><i class="fas fa-clock"></i> Recent Fee Payments</h4>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Date</th><th>Client</th><th>Amount</th><th>Method</th><th>Reference</th><th>Recorded By</th></tr></thead><tbody id="recentPaymentsBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="flex-between" style="margin-bottom:0.5rem;">
+        <h4><i class="fas fa-car-crash"></i> Recent Accident Advances</h4>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Date</th><th>Client</th><th>Claim #</th><th>Amount</th><th>Purpose</th><th>M-PESA Ref</th></tr></thead><tbody id="recentAdvancesBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENTS -->
+  <div id="page-clients" class="page">
+    <div class="tabs" id="clientTabs">
+      <button class="tab-btn active" data-tab="all-entities"><i class="fas fa-users"></i> All Entities</button>
+      <button class="tab-btn" data-tab="client-accounts"><i class="fas fa-user-tie"></i> Regular Clients</button>
+      <button class="tab-btn" data-tab="accident-accounts"><i class="fas fa-car-crash"></i> Accident Clients <span class="badge red" id="accidentCountBadge" style="margin-left:0.3rem;">0</span></button>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,#fee2e2,#fecaca);border-color:#fca5a5;margin-bottom:0.75rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <i class="fas fa-car-crash" style="font-size:1.6rem;color:#991b1b;"></i>
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;color:#991b1b;text-transform:uppercase;">Accident Claim Clients</div>
+            <div style="font-size:1.1rem;font-weight:700;color:#7f1d1d;" id="accidentVictimsSummary">0 victims · KES 0 total advances</div>
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="scrollToAccidentSection()"><i class="fas fa-arrow-down"></i> View All</button>
+      </div>
+    </div>
+
+    <div id="tab-all-entities" class="tab-content active">
+      <div class="info-banner">
+        <i class="fas fa-info-circle"></i> Unified view of <strong>regular clients + accident clients</strong> from admin.html. Read-only — add or edit them in admin.html.
+      </div>
+      <div class="search-box">
+        <input type="text" id="allEntitiesSearch" placeholder="Search by name, email, phone, claim #..." oninput="renderAllEntities()">
+      </div>
+      <div id="allEntitiesList" class="entity-grid"></div>
+    </div>
+
+    <div id="tab-client-accounts" class="tab-content">
+      <div class="info-banner success">
+        <i class="fas fa-info-circle"></i> Regular clients from admin.html. Fee agreements, installments, and payments sync in real time.
+      </div>
+      <div class="search-box">
+        <input type="text" id="clientAccountSearch" placeholder="Search clients..." oninput="renderClientAccounts()">
+      </div>
+      <div id="clientAccountsList" class="entity-grid"></div>
+    </div>
+
+    <div id="tab-accident-accounts" class="tab-content">
+      <div class="info-banner warning">
+        <i class="fas fa-exclamation-triangle"></i> Accident clients from admin.html. Advances are M-PESA only, capped at 50% of firm fee. <strong id="accidentLiveCount">0 claims</strong> tracked.
+      </div>
+      <div class="search-box">
+        <input type="text" id="accidentAccountSearch" placeholder="Search accident claims..." oninput="renderAccidentAccounts()">
+      </div>
+      <div id="accidentAccountsList" class="entity-grid"></div>
+    </div>
+  </div>
+
+  <!-- INVOICES -->
+  <div id="page-invoices" class="page">
+    <div class="table-wrap">
+      <div class="flex-between" style="margin-bottom:0.5rem;">
+        <h4><i class="fas fa-file-invoice"></i> All Invoices</h4>
+        <span class="fs-small text-muted" id="allInvoiceCountLabel">0 invoices</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Invoice #</th><th>Client</th><th>Case</th><th>Amount</th><th>Date</th><th>Status</th><th style="text-align:center;">Action</th></tr></thead><tbody id="allInvoicesBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEES -->
+  <div id="page-fees" class="page">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-hand-holding-usd"></i> Fee Collection Overview</div>
+      <div class="detail-view">
+        <div class="detail-row"><span class="label">Total Agreed Fees (all clients)</span><span class="value" id="feeTotalAll">KES 0</span></div>
+        <div class="detail-row"><span class="label">Total Collected</span><span class="value" style="color:#166534;" id="feePaidAll">KES 0</span></div>
+        <div class="detail-row"><span class="label">Total Outstanding</span><span class="value" style="color:#ef4444;" id="feeOutstandingAll">KES 0</span></div>
+        <div class="detail-row"><span class="label">Due/Overdue Installments</span><span class="value" style="color:#f59e0b;" id="feeDueCount">0</span></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="flex-between" style="margin-bottom:0.5rem;">
+        <h4><i class="fas fa-users"></i> Client Fee Agreements</h4>
+        <span class="fs-small text-muted" id="feeClientCount">0 clients</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Client</th><th>Total Fees</th><th>Paid</th><th>Balance</th><th>Progress</th><th>Next Due</th><th style="text-align:center;">Actions</th></tr></thead><tbody id="feesBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS (view only) -->
+  <div id="page-tasks" class="page">
+    <div class="info-banner">
+      <i class="fas fa-info-circle"></i> Tasks are managed in admin.html. This is a read-only view.
+    </div>
+    <div class="table-wrap">
+      <div class="flex-between" style="margin-bottom:0.5rem;">
+        <h4><i class="fas fa-tasks"></i> Tasks</h4>
+        <span class="fs-small text-muted" id="taskCountLabel">0</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Title</th><th>Client</th><th>Date</th><th>Priority</th><th>Status</th></tr></thead><tbody id="tasksListBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNTS SUMMARY -->
+  <div id="page-accounts" class="page">
+    <div class="info-banner">
+      <i class="fas fa-info-circle"></i> Firm-level financial summary. All figures derived live from admin.html data + finance trust accounts.
+    </div>
+    <div class="account-grid">
+      <div class="account-card master">
+        <div class="acc-label">Total Firm Revenue</div>
+        <div class="acc-value" id="acctTotalEarned">KES 0</div>
+        <i class="fas fa-coins acc-icon"></i>
+      </div>
+      <div class="account-card client"><div class="acc-label">Client Trust</div><div class="acc-value" id="acctClient">KES 0</div></div>
+      <div class="account-card accident"><div class="acc-label">Accident Advances</div><div class="acc-value" id="acctAccident">KES 0</div></div>
+      <div class="account-card firm"><div class="acc-label">Fees Collected</div><div class="acc-value" id="acctFirm">KES 0</div></div>
+      <div class="account-card personal"><div class="acc-label">Outstanding Fees</div><div class="acc-value" id="acctPersonal">KES 0</div></div>
+      <div class="account-card misc"><div class="acc-label">Total Expenses</div><div class="acc-value" id="acctMisc">KES 0</div></div>
+      <div class="account-card salaries"><div class="acc-label">Paid Invoices</div><div class="acc-value" id="acctSalaries">KES 0</div></div>
+      <div class="account-card office"><div class="acc-label">Unpaid Invoices</div><div class="acc-value" id="acctOffice">KES 0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tools"></i> Account Tools</div>
+      <div class="action-grid">
+        <button class="action-btn primary" onclick="recompute();refreshAll();showToast('Refreshed.','info');"><i class="fas fa-sync"></i> Refresh</button>
+        <button class="action-btn" onclick="exportAllData()"><i class="fas fa-download"></i> Export All</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="app-nav" id="appNav" style="display:none;">
+  <button class="nav-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></button>
+  <button class="nav-item" data-page="clients"><i class="fas fa-user-tie"></i><span>Clients</span></button>
+  <button class="nav-item" data-page="invoices"><i class="fas fa-file-invoice"></i><span>Invoices</span></button>
+  <button class="nav-item" data-page="fees"><i class="fas fa-hand-holding-usd"></i><span>Fees</span></button>
+  <button class="nav-item" data-page="tasks"><i class="fas fa-tasks"></i><span>Tasks</span><span class="nav-badge" id="taskNavBadge" style="display:none;">0</span></button>
+  <button class="nav-item" data-page="accounts"><i class="fas fa-wallet"></i><span>Accounts</span></button>
+</nav>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="entityDetailModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header"><h2 id="entityDetailTitle">Details</h2><button class="modal-close" onclick="closeModal('entityDetailModal')">&times;</button></div>
+    <div id="entityDetailBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addClientMoneyModal">
+  <div class="modal">
+    <div class="modal-header"><h2><i class="fas fa-user-plus"></i> Add Client Trust Money</h2><button class="modal-close" onclick="closeModal('addClientMoneyModal')">&times;</button></div>
+    <form id="addClientMoneyForm">
+      <div class="form-group"><label>Client *</label><select id="clientMoneyClientSelect" required><option value="">Select client...</option></select></div>
+      <div class="form-group"><label>Amount (KES) *</label><input type="number" id="clientMoneyAmount" min="1" step="1" required></div>
+      <div class="form-group"><label>Method</label>
+        <select id="clientMoneyMethod">
+          <option value="M-PESA">M-PESA</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Cash">Cash</option>
+          <option value="Cheque">Cheque</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Reference</label><input type="text" id="clientMoneyRef" placeholder="M-PESA code / Bank ref"></div>
+      <div class="form-group"><label>Description</label><input type="text" id="clientMoneyDesc" placeholder="Client deposit"></div>
+      <div class="form-group"><label>Date *</label><input type="date" id="clientMoneyDate" required></div>
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('addClientMoneyModal')">Cancel</button>
+        <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> Add Trust Money</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addAccidentAdvanceModal">
+  <div class="modal">
+    <div class="modal-header"><h2><i class="fas fa-car-crash"></i> Record Accident Advance</h2><button class="modal-close" onclick="closeModal('addAccidentAdvanceModal')">&times;</button></div>
+    <form id="addAccidentAdvanceForm">
+      <div class="form-group"><label>Accident Client *</label><select id="advanceClientSelect" required><option value="">Select accident client...</option></select></div>
+      <div class="info-banner warning" style="margin-bottom:0.6rem;">
+        <i class="fas fa-exclamation-triangle"></i> M-PESA only. Max 50% of firm fee. Available room: <strong id="advanceRoomText">KES 0</strong>
+      </div>
+      <div class="form-group"><label>Amount (KES) *</label><input type="number" id="advanceAmount" min="1" step="1" required></div>
+      <div class="form-group"><label>Date *</label><input type="date" id="advanceDate" required></div>
+      <div class="form-group"><label>Purpose *</label>
+        <select id="advancePurpose" required>
+          <option value="Medical Expenses">Medical Expenses</option>
+          <option value="Transport">Transport</option>
+          <option value="Living Expenses">Living Expenses</option>
+          <option value="Funeral Expenses">Funeral Expenses</option>
+          <option value="School Fees">School Fees</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Received By *</label><input type="text" id="advanceReceivedBy" required></div>
+      <div class="form-group"><label>Witness (Staff) *</label><input type="text" id="advanceWitness" required></div>
+      <div class="form-group"><label>M-PESA Reference *</label><input type="text" id="advanceReference" required placeholder="e.g. QK12345678"></div>
+      <div class="form-group"><label>Notes</label><textarea id="advanceNotes" rows="2"></textarea></div>
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('addAccidentAdvanceModal')">Cancel</button>
+        <button type="submit" class="btn btn-danger"><i class="fas fa-check"></i> Record Advance</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addChargeModal">
+  <div class="modal">
+    <div class="modal-header"><h2><i class="fas fa-plus-circle"></i> Add Charge to Client</h2><button class="modal-close" onclick="closeModal('addChargeModal')">&times;</button></div>
+    <form id="addChargeForm">
+      <div class="form-group">
+        <label>Client *</label>
+        <select id="chargeClientSelect" required><option value="">Select client...</option></select>
+      </div>
+      <div class="form-group">
+        <label>Charge Description *</label>
+        <input type="text" id="chargeDescription" required placeholder="e.g. Court filing fee, Transport, Document fee">
+      </div>
+      <div class="form-group">
+        <label>Amount (KES) *</label>
+        <input type="number" id="chargeAmount" min="1" step="1" required placeholder="e.g. 5000">
+      </div>
+      <div class="form-group">
+        <label>Charge Date *</label>
+        <input type="date" id="chargeDate" required>
+      </div>
+      <div class="form-group">
+        <label>Link to Case (optional)</label>
+        <select id="chargeCase"><option value="">None / General</option></select>
+      </div>
+      <div class="form-group">
+        <label>Charge Category</label>
+        <select id="chargeCategory">
+          <option value="Court Fee">Court Fee</option>
+          <option value="Transport">Transport</option>
+          <option value="Filing">Filing</option>
+          <option value="Document">Document / Photocopy</option>
+          <option value="Search">Search Fee</option>
+          <option value="Medical">Medical</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group" style="background:#f0f7ff;padding:0.6rem;border-radius:0.5rem;border:1px solid #dbeafe;">
+        <label style="display:flex;align-items:flex-start;gap:0.5rem;font-weight:500;cursor:pointer;margin:0;">
+          <input type="checkbox" id="chargeAddToFeeTotal" style="width:auto;margin-top:0.15rem;">
+          <span><strong>Add this charge to the client's agreed fee total</strong><br><span class="fs-small text-muted">If ticked, the client's "Total Agreed Fees" will increase by this amount. If unticked, this charge is recorded as a separate invoice only.</span></span>
+        </label>
+      </div>
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end;margin-top:0.75rem;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('addChargeModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Charge</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="recordPaymentModal">
+  <div class="modal">
+    <div class="modal-header"><h2><i class="fas fa-money-bill-wave"></i> Record Fee Payment</h2><button class="modal-close" onclick="closeModal('recordPaymentModal')">&times;</button></div>
+    <form id="recordPaymentForm">
+      <div class="form-group"><label>Client *</label><select id="paymentClientSelect" required><option value="">Select client...</option></select></div>
+      <div class="info-banner" style="margin-bottom:0.6rem;">
+        Agreed: <strong id="paymentTotalFees">KES 0</strong> · Paid: <strong id="paymentAlreadyPaid" style="color:#166534;">KES 0</strong> · Balance: <strong id="paymentBalance" style="color:#ef4444;">KES 0</strong>
+      </div>
+      <div class="form-group"><label>Amount (KES) *</label><input type="number" id="paymentAmount" min="1" step="1" required></div>
+      <div class="form-group"><label>Date *</label><input type="date" id="paymentDate" required></div>
+      <div class="form-group"><label>Method *</label>
+        <select id="paymentMethod" required>
+          <option value="M-PESA">M-PESA</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Cash">Cash</option>
+          <option value="Cheque">Cheque</option>
+          <option value="Card">Card</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Reference</label><input type="text" id="paymentReference" placeholder="e.g. M-PESA code"></div>
+      <div class="form-group"><label>Notes</label><textarea id="paymentNotes" rows="2"></textarea></div>
+      <div class="form-group" style="background:#f8fafc;padding:0.5rem;border-radius:0.4rem;">
+        <label style="display:flex;align-items:center;gap:0.4rem;font-weight:500;">
+          <input type="checkbox" id="paymentLinkInstallment" style="width:auto;"> Mark next due installment as paid
+        </label>
+      </div>
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('recordPaymentModal')">Cancel</button>
+        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Record Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   KK FINANCE — financial master, synced with admin.html
+   ============================================================ */
+
+function $(id){ return document.getElementById(id); }
+function fmt(n){ return 'KES ' + Number(n||0).toLocaleString(); }
+function toNum(v){ var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function today(){ return new Date().toISOString().slice(0,10); }
+function nowDT(){ return new Date().toISOString().replace('T',' ').slice(0,19); }
+function nowT(){ return new Date().toTimeString().slice(0,8); }
+function genId(p){ return p + '-' + Date.now() + '-' + Math.floor(Math.random()*10000); }
+function esc(s){ return String(s||'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function openModal(id){ var e = $(id); if (e) e.classList.add('active'); }
+function closeModal(id){ var e = $(id); if (e) e.classList.remove('active'); }
+
+function showToast(msg, type, dur){
+  type = type || 'info'; dur = dur || 3500;
+  var c = $('toastContainer');
+  if (!c) { alert(msg); return; }
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type === 'error' ? 'error' : (type === 'warning' ? 'warning' : ''));
+  t.innerHTML = '<span>' + esc(msg) + '</span><span class="toast-close" onclick="this.parentElement.remove()">&times;</span>';
+  c.appendChild(t);
+  setTimeout(function(){ if (t.parentElement) t.remove(); }, dur);
+}
+
+/* ---------- Firebase ---------- */
+var firebaseConfig = {
+  apiKey: "AIzaSyAv35HANTesz9EqroXt3QaHpYvZwk2fa3o",
+  authDomain: "kuriakaratu-b5c90.firebaseapp.com",
+  databaseURL: "https://kuriakaratu-b5c90-default-rtdb.firebaseio.com",
+  projectId: "kuriakaratu-b5c90",
+  storageBucket: "kuriakaratu-b5c90.firebasestorage.app",
+  messagingSenderId: "14852374326",
+  appId: "1:14852374326:web:b171bd36719d8700953d97"
+};
+var db = null, auth = null, fbOK = false;
+try {
+  if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  auth = firebase.auth();
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  fbOK = true;
+} catch (e) { console.error('Firebase init failed:', e); }
+
+/* ---------- State ---------- */
+var currentUserEmail = '';
+var currentUserRole = 'clerk';
+var clientsData = [];
+var accidentClientsData = [];
+var invoicesData = [];
+var casesData = [];
+var tasksData = [];
+var receiptsData = [];
+var trustGlobal = { total: 0, accounts: {}, transactions: [] };
+var computedTotalEarned = 0;
+var totalClientBalance = 0;
+var totalAccidentBalance = 0;
+var totalAgreedFees = 0;
+var totalFeesPaid = 0;
+var totalOutstanding = 0;
+var totalExpenses = 0;
+var unsubs = {};
+var chartsInitialized = false;
+var chartInstances = {};
+
+/* ---------- Hardcoded users ---------- */
+var HARDCODED = [
+  { email:'admin@kuriakaratu.com', password:'admin123', role:'admin' },
+  { email:'developer@kuriakaratu.com', password:'dev123', role:'developer' },
+  { email:'clerk@kuriakaratu.com', password:'clerk123', role:'clerk' }
+];
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function showApp(email, role){
+  currentUserEmail = email;
+  currentUserRole = role || 'clerk';
+  $('loginOverlay').classList.add('hidden');
+  $('appHeader').style.display = 'flex';
+  $('appContent').style.display = 'block';
+  $('appNav').style.display = 'flex';
+  $('userAvatar').textContent = email.charAt(0).toUpperCase();
+  $('userNameDisplay').textContent = email.split('@')[0] + ' (' + currentUserRole + ')';
+  initApp();
+}
+
+function handleLogin(email, password){
+  return new Promise(function(resolve){
+    if (!email || !password) { resolve({ ok:false, msg:'Select user and enter password.' }); return; }
+    if (fbOK && auth) {
+      var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('TIMEOUT')); }, 10000); });
+      Promise.race([ auth.signInWithEmailAndPassword(email, password), timeout ])
+        .then(function(cred){
+          var user = cred.user;
+          var role = 'clerk';
+          var hc = HARDCODED.find(function(u){ return u.email === email; });
+          if (hc) role = hc.role;
+          db.collection('users').doc(user.uid).get().then(function(doc){
+            if (doc.exists && doc.data().role) role = doc.data().role;
+          }).catch(function(){}).finally(function(){
+            resolve({ ok:true, email: email, role: role });
+          });
+        })
+        .catch(function(err){
+          var isTimeout = err.message === 'TIMEOUT';
+          var isNet = err.code === 'auth/network-request-failed';
+          var isInvalid = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/invalid-email'].indexOf(err.code) !== -1;
+          var hc = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
+          if (hc && (isTimeout || isNet || isInvalid)) {
+            resolve({ ok:true, email: email, role: hc.role, offline:true });
+            return;
+          }
+          if (isTimeout) resolve({ ok:false, msg:'Connection timed out.' });
+          else if (isNet) resolve({ ok:false, msg:'Network error.' });
+          else if (isInvalid) resolve({ ok:false, msg:'Invalid credentials.' });
+          else resolve({ ok:false, msg: err.message || 'Login failed.' });
+        });
+      return;
+    }
+    var hc2 = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
+    if (hc2) resolve({ ok:true, email: email, role: hc2.role, offline:true });
+    else resolve({ ok:false, msg:'Login unavailable.' });
+  });
+}
+
+function setupLogin(){
+  var form = $('loginForm');
+  if (!form) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = $('loginEmailSelect').value;
+    var password = $('loginPassword').value;
+    var errEl = $('loginError');
+    var btn = $('loginSubmitBtn');
+    errEl.textContent = '';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span> Signing in...';
+    handleLogin(email, password).then(function(res){
+      if (res.ok) {
+        showApp(res.email, res.role);
+        showToast('Welcome ' + res.email.split('@')[0] + '!' + (res.offline ? ' (offline)' : ''), 'info');
+      } else errEl.textContent = res.msg;
+    }).catch(function(err){ errEl.textContent = 'Error: ' + err.message; })
+    .finally(function(){
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+    });
+  });
+  $('loginPassword').addEventListener('input', function(){ $('loginError').textContent = ''; });
+}
+
+function setupLogout(){
+  var btn = $('logoutBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function(){
+    if (!confirm('Logout?')) return;
+    if (auth) auth.signOut().catch(function(){});
+    Object.keys(unsubs).forEach(function(k){
+      try { unsubs[k] && unsubs[k](); } catch(e){}
+      delete unsubs[k];
+    });
+    Object.keys(chartInstances).forEach(function(k){
+      try { chartInstances[k].destroy(); } catch(e){}
+    });
+    chartInstances = {}; chartsInitialized = false;
+    currentUserEmail = '';
+    $('loginOverlay').classList.remove('hidden');
+    $('appHeader').style.display = 'none';
+    $('appContent').style.display = 'none';
+    $('appNav').style.display = 'none';
+    showToast('Logged out.', 'info');
+  });
+}
+
+/* ============================================================
+   APP INIT
+   ============================================================ */
+var appInited = false;
+function initApp(){
+  if (appInited) return;
+  appInited = true;
+  wireNavigation();
+  wireTabs();
+  wireForms();
+  wireQuickActions();
+  renderAllEntities();
+  renderClientAccounts();
+  renderAccidentAccounts();
+  renderAllInvoices();
+  renderFees();
+  renderTasksList();
+  renderRecentPayments();
+  renderRecentAdvances();
+
+  if (fbOK && db) {
+    listenClients();
+    listenAccidentClients();
+    listenInvoices();
+    listenCases();
+    listenTasks();
+    listenReceipts();
+    listenTrust();
+    setTimeout(initCharts, 800);
+  } else {
+    showToast('Firebase unavailable — offline mode', 'warning');
+  }
+}
+
+/* ============================================================
+   LISTENERS
+   ============================================================ */
+function listenClients(){
+  if (unsubs.clients) unsubs.clients();
+  try {
+    unsubs.clients = db.collection('clients').onSnapshot(function(snap){
+      clientsData = [];
+      snap.forEach(function(d){
+        var data = d.data(); data.id = d.id;
+        if (!data.expenses) data.expenses = [];
+        if (!data.documents) data.documents = [];
+        if (!data.docRequests) data.docRequests = [];
+        clientsData.push(data);
+      });
+      recompute();
+      populateClientDropdowns();
+      populatePaymentClientDropdown();
+      populateChargeClientDropdown();
+      refreshAll();
+    }, function(err){
+      console.warn('clients listener', err);
+      $('syncPill').classList.add('error');
+    });
+  } catch (e) { console.error('listenClients failed:', e); }
+}
+
+function listenAccidentClients(){
+  if (unsubs.accidents) unsubs.accidents();
+  try {
+    unsubs.accidents = db.collection('accidentClients').onSnapshot(function(snap){
+      accidentClientsData = [];
+      snap.forEach(function(d){
+        var data = d.data(); data.id = d.id;
+        if (!Array.isArray(data.advances)) data.advances = [];
+        accidentClientsData.push(data);
+      });
+      recompute();
+      populateAdvanceClientDropdown();
+      refreshAll();
+    }, function(err){
+      console.warn('accidentClients listener', err);
+      $('syncPill').classList.add('error');
+    });
+  } catch (e) { console.error('listenAccidentClients failed:', e); }
+}
+
+function listenInvoices(){
+  if (unsubs.invoices) unsubs.invoices();
+  try {
+    unsubs.invoices = db.collection('invoices').onSnapshot(function(snap){
+      invoicesData = [];
+      snap.forEach(function(d){ var data = d.data(); data.id = d.id; invoicesData.push(data); });
+      recompute();
+      refreshAll();
+    }, function(err){ console.warn('invoices listener', err); });
+  } catch (e) { console.error('listenInvoices failed:', e); }
+}
+
+function listenCases(){
+  if (unsubs.cases) unsubs.cases();
+  try {
+    unsubs.cases = db.collection('cases').onSnapshot(function(snap){
+      casesData = [];
+      snap.forEach(function(d){ var data = d.data(); data.id = d.id; casesData.push(data); });
+      recompute();
+      refreshAll();
+    }, function(err){ console.warn('cases listener', err); });
+  } catch (e) { console.error('listenCases failed:', e); }
+}
+
+function listenTasks(){
+  if (unsubs.tasks) unsubs.tasks();
+  try {
+    unsubs.tasks = db.collection('tasks').onSnapshot(function(snap){
+      tasksData = [];
+      snap.forEach(function(d){ var data = d.data(); data.id = d.id; tasksData.push(data); });
+      refreshAll();
+    }, function(err){ console.warn('tasks listener', err); });
+  } catch (e) { console.error('listenTasks failed:', e); }
+}
+
+function listenReceipts(){
+  if (unsubs.receipts) unsubs.receipts();
+  try {
+    unsubs.receipts = db.collection('receipts').onSnapshot(function(snap){
+      receiptsData = [];
+      snap.forEach(function(d){ var data = d.data(); data.id = d.id; receiptsData.push(data); });
+    }, function(err){ console.warn('receipts listener', err); });
+  } catch (e) { console.error('listenReceipts failed:', e); }
+}
+
+function listenTrust(){
+  if (unsubs.trust) unsubs.trust();
+  try {
+    unsubs.trust = db.collection('finance').doc('trust').onSnapshot(function(doc){
+      if (doc.exists) {
+        var d = doc.data();
+        trustGlobal = {
+          total: toNum(d.total),
+          accounts: d.accounts || {},
+          transactions: Array.isArray(d.transactions) ? d.transactions : []
+        };
+      } else {
+        trustGlobal = { total: 0, accounts: {}, transactions: [] };
+      }
+      recompute();
+      refreshAll();
+    }, function(err){ console.warn('trust listener', err); });
+  } catch (e) { console.error('listenTrust failed:', e); }
+}
+
+/* ============================================================
+   COMPUTE
+   ============================================================ */
+function computeClientPaid(client){
+  var fa = client.feeAgreement || {};
+  var deposit = (fa.depositPaid !== false) ? toNum(fa.deposit) : 0;
+  var payments = Array.isArray(fa.payments) ? fa.payments : [];
+  var installments = Array.isArray(fa.installments) ? fa.installments : [];
+  if (payments.length > 0) {
+    return deposit + payments.reduce(function(s,p){ return s + toNum(p.amount); }, 0);
+  }
+  return deposit + installments.filter(function(i){return i.paid;}).reduce(function(s,i){ return s + toNum(i.amount); }, 0);
+}
+
+function recompute(){
+  totalAgreedFees = 0;
+  totalFeesPaid = 0;
+  totalExpenses = 0;
+
+  clientsData.forEach(function(c){
+    var fa = c.feeAgreement || {};
+    var total = toNum(fa.totalFees);
+    var paid = computeClientPaid(c);
+    totalAgreedFees += total;
+    totalFeesPaid += paid;
+    if (Array.isArray(c.expenses)) {
+      c.expenses.forEach(function(e){ totalExpenses += toNum(e.amount); });
+    }
+  });
+  totalOutstanding = Math.max(0, totalAgreedFees - totalFeesPaid);
+
+  var filedFees = 0;
+  casesData.forEach(function(c){ if (c.filed === true) filedFees += toNum(c.caseFee); });
+  var paidInv = 0;
+  invoicesData.forEach(function(i){ if (i.status === 'Paid') paidInv += toNum(i.amount); });
+  computedTotalEarned = filedFees + paidInv;
+
+  totalAccidentBalance = 0;
+  accidentClientsData.forEach(function(c){
+    (c.advances || []).forEach(function(a){ totalAccidentBalance += toNum(a.amount); });
+  });
+
+  totalClientBalance = 0;
+  Object.keys(trustGlobal.accounts || {}).forEach(function(k){
+    totalClientBalance += toNum(trustGlobal.accounts[k].balance);
+  });
+}
+
+function refreshAll(){
+  updateDashboardUI();
+  renderAllEntities();
+  renderClientAccounts();
+  renderAccidentAccounts();
+  renderAllInvoices();
+  renderFees();
+  renderTasksList();
+  renderRecentPayments();
+  renderRecentAdvances();
+  populateAdvanceClientDropdown();
+  populateChargeClientDropdown();
+  if (chartsInitialized) updateCharts();
+}
+
+/* ============================================================
+   UI UPDATE
+   ============================================================ */
+function updateDashboardUI(){
+  function set(id, v){ var e = $(id); if (e) e.textContent = v; }
+  var filedFees = casesData.filter(function(c){return c.filed===true;}).reduce(function(s,c){return s+toNum(c.caseFee);},0);
+  var paidInv = invoicesData.filter(function(i){return i.status==='Paid';}).reduce(function(s,i){return s+toNum(i.amount);},0);
+  var unpaidInv = invoicesData.filter(function(i){return i.status!=='Paid';}).reduce(function(s,i){return s+toNum(i.amount);},0);
+
+  set('totalEarned', fmt(computedTotalEarned));
+  set('clientBalanceTotal', fmt(totalClientBalance));
+  set('accidentBalanceTotal', fmt(totalAccidentBalance));
+  set('firmBalance', fmt(totalFeesPaid));
+  set('personalBalance', fmt(totalOutstanding));
+  set('miscBalance', fmt(totalExpenses));
+  set('salariesBalance', fmt(paidInv));
+  set('officeBalance', fmt(unpaidInv));
+
+  set('kpiClients', clientsData.length);
+  set('kpiAccidents', accidentClientsData.length);
+  set('kpiActiveCases', casesData.filter(function(c){return c.status==='Active';}).length);
+  set('kpiFiledCases', casesData.filter(function(c){return c.filed===true;}).length);
+  set('kpiTasks', tasksData.filter(function(t){return t.status==='Scheduled';}).length);
+  set('kpiInvoices', invoicesData.length);
+
+  set('sumTotalFees', fmt(totalAgreedFees));
+  set('sumPaid', fmt(totalFeesPaid));
+  set('sumOutstanding', fmt(totalOutstanding));
+  set('sumAccAdvances', fmt(totalAccidentBalance));
+  set('sumAccFees', fmt(accidentClientsData.reduce(function(s,c){ return s + toNum(c.firmFee); }, 0)));
+
+  set('acctTotalEarned', fmt(computedTotalEarned));
+  set('acctClient', fmt(totalClientBalance));
+  set('acctAccident', fmt(totalAccidentBalance));
+  set('acctFirm', fmt(totalFeesPaid));
+  set('acctPersonal', fmt(totalOutstanding));
+  set('acctMisc', fmt(totalExpenses));
+  set('acctSalaries', fmt(paidInv));
+  set('acctOffice', fmt(unpaidInv));
+
+  var badge = $('taskNavBadge');
+  if (badge) {
+    var ct = tasksData.filter(function(t){return t.status==='Scheduled';}).length;
+    badge.textContent = ct;
+    badge.style.display = ct > 0 ? 'inline-block' : 'none';
+  }
+
+  set('accidentVictimsSummary', accidentClientsData.length + ' victim' + (accidentClientsData.length!==1?'s':'') + ' · ' + fmt(totalAccidentBalance) + ' total advances');
+  var ab = $('accidentCountBadge');
+  if (ab) { ab.textContent = accidentClientsData.length; ab.style.display = accidentClientsData.length > 0 ? 'inline-block' : 'none'; }
+  set('accidentLiveCount', accidentClientsData.length + ' claim' + (accidentClientsData.length!==1?'s':''));
+}
+
+/* ============================================================
+   ALL ENTITIES
+   ============================================================ */
+function renderAllEntities(){
+  var c = $('allEntitiesList'); if (!c) return;
+  var q = ($('allEntitiesSearch') ? $('allEntitiesSearch').value : '').toLowerCase();
+  var entities = [];
+
+  clientsData.forEach(function(cl){
+    var fa = cl.feeAgreement || {};
+    var total = toNum(fa.totalFees);
+    var paid = computeClientPaid(cl);
+    var balance = Math.max(0, total - paid);
+    var trustAcc = trustGlobal.accounts[cl.id] || { balance: 0 };
+    entities.push({
+      type: 'client', id: cl.id, name: cl.name || 'Unnamed',
+      email: cl.email, phone: cl.phone,
+      trustBalance: toNum(trustAcc.balance),
+      feeTotal: total, feePaid: paid, feeBalance: balance
+    });
+  });
+
+  accidentClientsData.forEach(function(ac){
+    var advTotal = (ac.advances || []).reduce(function(s,a){ return s + toNum(a.amount); }, 0);
+    var firmFee = toNum(ac.firmFee);
+    entities.push({
+      type: 'accident', id: ac.id, name: ac.name || 'Unnamed',
+      email: ac.email, phone: ac.phone,
+      claimNumber: ac.claimNumber || '—',
+      insurer: ac.insurer || '—',
+      claimStatus: ac.claimStatus || 'Ongoing',
+      advancesTotal: advTotal,
+      firmFee: firmFee,
+      settlementAmount: toNum(ac.settlementAmount),
+      estimatedSettlement: toNum(ac.estimatedSettlement)
+    });
+  });
+
+  var filtered = entities.filter(function(e){
+    if (!q) return true;
+    return (e.name||'').toLowerCase().indexOf(q) !== -1 ||
+           (e.email||'').toLowerCase().indexOf(q) !== -1 ||
+           (e.phone||'').toLowerCase().indexOf(q) !== -1 ||
+           (e.claimNumber||'').toLowerCase().indexOf(q) !== -1;
+  });
+
+  filtered.sort(function(a,b){ return a.type === 'accident' ? -1 : 1; });
+
+  if (!filtered.length) {
+    c.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-users"></i><p>No entities found.</p></div>';
+    return;
+  }
+
+  c.innerHTML = filtered.map(function(e){
+    var isAcc = e.type === 'accident';
+    var cardClass = isAcc ? 'accident-entity' : 'client-entity';
+    var iconClass = isAcc ? 'fa-car-crash' : 'fa-user-circle';
+    var iconColor = isAcc ? '#ef4444' : '#22c55e';
+    var click = isAcc ? "openAccidentDetail('" + e.id + "')" : "openClientDetail('" + e.id + "')";
+
+    var badges = '';
+    if (isAcc) {
+      var sc = e.claimStatus === 'Settled' ? 'green' : e.claimStatus === 'Closed' ? 'gray' : e.claimStatus === 'Negotiation' ? 'yellow' : 'red';
+      badges = '<span class="badge red">ACCIDENT</span> <span class="badge ' + sc + '">' + esc(e.claimStatus) + '</span>';
+    } else {
+      if (e.feeBalance > 0) badges = '<span class="badge red">OWES ' + fmt(e.feeBalance) + '</span>';
+      else if (e.feeTotal > 0) badges = '<span class="badge green">PAID</span>';
+    }
+
+    var meta = isAcc
+      ? 'Claim #' + esc(e.claimNumber) + ' · ' + esc(e.insurer)
+      : esc(e.email || e.phone || 'No contact');
+
+    var balances = '';
+    if (isAcc) {
+      balances += '<div class="entity-meta" style="color:#991b1b;">Advances: ' + fmt(e.advancesTotal) + '</div>';
+      if (e.firmFee > 0) balances += '<div class="entity-meta" style="color:#92400e;">Firm Fee: ' + fmt(e.firmFee) + '</div>';
+    } else {
+      if (e.trustBalance > 0) balances += '<div class="entity-meta" style="color:#0369a1;">Trust: ' + fmt(e.trustBalance) + '</div>';
+      if (e.feeTotal > 0) balances += '<div class="entity-meta" style="color:#166534;">Fees: ' + fmt(e.feePaid) + ' / ' + fmt(e.feeTotal) + '</div>';
+    }
+
+    var total = isAcc ? e.advancesTotal : (e.trustBalance + e.feePaid);
+    var totalColor = isAcc ? '#991b1b' : '#166534';
+
+    var actions = isAcc
+      ? '<button class="btn btn-danger btn-xs" onclick="event.stopPropagation();openAddAccidentAdvanceModal(\'' + e.id + '\')"><i class="fas fa-plus"></i> Advance</button>'
+        + '<button class="btn btn-outline btn-xs" onclick="event.stopPropagation();openAccidentDetail(\'' + e.id + '\')"><i class="fas fa-eye"></i> View</button>'
+      : '<button class="btn btn-success btn-xs" onclick="event.stopPropagation();openAddClientMoneyModal(\'' + e.id + '\')"><i class="fas fa-plus"></i> Trust</button>'
+        + '<button class="btn btn-warning btn-xs" onclick="event.stopPropagation();openRecordPaymentModalForClient(\'' + e.id + '\')"><i class="fas fa-money-bill-wave"></i> Fee</button>'
+        + '<button class="btn btn-primary btn-xs" onclick="event.stopPropagation();openAddChargeModal(\'' + e.id + '\')"><i class="fas fa-plus-circle"></i> Charge</button>'
+        + '<button class="btn btn-outline btn-xs" onclick="event.stopPropagation();openClientDetail(\'' + e.id + '\')"><i class="fas fa-eye"></i></button>';
+
+    return '<div class="entity-card ' + cardClass + '" onclick="' + click + '">'
+      + '<div class="entity-name"><i class="fas ' + iconClass + '" style="color:' + iconColor + ';"></i> ' + esc(e.name) + '</div>'
+      + (badges ? '<div style="margin-top:0.3rem;">' + badges + '</div>' : '')
+      + '<div class="entity-meta">' + meta + '</div>'
+      + balances
+      + '<div class="entity-balance" style="color:' + totalColor + ';">' + (isAcc ? 'Advances: ' : 'Contributed: ') + fmt(total) + '</div>'
+      + '<div class="entity-footer" onclick="event.stopPropagation();">' + actions + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function scrollToAccidentSection(){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  var t = document.querySelector('[data-tab="accident-accounts"]');
+  if (t) t.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
+  var el = $('tab-accident-accounts'); if (el) el.classList.add('active');
+  var ac = $('appContent'); if (ac) ac.scrollTop = 0;
+}
+
+/* ============================================================
+   CLIENT ACCOUNTS
+   ============================================================ */
+function renderClientAccounts(){
+  var c = $('clientAccountsList'); if (!c) return;
+  var q = ($('clientAccountSearch') ? $('clientAccountSearch').value : '').toLowerCase();
+  var filtered = clientsData.filter(function(x){
+    return (x.name||'').toLowerCase().indexOf(q) !== -1 ||
+           (x.email||'').toLowerCase().indexOf(q) !== -1 ||
+           (x.phone||'').toLowerCase().indexOf(q) !== -1;
+  });
+  if (!filtered.length) {
+    c.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-user-tie"></i><p>No clients yet.</p></div>';
+    return;
+  }
+  c.innerHTML = filtered.map(function(x){
+    var fa = x.feeAgreement || {};
+    var total = toNum(fa.totalFees);
+    var paid = computeClientPaid(x);
+    var balance = Math.max(0, total - paid);
+    var trustAcc = trustGlobal.accounts[x.id] || { balance: 0 };
+    var trustBal = toNum(trustAcc.balance);
+    var paymentCount = (fa.payments || []).length;
+    return '<div class="entity-card client-entity" onclick="openClientDetail(\'' + x.id + '\')">'
+      + '<div class="flex-between">'
+      + '<div class="entity-name"><i class="fas fa-user-circle" style="color:#22c55e;"></i> ' + esc(x.name) + '</div>'
+      + (balance > 0 ? '<span class="badge red">OWES</span>' : (total > 0 ? '<span class="badge green">PAID</span>' : ''))
+      + '</div>'
+      + '<div class="entity-meta">' + esc(x.email || x.phone || 'No contact') + '</div>'
+      + (total > 0 ? '<div class="entity-meta">Fees: ' + fmt(paid) + ' / ' + fmt(total) + ' · ' + paymentCount + ' pmt' + (paymentCount!==1?'s':'') + '</div>' : '')
+      + (trustBal > 0 ? '<div class="entity-meta" style="color:#0369a1;">Trust: ' + fmt(trustBal) + '</div>' : '')
+      + '<div class="entity-balance">' + (balance > 0 ? 'Balance: ' + fmt(balance) : (total > 0 ? 'Settled' : 'No fees')) + '</div>'
+      + '<div class="entity-footer" onclick="event.stopPropagation();">'
+      + '<button class="btn btn-success btn-xs" onclick="openAddClientMoneyModal(\'' + x.id + '\')"><i class="fas fa-plus"></i> Trust</button>'
+      + '<button class="btn btn-warning btn-xs" onclick="openRecordPaymentModalForClient(\'' + x.id + '\')"><i class="fas fa-money-bill-wave"></i> Fee</button>'
+      + '<button class="btn btn-primary btn-xs" onclick="openAddChargeModal(\'' + x.id + '\')"><i class="fas fa-plus-circle"></i> Charge</button>'
+      + '<button class="btn btn-outline btn-xs" onclick="openClientDetail(\'' + x.id + '\')"><i class="fas fa-eye"></i></button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function openClientDetail(id){
+  var cl = clientsData.find(function(c){ return c.id === id; });
+  if (!cl) { showToast('Client not found', 'error'); return; }
+  var fa = cl.feeAgreement || {};
+  var total = toNum(fa.totalFees);
+  var deposit = (fa.depositPaid !== false) ? toNum(fa.deposit) : 0;
+  var payments = Array.isArray(fa.payments) ? fa.payments : [];
+  var installments = Array.isArray(fa.installments) ? fa.installments : [];
+  var paid = computeClientPaid(cl);
+  var balance = Math.max(0, total - paid);
+  var trustAcc = trustGlobal.accounts[id] || { balance: 0, transactions: [] };
+
+  var paymentsHtml = payments.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).map(function(p){
+    return '<div class="tx-item"><div class="tx-desc">' + esc(p.method || 'Payment') + (p.reference ? ' · ' + esc(p.reference) : '') + (p.notes ? ' · ' + esc(p.notes) : '') + '<span class="tx-time">' + esc(p.date) + ' by ' + esc(p.recordedBy||'System') + '</span></div><div class="tx-amt credit">+' + fmt(p.amount) + '</div></div>';
+  }).join('');
+
+  var instHtml = installments.map(function(inst, idx){
+    var statusClass = inst.paid ? 'green' : (inst.date < today() ? 'red' : 'gray');
+    var statusLabel = inst.paid ? 'Paid ' + (inst.paidDate || '') : (inst.date < today() ? 'Overdue' : 'Scheduled');
+    return '<div class="detail-row"><span class="label">Installment ' + (idx+1) + ' (' + esc(inst.date || '—') + ')</span><span class="value">' + fmt(inst.amount) + ' <span class="badge ' + statusClass + '">' + statusLabel + '</span></span></div>';
+  }).join('');
+
+  var trustTxHtml = (trustAcc.transactions || []).slice().reverse().slice(0, 15).map(function(t){
+    return '<div class="tx-item"><div class="tx-desc">' + esc(t.description || 'Trust') + '<span class="tx-time">' + esc(t.date || '') + ' ' + esc(t.time || '') + ' by ' + esc(t.recordedBy||'') + '</span></div><div class="tx-amt ' + (t.type === 'credit' ? 'credit' : 'debit') + '">' + (t.type === 'credit' ? '+' : '-') + fmt(t.amount) + '</div></div>';
+  }).join('');
+
+  var clientCases = casesData.filter(function(c){ return c.client === cl.name || c.clientId === cl.id; });
+  var casesHtml = clientCases.length
+    ? clientCases.map(function(c){
+        return '<div class="detail-row"><span class="label">' + esc(c.caseNo || '—') + ' · ' + esc(c.area || '') + '</span><span class="value">' + (c.filed ? '<span class="badge green">Filed</span>' : '<span class="badge yellow">Unfiled</span>') + ' ' + fmt(c.caseFee || 0) + '</span></div>';
+      }).join('')
+    : '<p class="text-muted fs-small">No cases for this client.</p>';
+
+  // Client's charges (invoices sourced from finance)
+  var clientCharges = invoicesData.filter(function(i){ return i.clientId === cl.id; });
+  var chargesHtml = clientCharges.length
+    ? clientCharges.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).map(function(i){
+        return '<div class="detail-row"><span class="label">' + esc(i.date || '') + ' · ' + esc(i.description || 'Charge') + '</span><span class="value">' + fmt(i.amount) + ' <span class="badge ' + (i.status === 'Paid' ? 'green' : 'yellow') + '">' + esc(i.status || 'Unpaid') + '</span></span></div>';
+      }).join('')
+    : '<p class="text-muted fs-small">No additional charges/invoices.</p>';
+
+  $('entityDetailTitle').textContent = cl.name + ' — Financial Profile';
+  $('entityDetailBody').innerHTML =
+    '<div class="detail-view">'
+    + '<div class="detail-row"><span class="label">Name</span><span class="value">' + esc(cl.name) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Email</span><span class="value">' + esc(cl.email||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Phone</span><span class="value">' + esc(cl.phone||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Address</span><span class="value">' + esc(cl.address||'—') + '</span></div>'
+    + '</div>'
+    + '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-hand-holding-usd" style="color:#3b82f6;"></i> Fee Agreement</h4>'
+    + '<div class="detail-view">'
+    + '<div class="detail-row"><span class="label">Total Agreed Fees</span><span class="value">' + fmt(total) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Deposit</span><span class="value">' + fmt(deposit) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Payments Recorded</span><span class="value">' + fmt(Math.max(0, paid - deposit)) + ' (' + payments.length + ')</span></div>'
+    + '<div class="detail-row"><span class="label">Total Paid</span><span class="value" style="color:#166534;">' + fmt(paid) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Balance</span><span class="value" style="color:' + (balance > 0 ? '#ef4444' : '#166534') + ';">' + fmt(balance) + '</span></div>'
+    + '</div>'
+    + (trustAcc.balance > 0
+        ? '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-user-tie" style="color:#0369a1;"></i> Client Trust Account</h4>'
+          + '<div class="detail-view"><div class="detail-row"><span class="label">Trust Balance</span><span class="value" style="color:#0369a1;">' + fmt(trustAcc.balance) + '</span></div></div>'
+          + '<h5 style="font-size:0.75rem;margin:0.5rem 0 0.3rem;color:#64748b;">Recent Trust Transactions</h5>'
+          + '<div class="tx-timeline">' + (trustTxHtml || '<p class="text-muted fs-small">No trust transactions.</p>') + '</div>'
+        : '')
+    + (instHtml ? '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-calendar-day" style="color:#f59e0b;"></i> Installments</h4><div class="detail-view">' + instHtml + '</div>' : '')
+    + '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-folder-open" style="color:#8b5cf6;"></i> Cases (' + clientCases.length + ')</h4>'
+    + '<div class="detail-view">' + casesHtml + '</div>'
+    + '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-file-invoice-dollar" style="color:#f59e0b;"></i> Charges & Invoices (' + clientCharges.length + ')</h4>'
+    + '<div class="detail-view">' + chargesHtml + '</div>'
+    + '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-history" style="color:#166534;"></i> Fee Payments (' + payments.length + ')</h4>'
+    + '<div class="tx-timeline">' + (paymentsHtml || '<p class="text-muted fs-small">No payments recorded.</p>') + '</div>'
+    + '<div style="display:flex;gap:0.4rem;margin-top:0.75rem;flex-wrap:wrap;">'
+    + '<button class="btn btn-success btn-sm" onclick="closeModal(\'entityDetailModal\');openAddClientMoneyModal(\'' + id + '\')"><i class="fas fa-plus"></i> Add Trust Money</button>'
+    + '<button class="btn btn-warning btn-sm" onclick="closeModal(\'entityDetailModal\');openRecordPaymentModalForClient(\'' + id + '\')"><i class="fas fa-money-bill-wave"></i> Record Fee Payment</button>'
+    + '<button class="btn btn-primary btn-sm" onclick="closeModal(\'entityDetailModal\');openAddChargeModal(\'' + id + '\')"><i class="fas fa-plus-circle"></i> Add Charge</button>'
+    + '<button class="btn btn-outline btn-sm" onclick="printClientStatement(\'' + id + '\')"><i class="fas fa-print"></i> Print Statement</button>'
+    + '</div>';
+
+  openModal('entityDetailModal');
+}
+
+/* ============================================================
+   ACCIDENT ACCOUNTS
+   ============================================================ */
+function renderAccidentAccounts(){
+  var c = $('accidentAccountsList'); if (!c) return;
+  var q = ($('accidentAccountSearch') ? $('accidentAccountSearch').value : '').toLowerCase();
+  var filtered = accidentClientsData.filter(function(x){
+    return (x.name||'').toLowerCase().indexOf(q) !== -1 ||
+           (x.claimNumber||'').toLowerCase().indexOf(q) !== -1 ||
+           (x.insurer||'').toLowerCase().indexOf(q) !== -1 ||
+           (x.phone||'').toLowerCase().indexOf(q) !== -1;
+  });
+  if (!filtered.length) {
+    c.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-car-crash"></i><p>No accident clients yet. Add them from admin.html.</p></div>';
+    return;
+  }
+  c.innerHTML = filtered.map(function(x){
+    var advTotal = (x.advances || []).reduce(function(s,a){ return s + toNum(a.amount); }, 0);
+    var firmFee = toNum(x.firmFee);
+    var maxAdvance = Math.floor(firmFee * 0.5);
+    var room = Math.max(0, maxAdvance - advTotal);
+    var statusColors = { Ongoing:'#f59e0b', Negotiation:'#3b82f6', Settled:'#22c55e', Closed:'#94a3b8' };
+    var sc = statusColors[x.claimStatus] || '#f59e0b';
+    return '<div class="entity-card accident-entity" onclick="openAccidentDetail(\'' + x.id + '\')">'
+      + '<div class="flex-between">'
+      + '<div class="entity-name"><i class="fas fa-car-crash" style="color:#ef4444;"></i> ' + esc(x.name) + '</div>'
+      + '<span class="badge" style="background:' + sc + ';color:white;">' + esc(x.claimStatus||'Ongoing') + '</span>'
+      + '</div>'
+      + '<div class="entity-meta">Claim #' + esc(x.claimNumber||'—') + ' · ' + esc(x.insurer||'—') + '</div>'
+      + '<div class="entity-meta">' + esc(x.phone||'No phone') + '</div>'
+      + '<div class="entity-meta" style="color:#991b1b;">Advances: ' + fmt(advTotal) + ' (' + (x.advances||[]).length + ')</div>'
+      + (firmFee > 0 ? '<div class="entity-meta" style="color:#92400e;">Firm Fee: ' + fmt(firmFee) + ' · Room: ' + fmt(room) + '</div>' : '')
+      + '<div class="entity-balance">Advances: ' + fmt(advTotal) + '</div>'
+      + '<div class="entity-footer" onclick="event.stopPropagation();">'
+      + '<button class="btn btn-danger btn-xs" onclick="openAddAccidentAdvanceModal(\'' + x.id + '\')"><i class="fas fa-plus"></i> Advance</button>'
+      + '<button class="btn btn-outline btn-xs" onclick="openAccidentDetail(\'' + x.id + '\')"><i class="fas fa-eye"></i> View</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function openAccidentDetail(id){
+  var c = accidentClientsData.find(function(x){ return x.id === id; });
+  if (!c) { showToast('Not found', 'error'); return; }
+  var advTotal = (c.advances || []).reduce(function(s,a){ return s + toNum(a.amount); }, 0);
+  var firmFee = toNum(c.firmFee);
+  var maxAdv = Math.floor(firmFee * 0.5);
+  var room = Math.max(0, maxAdv - advTotal);
+  var settlement = toNum(c.settlementAmount);
+  var netToClient = settlement > 0 ? (settlement - firmFee) : 0;
+  var balance = settlement > 0 ? (netToClient - advTotal) : -advTotal;
+
+  var advHtml = (c.advances || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).map(function(a){
+    return '<div class="tx-item"><div class="tx-desc">' + esc(a.purpose || 'Advance') + ' · ' + esc(a.reference || '') + '<span class="tx-time">' + esc(a.date || '') + ' by ' + esc(a.recordedBy || 'System') + '</span></div><div class="tx-amt debit">-' + fmt(a.amount) + '</div></div>';
+  }).join('');
+
+  $('entityDetailTitle').textContent = c.name + ' — Accident Claim';
+  $('entityDetailBody').innerHTML =
+    '<div class="detail-view">'
+    + '<div class="detail-row"><span class="label">Name</span><span class="value">' + esc(c.name) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Phone</span><span class="value">' + esc(c.phone||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Email</span><span class="value">' + esc(c.email||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Claim #</span><span class="value">' + esc(c.claimNumber||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Insurer</span><span class="value">' + esc(c.insurer||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Policy #</span><span class="value">' + esc(c.policyNumber||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Accident Date</span><span class="value">' + esc(c.accidentDate||'—') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Status</span><span class="value">' + esc(c.claimStatus||'Ongoing') + '</span></div>'
+    + '</div>'
+    + '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-calculator" style="color:#3b82f6;"></i> Financial Summary</h4>'
+    + '<div class="detail-view">'
+    + '<div class="detail-row"><span class="label">Estimated Settlement</span><span class="value">' + fmt(c.estimatedSettlement||0) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Actual Settlement</span><span class="value">' + (settlement > 0 ? fmt(settlement) : 'Pending') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Firm Fee</span><span class="value">' + fmt(firmFee) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Net to Client</span><span class="value">' + (netToClient > 0 ? fmt(netToClient) : 'Pending') + '</span></div>'
+    + '<div class="detail-row"><span class="label">Total Advances Paid</span><span class="value" style="color:#f59e0b;">' + fmt(advTotal) + ' (' + (c.advances||[]).length + ')</span></div>'
+    + '<div class="detail-row"><span class="label">50% Advance Cap</span><span class="value">' + fmt(maxAdv) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Available Room</span><span class="value" style="color:' + (room > 0 ? '#22c55e' : '#ef4444') + ';">' + fmt(room) + '</span></div>'
+    + '<div class="detail-row"><span class="label">Balance on Finalization</span><span class="value" style="color:' + (balance >= 0 ? '#166534' : '#ef4444') + ';">' + (settlement > 0 ? fmt(balance) : 'Pending') + '</span></div>'
+    + '</div>'
+    + '<h4 style="font-size:0.8rem;margin:0.75rem 0 0.4rem;"><i class="fas fa-history" style="color:#ef4444;"></i> Advance History (' + (c.advances||[]).length + ')</h4>'
+    + '<div class="tx-timeline">' + (advHtml || '<p class="text-muted fs-small">No advances recorded.</p>') + '</div>'
+    + '<div style="display:flex;gap:0.4rem;margin-top:0.75rem;flex-wrap:wrap;">'
+    + '<button class="btn btn-danger btn-sm" onclick="closeModal(\'entityDetailModal\');openAddAccidentAdvanceModal(\'' + id + '\')"><i class="fas fa-plus"></i> Record Advance</button>'
+    + '<button class="btn btn-outline btn-sm" onclick="printAccidentStatement(\'' + id + '\')"><i class="fas fa-print"></i> Print Statement</button>'
+    + '</div>';
+
+  openModal('entityDetailModal');
+}
+
+/* ============================================================
+   INVOICES
+   ============================================================ */
+function renderAllInvoices(){
+  var tbody = $('allInvoicesBody'); if (!tbody) return;
+  var lbl = $('allInvoiceCountLabel');
+  if (lbl) lbl.textContent = invoicesData.length + ' invoice' + (invoicesData.length!==1?'s':'');
+  var sorted = invoicesData.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No invoices.</td></tr>'; return; }
+  tbody.innerHTML = sorted.map(function(inv){
+    var cl = clientsData.find(function(c){ return c.id === inv.clientId; });
+    var name = cl ? cl.name : (inv.clientName || 'Unknown');
+    var sc = inv.status === 'Paid' ? 'green' : (inv.status === 'Overdue' ? 'red' : 'yellow');
+    return '<tr>'
+      + '<td>' + esc(inv.invoiceNumber || inv.id.slice(0,8)) + '</td>'
+      + '<td><strong>' + esc(name) + '</strong></td>'
+      + '<td>' + esc(inv.caseName || '—') + '</td>'
+      + '<td>' + fmt(inv.amount) + '</td>'
+      + '<td>' + esc(inv.date || '—') + '</td>'
+      + '<td><span class="badge ' + sc + '">' + esc(inv.status || 'Unpaid') + '</span></td>'
+      + '<td style="text-align:center;">' + (inv.status !== 'Paid' ? '<button class="btn btn-success btn-xs" onclick="markInvoicePaid(\'' + inv.id + '\')"><i class="fas fa-check"></i> Mark Paid</button>' : '<span class="badge green">Paid</span>') + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+async function markInvoicePaid(id){
+  if (!db) return;
+  if (!confirm('Mark this invoice as PAID?')) return;
+  try {
+    await db.collection('invoices').doc(id).update({ status:'Paid', paidDate: today() });
+    showToast('Invoice marked paid.', 'info');
+  } catch (e) { showToast('Failed: ' + e.message, 'error'); }
+}
+
+/* ============================================================
+   FEES
+   ============================================================ */
+function renderFees(){
+  var body = $('feesBody'); if (!body) return;
+  var withFees = clientsData.filter(function(c){ return c.feeAgreement && toNum(c.feeAgreement.totalFees) > 0; });
+  var lbl = $('feeClientCount');
+  if (lbl) lbl.textContent = withFees.length + ' client' + (withFees.length !== 1 ? 's' : '');
+  var totalAll = 0, paidAll = 0, dueCount = 0;
+  var t = today();
+  withFees.forEach(function(c){
+    var fa = c.feeAgreement;
+    var total = toNum(fa.totalFees);
+    var paid = computeClientPaid(c);
+    totalAll += total;
+    paidAll += paid;
+    (fa.installments||[]).forEach(function(i){ if (!i.paid && i.date && i.date <= t) dueCount++; });
+  });
+  if ($('feeTotalAll')) $('feeTotalAll').textContent = fmt(totalAll);
+  if ($('feePaidAll')) $('feePaidAll').textContent = fmt(paidAll);
+  if ($('feeOutstandingAll')) $('feeOutstandingAll').textContent = fmt(Math.max(0, totalAll - paidAll));
+  if ($('feeDueCount')) $('feeDueCount').textContent = dueCount;
+
+  if (!withFees.length) { body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No fee agreements.</td></tr>'; return; }
+
+  body.innerHTML = withFees.map(function(c){
+    var fa = c.feeAgreement;
+    var total = toNum(fa.totalFees);
+    var paid = computeClientPaid(c);
+    var balance = Math.max(0, total - paid);
+    var pct = total > 0 ? Math.round((paid/total)*100) : 0;
+    var pending = (fa.installments||[]).filter(function(i){ return !i.paid && i.date; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+    var next = pending[0];
+    var nextDue = next ? (next.date + ' <span class="badge ' + (next.date < t ? 'red' : 'yellow') + '">' + fmt(next.amount) + '</span>') : '<span class="text-muted">—</span>';
+    return '<tr>'
+      + '<td><strong>' + esc(c.name) + '</strong></td>'
+      + '<td>' + fmt(total) + '</td>'
+      + '<td>' + fmt(paid) + '</td>'
+      + '<td><span class="badge ' + (balance > 0 ? 'red' : 'green') + '">' + fmt(balance) + '</span></td>'
+      + '<td><div style="background:#e2e8f0;border-radius:4px;height:6px;overflow:hidden;"><div style="width:' + Math.min(100,pct) + '%;height:100%;background:' + (pct >= 100 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444') + ';"></div></div><span class="fs-small text-muted">' + pct + '%</span></td>'
+      + '<td>' + nextDue + '</td>'
+      + '<td style="text-align:center;white-space:nowrap;">'
+      + '<button class="btn btn-warning btn-xs" onclick="openRecordPaymentModalForClient(\'' + c.id + '\')"><i class="fas fa-money-bill-wave"></i> Pay</button> '
+      + '<button class="btn btn-primary btn-xs" onclick="openAddChargeModal(\'' + c.id + '\')"><i class="fas fa-plus-circle"></i> Charge</button>'
+      + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+/* ============================================================
+   TASKS (view only)
+   ============================================================ */
+function renderTasksList(){
+  var tbody = $('tasksListBody'); if (!tbody) return;
+  var sorted = tasksData.slice().sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+  var lbl = $('taskCountLabel'); if (lbl) lbl.textContent = sorted.length + ' task' + (sorted.length!==1?'s':'');
+  if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No tasks.</td></tr>'; return; }
+  tbody.innerHTML = sorted.map(function(t){
+    var pc = (t.priority||'Medium').toLowerCase();
+    var sc = t.status === 'Scheduled' ? 'yellow' : (t.status === 'Completed' ? 'green' : 'gray');
+    return '<tr>'
+      + '<td><strong>' + esc(t.title) + '</strong></td>'
+      + '<td>' + esc(t.clientName||'—') + '</td>'
+      + '<td>' + esc(t.date||'—') + ' ' + esc(t.time||'') + '</td>'
+      + '<td><span class="badge ' + pc + '">' + esc(t.priority||'Medium') + '</span></td>'
+      + '<td><span class="badge ' + sc + '">' + esc(t.status||'Scheduled') + '</span></td>'
+      + '</tr>';
+  }).join('');
+}
+
+/* ============================================================
+   RECENT FEEDS
+   ============================================================ */
+function renderRecentPayments(){
+  var tbody = $('recentPaymentsBody'); if (!tbody) return;
+  var rows = [];
+  clientsData.forEach(function(c){
+    var fa = c.feeAgreement || {};
+    (fa.payments || []).forEach(function(p){
+      rows.push({ date: p.date, client: c.name, amount: p.amount, method: p.method, reference: p.reference, by: p.recordedBy });
+    });
+  });
+  rows.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  rows = rows.slice(0, 10);
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No payments yet.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(function(r){
+    return '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.client) + '</td><td><span class="badge green">' + fmt(r.amount) + '</span></td><td>' + esc(r.method||'—') + '</td><td>' + esc(r.reference||'—') + '</td><td>' + esc(r.by||'—') + '</td></tr>';
+  }).join('');
+}
+
+function renderRecentAdvances(){
+  var tbody = $('recentAdvancesBody'); if (!tbody) return;
+  var rows = [];
+  accidentClientsData.forEach(function(c){
+    (c.advances || []).forEach(function(a){
+      rows.push({ date: a.date, client: c.name, claim: c.claimNumber, amount: a.amount, purpose: a.purpose, ref: a.reference });
+    });
+  });
+  rows.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  rows = rows.slice(0, 10);
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No advances yet.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(function(r){
+    return '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.client) + '</td><td>' + esc(r.claim||'—') + '</td><td><span class="badge red">' + fmt(r.amount) + '</span></td><td>' + esc(r.purpose||'—') + '</td><td>' + esc(r.ref||'—') + '</td></tr>';
+  }).join('');
+}
+
+/* ============================================================
+   DROPDOWNS
+   ============================================================ */
+function populateClientDropdowns(){
+  var sel = $('clientMoneyClientSelect'); if (!sel) return;
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">Select client...</option>';
+  clientsData.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c.id; o.textContent = c.name;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function populatePaymentClientDropdown(){
+  var sel = $('paymentClientSelect'); if (!sel) return;
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">Select client...</option>';
+  clientsData.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c.id; o.textContent = c.name;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function populateAdvanceClientDropdown(){
+  var sel = $('advanceClientSelect'); if (!sel) return;
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">Select accident client...</option>';
+  accidentClientsData.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = c.name + ' — ' + (c.claimNumber || '');
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function populateChargeClientDropdown(){
+  var sel = $('chargeClientSelect'); if (!sel) return;
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">Select client...</option>';
+  clientsData.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = c.name;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function populateChargeCaseDropdown(clientId){
+  var sel = $('chargeCase'); if (!sel) return;
+  sel.innerHTML = '<option value="">None / General</option>';
+  if (!clientId) return;
+  var cl = clientsData.find(function(c){ return c.id === clientId; });
+  if (!cl) return;
+  var clientCases = casesData.filter(function(c){ return c.client === cl.name || c.clientId === cl.id; });
+  clientCases.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = (c.caseNo || '') + ' — ' + (c.name || '');
+    sel.appendChild(o);
+  });
+}
+
+/* ============================================================
+   MODAL OPENERS
+   ============================================================ */
+function openAddClientMoneyModal(clientId){
+  populateClientDropdowns();
+  if (clientId) $('clientMoneyClientSelect').value = clientId;
+  $('clientMoneyAmount').value = '';
+  $('clientMoneyRef').value = '';
+  $('clientMoneyDesc').value = '';
+  $('clientMoneyDate').value = today();
+  $('clientMoneyMethod').value = 'M-PESA';
+  openModal('addClientMoneyModal');
+}
+
+function openAddAccidentAdvanceModal(accId){
+  populateAdvanceClientDropdown();
+  if (accId) $('advanceClientSelect').value = accId;
+  $('advanceAmount').value = '';
+  $('advanceDate').value = today();
+  $('advancePurpose').value = 'Medical Expenses';
+  $('advanceReference').value = '';
+  $('advanceNotes').value = '';
+  $('advanceReceivedBy').value = '';
+  $('advanceWitness').value = currentUserEmail;
+  updateAdvanceRoom();
+  openModal('addAccidentAdvanceModal');
+}
+
+function updateAdvanceRoom(){
+  var accId = $('advanceClientSelect').value;
+  var c = accidentClientsData.find(function(x){ return x.id === accId; });
+  if (c) {
+    $('advanceReceivedBy').value = c.name;
+    var advTotal = (c.advances || []).reduce(function(s,a){ return s + toNum(a.amount); }, 0);
+    var maxAdv = Math.floor(toNum(c.firmFee) * 0.5);
+    var room = Math.max(0, maxAdv - advTotal);
+    $('advanceRoomText').textContent = fmt(room);
+    $('advanceAmount').max = room;
+  } else {
+    $('advanceRoomText').textContent = 'KES 0';
+  }
+}
+
+function openRecordPaymentModalForClient(clientId){
+  populatePaymentClientDropdown();
+  if (clientId) $('paymentClientSelect').value = clientId;
+  updatePaymentSummary();
+  $('paymentAmount').value = '';
+  $('paymentDate').value = today();
+  $('paymentMethod').value = 'M-PESA';
+  $('paymentReference').value = '';
+  $('paymentNotes').value = '';
+  $('paymentLinkInstallment').checked = true;
+  openModal('recordPaymentModal');
+}
+
+function updatePaymentSummary(){
+  var cid = $('paymentClientSelect').value;
+  var c = clientsData.find(function(x){ return x.id === cid; });
+  if (!c) {
+    $('paymentTotalFees').textContent = 'KES 0';
+    $('paymentAlreadyPaid').textContent = 'KES 0';
+    $('paymentBalance').textContent = 'KES 0';
+    return;
+  }
+  var fa = c.feeAgreement || {};
+  var total = toNum(fa.totalFees);
+  var paid = computeClientPaid(c);
+  var balance = Math.max(0, total - paid);
+  $('paymentTotalFees').textContent = fmt(total);
+  $('paymentAlreadyPaid').textContent = fmt(paid);
+  $('paymentBalance').textContent = fmt(balance);
+}
+
+function openAddChargeModal(clientId){
+  populateChargeClientDropdown();
+  if (clientId) {
+    $('chargeClientSelect').value = clientId;
+    populateChargeCaseDropdown(clientId);
+  } else {
+    populateChargeCaseDropdown('');
+  }
+  $('chargeDescription').value = '';
+  $('chargeAmount').value = '';
+  $('chargeDate').value = today();
+  $('chargeCategory').value = 'Court Fee';
+  $('chargeAddToFeeTotal').checked = false;
+  openModal('addChargeModal');
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function wireNavigation(){
+  document.querySelectorAll('.nav-item').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var page = this.dataset.page;
+      document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+      var el = $('page-' + page); if (el) el.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      var ac = $('appContent'); if (ac) ac.scrollTop = 0;
+      if (page === 'clients') { renderAllEntities(); renderClientAccounts(); renderAccidentAccounts(); }
+      if (page === 'invoices') renderAllInvoices();
+      if (page === 'fees') renderFees();
+      if (page === 'tasks') renderTasksList();
+      if (page === 'accounts') updateDashboardUI();
+    });
+  });
+}
+
+function wireTabs(){
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var tabId = this.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
+      var el = $('tab-' + tabId); if (el) el.classList.add('active');
+    });
+  });
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+function wireForms(){
+  wireAddClientMoney();
+  wireAddAccidentAdvance();
+  wireRecordPayment();
+  wireAddChargeForm();
+}
+
+function wireAddClientMoney(){
+  var f = $('addClientMoneyForm'); if (!f) return;
+  f.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!db) { showToast('DB not ready', 'error'); return; }
+    var clientId = $('clientMoneyClientSelect').value;
+    var cl = clientsData.find(function(c){ return c.id === clientId; });
+    if (!cl) { showToast('Select a client', 'warning'); return; }
+    var amount = toNum($('clientMoneyAmount').value);
+    if (amount <= 0) { showToast('Enter valid amount', 'warning'); return; }
+    var method = $('clientMoneyMethod').value;
+    var ref = $('clientMoneyRef').value.trim();
+    var desc = $('clientMoneyDesc').value.trim() || 'Client trust deposit';
+    var date = $('clientMoneyDate').value || today();
+
+    var accounts = Object.assign({}, trustGlobal.accounts);
+    var acct = accounts[clientId] || { balance: 0, transactions: [] };
+    acct.balance = toNum(acct.balance) + amount;
+    acct.transactions = acct.transactions || [];
+    acct.transactions.push({
+      id: genId('TTX'), type: 'credit', amount: amount,
+      description: desc + (ref ? ' (' + ref + ')' : ''),
+      method: method, reference: ref,
+      date: date, time: nowT(),
+      recordedBy: currentUserEmail
+    });
+    accounts[clientId] = acct;
+
+    var tr = {
+      id: genId('TRF'), from: 'external', to: 'trust', clientId: clientId, clientName: cl.name,
+      amount: amount, method: method, reference: ref,
+      date: date, time: nowT(), timestamp: nowDT(),
+      recordedBy: currentUserEmail, description: desc
+    };
+
+    try {
+      var newTotal = 0;
+      Object.keys(accounts).forEach(function(k){ newTotal += toNum(accounts[k].balance); });
+      await db.collection('finance').doc('trust').set({
+        accounts: accounts,
+        total: newTotal,
+        transactions: firebase.firestore.FieldValue.arrayUnion(tr),
+        lastUpdated: nowDT()
+      }, { merge: true });
+      showToast('Added ' + fmt(amount) + ' to ' + cl.name + ' trust', 'info');
+      closeModal('addClientMoneyModal');
+      this.reset();
+    } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+  });
+}
+
+function wireAddAccidentAdvance(){
+  var sel = $('advanceClientSelect');
+  if (sel) sel.addEventListener('change', updateAdvanceRoom);
+  var f = $('addAccidentAdvanceForm'); if (!f) return;
+  f.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!db) { showToast('DB not ready', 'error'); return; }
+    var accId = $('advanceClientSelect').value;
+    var c = accidentClientsData.find(function(x){ return x.id === accId; });
+    if (!c) { showToast('Select accident client', 'warning'); return; }
+    var amount = toNum($('advanceAmount').value);
+    if (amount <= 0) { showToast('Enter valid amount', 'warning'); return; }
+    var ref = $('advanceReference').value.trim();
+    if (!ref) { showToast('M-PESA reference required', 'error'); return; }
+
+    var advTotal = (c.advances || []).reduce(function(s,a){ return s + toNum(a.amount); }, 0);
+    var maxAdv = Math.floor(toNum(c.firmFee) * 0.5);
+    if (advTotal + amount > maxAdv) {
+      showToast('Exceeds 50% cap. Max: ' + fmt(maxAdv) + ', already paid: ' + fmt(advTotal), 'error', 7000);
+      return;
+    }
+
+    var advance = {
+      advanceId: genId('ADV'),
+      amount: amount,
+      date: $('advanceDate').value || today(),
+      purpose: $('advancePurpose').value,
+      receivedBy: $('advanceReceivedBy').value.trim(),
+      witness: $('advanceWitness').value.trim(),
+      method: 'M-PESA',
+      reference: ref,
+      notes: $('advanceNotes').value.trim(),
+      recordedBy: currentUserEmail,
+      recordedAt: nowDT()
+    };
+    var advances = (c.advances || []).concat([advance]);
+
+    try {
+      await db.collection('accidentClients').doc(accId).update({ advances: advances });
+      showToast('Advance of ' + fmt(amount) + ' recorded for ' + c.name, 'info');
+      closeModal('addAccidentAdvanceModal');
+      this.reset();
+    } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+  });
+}
+
+function wireRecordPayment(){
+  var sel = $('paymentClientSelect');
+  if (sel) sel.addEventListener('change', updatePaymentSummary);
+  var f = $('recordPaymentForm'); if (!f) return;
+  f.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!db) { showToast('DB not ready', 'error'); return; }
+    var clientId = $('paymentClientSelect').value;
+    var c = clientsData.find(function(x){ return x.id === clientId; });
+    if (!c) { showToast('Select a client', 'warning'); return; }
+    var amount = toNum($('paymentAmount').value);
+    if (amount <= 0) { showToast('Enter valid amount', 'warning'); return; }
+
+    var fa = c.feeAgreement || { totalFees: 0, deposit: 0, depositPaid: true, installments: [], payments: [] };
+    if (!Array.isArray(fa.payments)) fa.payments = [];
+    if (!Array.isArray(fa.installments)) fa.installments = [];
+
+    var paymentRecord = {
+      id: genId('PAY'),
+      amount: amount,
+      date: $('paymentDate').value || today(),
+      method: $('paymentMethod').value,
+      reference: $('paymentReference').value.trim(),
+      notes: $('paymentNotes').value.trim(),
+      recordedBy: currentUserEmail,
+      recordedAt: nowDT()
+    };
+    fa.payments.push(paymentRecord);
+
+    if ($('paymentLinkInstallment').checked) {
+      var nextIdx = fa.installments.findIndex(function(i){ return !i.paid && i.date; });
+      if (nextIdx >= 0) {
+        fa.installments[nextIdx].paid = true;
+        fa.installments[nextIdx].paidDate = paymentRecord.date;
+        fa.installments[nextIdx].linkedPaymentId = paymentRecord.id;
+      }
+    }
+
+    try {
+      await db.collection('clients').doc(clientId).update({ feeAgreement: fa });
+      showToast('Payment of ' + fmt(amount) + ' recorded for ' + c.name, 'info');
+      closeModal('recordPaymentModal');
+      this.reset();
+    } catch (err) { showToast('Failed: ' + err.message, 'error'); }
+  });
+}
+
+function wireAddChargeForm(){
+  var sel = $('chargeClientSelect');
+  if (sel) sel.addEventListener('change', function(){
+    populateChargeCaseDropdown(this.value);
+  });
+  var f = $('addChargeForm'); if (!f) return;
+  f.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!db) { showToast('DB not ready', 'error'); return; }
+    var clientId = $('chargeClientSelect').value;
+    var cl = clientsData.find(function(c){ return c.id === clientId; });
+    if (!cl) { showToast('Select a client', 'warning'); return; }
+    var description = $('chargeDescription').value.trim();
+    if (!description) { showToast('Enter charge description', 'warning'); return; }
+    var amount = toNum($('chargeAmount').value);
+    if (amount <= 0) { showToast('Enter valid amount', 'warning'); return; }
+    var date = $('chargeDate').value || today();
+    var caseId = $('chargeCase').value || null;
+    var caseData = caseId ? casesData.find(function(c){ return c.id === caseId; }) : null;
+    var category = $('chargeCategory').value;
+    var addToFeeTotal = $('chargeAddToFeeTotal').checked;
+
+    var invoiceNumber = 'INV-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*10000);
+    var invoiceData = {
+      clientId: cl.id,
+      clientName: cl.name,
+      caseId: caseId,
+      caseName: caseData ? caseData.name : null,
+      amount: amount,
+      date: date,
+      terms: 30,
+      status: 'Unpaid',
+      description: description + ' (' + category + ')',
+      invoiceNumber: invoiceNumber,
+      paidDate: null,
+      source: 'finance.html',
+      createdAt: nowDT(),
+      createdBy: currentUserEmail
+    };
+
+    try {
+      await db.collection('invoices').add(invoiceData);
+      if (addToFeeTotal) {
+        var fa = cl.feeAgreement || { totalFees: 0, deposit: 0, depositPaid: true, installments: [], payments: [] };
+        if (!Array.isArray(fa.installments)) fa.installments = [];
+        if (!Array.isArray(fa.payments)) fa.payments = [];
+        fa.totalFees = toNum(fa.totalFees) + amount;
+        await db.collection('clients').doc(cl.id).update({ feeAgreement: fa });
+      }
+      showToast('Charge of ' + fmt(amount) + ' added to ' + cl.name, 'info');
+      closeModal('addChargeModal');
+      this.reset();
+    } catch (err) {
+      console.error('Add charge failed:', err);
+      showToast('Failed: ' + err.message, 'error');
+    }
+  });
+}
+
+/* ============================================================
+   QUICK ACTIONS
+   ============================================================ */
+function wireQuickActions(){
+  var wire = function(id, fn){ var el = $(id); if (el) el.addEventListener('click', fn); };
+  wire('addClientMoneyBtn', function(){ openAddClientMoneyModal(); });
+  wire('addAccidentMoneyBtn', function(){ openAddAccidentAdvanceModal(); });
+  wire('recordPaymentBtn', function(){ openRecordPaymentModalForClient(); });
+  wire('addChargeBtn', function(){ openAddChargeModal(); });
+  wire('refreshBtn', function(){ recompute(); refreshAll(); showToast('Refreshed.', 'info'); });
+  wire('exportBtn', exportAllData);
+}
+
+/* ============================================================
+   PRINT STATEMENTS
+   ============================================================ */
+function printClientStatement(clientId){
+  var cl = clientsData.find(function(c){ return c.id === clientId; });
+  if (!cl) return;
+  var fa = cl.feeAgreement || {};
+  var total = toNum(fa.totalFees);
+  var paid = computeClientPaid(cl);
+  var balance = Math.max(0, total - paid);
+  var trustAcc = trustGlobal.accounts[clientId] || { balance: 0 };
+  var payments = (fa.payments || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  var installments = fa.installments || [];
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Client Statement — ' + cl.name + '</title><style>'
+    + 'body{font-family:Segoe UI,Roboto,sans-serif;padding:2rem;color:#1e293b;max-width:800px;margin:auto;}'
+    + 'h1{color:#0f172a;border-bottom:3px solid #3b82f6;padding-bottom:.5rem;font-size:1.4rem;}'
+    + 'h2{font-size:1rem;margin-top:1.5rem;border-bottom:1px solid #e2e8f0;padding-bottom:.3rem;}'
+    + '.header{background:#f8fafc;padding:1rem;border-radius:.5rem;border:1px solid #e2e8f0;margin:1rem 0;}'
+    + 'table{width:100%;border-collapse:collapse;margin:.75rem 0;font-size:.85rem;}'
+    + 'th{background:#f1f5f9;text-align:left;padding:.5rem;font-size:.72rem;text-transform:uppercase;color:#475569;}'
+    + 'td{padding:.5rem;border-bottom:1px solid #f1f5f9;}'
+    + '.total{font-weight:700;background:#f8fafc;}'
+    + '.footer{margin-top:2rem;text-align:center;color:#64748b;font-size:.75rem;border-top:1px solid #e2e8f0;padding-top:1rem;}'
+    + '</style></head><body>'
+    + '<h1>⚖ Kuria Karatu &amp; Company Advocates — Client Financial Statement</h1>'
+    + '<p style="color:#64748b;">Generated ' + new Date().toLocaleString() + '</p>'
+    + '<div class="header">'
+    + '<div style="font-size:1.2rem;font-weight:700;">' + esc(cl.name) + '</div>'
+    + '<div>Email: ' + esc(cl.email||'—') + ' · Phone: ' + esc(cl.phone||'—') + '</div>'
+    + '<div>Address: ' + esc(cl.address||'—') + '</div>'
+    + '</div>'
+    + '<h2>Summary</h2>'
+    + '<table>'
+    + '<tr><td>Total Agreed Fees</td><td style="text-align:right;font-weight:700;">' + fmt(total) + '</td></tr>'
+    + '<tr><td>Total Paid</td><td style="text-align:right;font-weight:700;color:#166534;">' + fmt(paid) + '</td></tr>'
+    + '<tr><td>Balance</td><td style="text-align:right;font-weight:700;color:' + (balance > 0 ? '#ef4444' : '#166534') + ';">' + fmt(balance) + '</td></tr>'
+    + '<tr><td>Trust Balance</td><td style="text-align:right;font-weight:700;color:#0369a1;">' + fmt(trustAcc.balance) + '</td></tr>'
+    + '</table>'
+    + '<h2>Installments</h2>'
+    + (installments.length ? '<table><thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>'
+      + installments.map(function(i, idx){
+          return '<tr><td>' + (idx+1) + '</td><td>' + esc(i.date||'—') + '</td><td>' + fmt(i.amount) + '</td><td>' + (i.paid ? 'Paid ' + (i.paidDate||'') : (i.date < today() ? 'Overdue' : 'Scheduled')) + '</td></tr>';
+        }).join('')
+      + '</tbody></table>' : '<p>No installments scheduled.</p>')
+    + '<h2>Payment History</h2>'
+    + (payments.length ? '<table><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Recorded By</th></tr></thead><tbody>'
+      + payments.map(function(p){
+          return '<tr><td>' + esc(p.date||'') + '</td><td>' + fmt(p.amount) + '</td><td>' + esc(p.method||'') + '</td><td>' + esc(p.reference||'') + '</td><td>' + esc(p.recordedBy||'') + '</td></tr>';
+        }).join('')
+      + '</tbody></table>' : '<p>No payments recorded.</p>')
+    + '<div class="footer">Computer-generated statement · Kuria Karatu &amp; Company Advocates · Ntugi House, 1st flr rm 10, Meru Town</div>'
+    + '<scr' + 'ipt>setTimeout(function(){window.print();},400);</scr' + 'ipt>'
+    + '</body></html>';
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+function printAccidentStatement(accId){
+  var c = accidentClientsData.find(function(x){ return x.id === accId; });
+  if (!c) return;
+  var advTotal = (c.advances || []).reduce(function(s,a){ return s + toNum(a.amount); }, 0);
+  var firmFee = toNum(c.firmFee);
+  var settlement = toNum(c.settlementAmount);
+  var netToClient = settlement > 0 ? (settlement - firmFee) : 0;
+  var balance = settlement > 0 ? (netToClient - advTotal) : -advTotal;
+  var sorted = (c.advances || []).slice().sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Accident Statement — ' + c.name + '</title><style>'
+    + 'body{font-family:Segoe UI,Roboto,sans-serif;padding:2rem;color:#1e293b;max-width:850px;margin:auto;}'
+    + 'h1{color:#0f172a;border-bottom:3px solid #ef4444;padding-bottom:.5rem;font-size:1.4rem;}'
+    + 'h2{font-size:1rem;margin-top:1.5rem;border-bottom:1px solid #e2e8f0;padding-bottom:.3rem;}'
+    + '.header{background:#fef2f2;padding:1rem;border-radius:.5rem;border:1px solid #fecaca;margin:1rem 0;}'
+    + 'table{width:100%;border-collapse:collapse;margin:.75rem 0;font-size:.85rem;}'
+    + 'th{background:#f1f5f9;text-align:left;padding:.5rem;font-size:.72rem;text-transform:uppercase;color:#475569;}'
+    + 'td{padding:.5rem;border-bottom:1px solid #f1f5f9;}'
+    + '.total{font-weight:700;background:#f8fafc;}'
+    + '.balance{font-weight:700;color:' + (balance >= 0 ? '#166534' : '#ef4444') + ';}'
+    + '.footer{margin-top:2rem;text-align:center;color:#64748b;font-size:.75rem;border-top:1px solid #e2e8f0;padding-top:1rem;}'
+    + '</style></head><body>'
+    + '<h1>⚖ Kuria Karatu &amp; Company Advocates — Accident Claim Statement</h1>'
+    + '<p style="color:#64748b;">Generated ' + new Date().toLocaleString() + '</p>'
+    + '<div class="header">'
+    + '<div style="font-size:1.2rem;font-weight:700;">' + esc(c.name) + '</div>'
+    + '<div>Phone: ' + esc(c.phone||'—') + ' · Email: ' + esc(c.email||'—') + '</div>'
+    + '<div>Claim #: ' + esc(c.claimNumber||'—') + ' · Insurer: ' + esc(c.insurer||'—') + ' · Policy: ' + esc(c.policyNumber||'—') + '</div>'
+    + '<div>Status: ' + esc(c.claimStatus||'Ongoing') + '</div>'
+    + '</div>'
+    + '<h2>Financial Summary</h2>'
+    + '<table>'
+    + '<tr><td>Estimated Settlement</td><td style="text-align:right;">' + fmt(c.estimatedSettlement||0) + '</td></tr>'
+    + '<tr><td>Actual Settlement</td><td style="text-align:right;">' + (settlement > 0 ? fmt(settlement) : 'Pending') + '</td></tr>'
+    + '<tr><td>Firm Fee</td><td style="text-align:right;">' + fmt(firmFee) + '</td></tr>'
+    + '<tr><td>Net to Client</td><td style="text-align:right;">' + (netToClient > 0 ? fmt(netToClient) : 'Pending') + '</td></tr>'
+    + '<tr class="total"><td>Total Advances Paid</td><td style="text-align:right;">' + fmt(advTotal) + '</td></tr>'
+    + '<tr class="balance"><td>Balance on Finalization</td><td style="text-align:right;">' + (settlement > 0 ? fmt(balance) : 'Pending') + '</td></tr>'
+    + '</table>'
+    + '<h2>Advances Handed to Client (' + sorted.length + ')</h2>'
+    + (sorted.length ? '<table><thead><tr><th>#</th><th>Date</th><th>Purpose</th><th>Received By</th><th>Witness</th><th>M-PESA Ref</th><th style="text-align:right;">Amount</th></tr></thead><tbody>'
+      + sorted.map(function(a, idx){
+          return '<tr><td>' + (idx+1) + '</td><td>' + esc(a.date||'') + '</td><td>' + esc(a.purpose||'') + '</td><td>' + esc(a.receivedBy||'') + '</td><td>' + esc(a.witness||'') + '</td><td>' + esc(a.reference||'') + '</td><td style="text-align:right;">' + fmt(a.amount) + '</td></tr>';
+        }).join('')
+      + '<tr class="total"><td colspan="6" style="text-align:right;">TOTAL</td><td style="text-align:right;">' + fmt(advTotal) + '</td></tr>'
+      + '</tbody></table>' : '<p>No advances recorded.</p>')
+    + '<div class="footer">Computer-generated statement · Kuria Karatu &amp; Company Advocates · Ntugi House, 1st flr rm 10, Meru Town</div>'
+    + '<scr' + 'ipt>setTimeout(function(){window.print();},400);</scr' + 'ipt>'
+    + '</body></html>';
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
+function exportAllData(){
+  var rows = [['Type','Date','Client','Amount','Method','Reference','Notes','By']];
+  clientsData.forEach(function(c){
+    var fa = c.feeAgreement || {};
+    (fa.payments || []).forEach(function(p){
+      rows.push(['Fee Payment', p.date||'', c.name||'', p.amount||0, p.method||'', p.reference||'', p.notes||'', p.recordedBy||'']);
+    });
+  });
+  Object.keys(trustGlobal.accounts || {}).forEach(function(cid){
+    var acc = trustGlobal.accounts[cid];
+    var cl = clientsData.find(function(c){ return c.id === cid; });
+    (acc.transactions || []).forEach(function(t){
+      rows.push(['Trust', t.date||'', cl ? cl.name : cid, t.amount||0, t.method||'', t.reference||'', t.description||'', t.recordedBy||'']);
+    });
+  });
+  accidentClientsData.forEach(function(c){
+    (c.advances || []).forEach(function(a){
+      rows.push(['Accident Advance', a.date||'', c.name||'', a.amount||0, a.method||'', a.reference||'', a.purpose||'', a.recordedBy||'']);
+    });
+  });
+  invoicesData.forEach(function(i){
+    rows.push(['Invoice', i.date||'', i.clientName||i.clientId||'', i.amount||0, '', i.invoiceNumber||'', i.description||i.status||'', '']);
+  });
+  var csv = rows.map(function(r){ return r.map(function(v){ return '"' + String(v||'').replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
+  var blob = new Blob([csv], { type:'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'KK_Finance_' + today() + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  showToast('Exported.', 'info');
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+function initCharts(){
+  if (!currentUserEmail) return;
+  Object.keys(chartInstances).forEach(function(k){ try { chartInstances[k].destroy(); } catch(e){} });
+  chartInstances = {}; chartsInitialized = true;
+  drawCollectionChart();
+  drawCaseFeesChart();
+  drawInvoiceChart();
+}
+function updateCharts(){ if (chartsInitialized) setTimeout(initCharts, 200); }
+
+function drawCollectionChart(){
+  var cv = $('chartAccountDist'); if (!cv) return;
+  var ctx = cv.getContext('2d');
+  chartInstances.accountDist = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Paid', 'Outstanding'],
+      datasets: [{ data: [totalFeesPaid || 1, totalOutstanding || 1], backgroundColor: ['#22c55e', '#ef4444'], borderWidth: 3, borderColor: '#fff' }]
+    },
+    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+  });
+}
+
+function drawCaseFeesChart(){
+  var cv = $('chartMonthlyRevenue'); if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var byArea = {};
+  casesData.forEach(function(c){
+    if (c.filed === true) {
+      var k = c.area || 'Other';
+      byArea[k] = (byArea[k] || 0) + toNum(c.caseFee);
+    }
+  });
+  var labels = Object.keys(byArea);
+  var values = Object.values(byArea);
+  if (!labels.length) { labels = ['No Data']; values = [1]; }
+  chartInstances.monthly = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: 'Filed Fees', data: values, backgroundColor: '#22c55e', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+function drawInvoiceChart(){
+  var cv = $('chartInvoiceStatus'); if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var p = invoicesData.filter(function(i){ return i.status === 'Paid'; }).length;
+  var u = invoicesData.filter(function(i){ return i.status === 'Unpaid'; }).length;
+  var o = invoicesData.filter(function(i){ return i.status === 'Overdue'; }).length;
+  chartInstances.status = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Paid', 'Unpaid', 'Overdue'],
+      datasets: [{ data: [p||1, u||1, o||1], backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], borderWidth: 3, borderColor: '#fff' }]
+    },
+    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+  });
+}
+
+/* ============================================================
+   GLOBAL EXPORTS
+   ============================================================ */
+window.showToast = showToast;
+window.closeModal = closeModal;
+window.openModal = openModal;
+window.openClientDetail = openClientDetail;
+window.openAccidentDetail = openAccidentDetail;
+window.openAddClientMoneyModal = openAddClientMoneyModal;
+window.openAddAccidentAdvanceModal = openAddAccidentAdvanceModal;
+window.openRecordPaymentModalForClient = openRecordPaymentModalForClient;
+window.openAddChargeModal = openAddChargeModal;
+window.markInvoicePaid = markInvoicePaid;
+window.scrollToAccidentSection = scrollToAccidentSection;
+window.renderAllEntities = renderAllEntities;
+window.renderClientAccounts = renderClientAccounts;
+window.renderAccidentAccounts = renderAccidentAccounts;
+window.exportAllData = exportAllData;
+window.recompute = recompute;
+window.refreshAll = refreshAll;
+window.printClientStatement = printClientStatement;
+window.printAccidentStatement = printAccidentStatement;
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', function(){
+  console.log('🚀 KK Finance booting…');
+  setupLogin();
+  setupLogout();
+  if (fbOK && auth) {
+    auth.onAuthStateChanged(function(user){
+      if (user && !currentUserEmail) {
+        var email = user.email;
+        var role = 'clerk';
+        var hc = HARDCODED.find(function(u){ return u.email === email; });
+        if (hc) role = hc.role;
+        db.collection('users').doc(user.uid).get().then(function(doc){
+          if (doc.exists && doc.data().role) role = doc.data().role;
+        }).catch(function(){}).finally(function(){
+          showApp(email, role);
+        });
+      }
+    });
+  }
+});
+
+console.log('✅ KK Finance loaded. Firebase:', fbOK);
+</script>
+</body>
+</html>

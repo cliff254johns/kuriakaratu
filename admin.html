@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Kuria Karatu & Company Advocates — Case Management System" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="KK Advocates" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" id="appleTouchIcon">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" id="favicon32">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" id="favicon16">
+    <title>Kuria Karatu &amp; Company Advocates</title>
+
+    <!-- External libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- ⬇⬇⬇ THIS LINE IS MISSING ⬇⬇⬇ -->
+    <link rel="stylesheet" href="admin.css" />
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+        <div id="loginOverlay">
+        <div class="login-box">
+        <div class="login-logo">
+    <img id="loginLogoImg" alt="Kuria Karatu" style="display:none;">
+    <i id="loginLogoIcon" class="fas fa-scale-balanced"></i>
+    <span>Kuria Karatu</span>
+</div>
+            <div class="login-sub">Advocates &amp; Legal Consultants</div>
+            <form id="loginForm">
+               <div class="form-group">
+    <label><i class="fas fa-user"></i> Email</label>
+    <input type="email" id="loginEmailInput" list="loginEmailOptions"
+           placeholder="you@kuriakaratu.com" autocomplete="username" required>
+    <datalist id="loginEmailOptions">
+        <!-- Populated dynamically by admin.js -->
+    </datalist>
+</div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <div class="login-error" id="loginError"></div>
+               <button type="submit" class="btn btn-primary login-submit-btn" id="loginSubmitBtn">
+    <span class="lbtn-label"><i class="fas fa-sign-in-alt"></i> Sign In</span>
+    <span class="lbtn-loader" aria-hidden="true">
+        <span></span><span></span><span></span>
+    </span>
+</button>
+                <div id="loginLoading" class="login-loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>
+           
+            </form>
+        </div>
+    </div>
+
+   <div id="pwaInstallBanner">
+    <img id="pwaLogoImg" alt="" style="display:none;height:22px;width:22px;object-fit:contain;border-radius:2px;">
+    <i id="pwaLogoIcon" class="fas fa-download"></i>
+    <span>Install KK Advocates app?</span>
+ 
+        <button class="btn btn-primary" id="pwaInstallBtn">Install</button>
+        <button class="dismiss" id="pwaDismissBtn">&times;</button>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="sidebar" id="sidebar">
+       <div class="brand">
+    <img id="sidebarLogoImg" alt="Kuria Karatu" style="display:none;">
+    <i id="sidebarLogoIcon" class="fas fa-scale-balanced"></i>
+    <span>Kuria Karatu &amp; Company Advocates</span>
+</div>
+        <nav id="sidebarNav">
+            <button class="nav-item active" data-page="dashboard" data-filter="" data-subfilter=""><i class="fas fa-chart-pie"></i><span>Dashboard</span></button>
+            <button class="nav-item" data-page="clients" data-filter="" data-subfilter=""><i class="fas fa-users"></i><span>Clients</span></button>
+            <button class="nav-item" data-page="invoices" data-filter="" data-subfilter=""><i class="fas fa-file-invoice"></i><span>Invoices</span></button>
+            <button class="nav-item has-dropdown" data-dropdown="casesDrop"><i class="fas fa-folder-open"></i><span>Cases</span><span class="arrow"><i class="fas fa-chevron-right"></i></span></button>
+            <div class="dropdown-wrap" id="casesDrop">
+                <button class="nav-item has-dropdown" data-dropdown="elcDrop"><span>ELCs</span><span class="arrow"><i class="fas fa-chevron-right"></i></span></button>
+                <div class="dropdown-wrap" id="elcDrop">
+                    <button class="nav-item" data-page="cases" data-filter="ELCs" data-subfilter="Magistrate">Magistrate Court</button>
+                    <button class="nav-item" data-page="cases" data-filter="ELCs" data-subfilter="High Court">High Court</button>
+                </div>
+                <button class="nav-item has-dropdown" data-dropdown="criminalDrop"><span>Criminal</span><span class="arrow"><i class="fas fa-chevron-right"></i></span></button>
+                <div class="dropdown-wrap" id="criminalDrop">
+                    <button class="nav-item" data-page="cases" data-filter="Criminal" data-subfilter="Magistrate">Magistrate Court</button>
+                    <button class="nav-item" data-page="cases" data-filter="Criminal" data-subfilter="High Court">High Court</button>
+                </div>
+                <button class="nav-item has-dropdown" data-dropdown="successionDrop"><span>Succession</span><span class="arrow"><i class="fas fa-chevron-right"></i></span></button>
+                <div class="dropdown-wrap" id="successionDrop">
+                    <button class="nav-item" data-page="cases" data-filter="Succession" data-subfilter="Magistrate">Magistrate Court</button>
+                    <button class="nav-item" data-page="cases" data-filter="Succession" data-subfilter="High Court">High Court</button>
+                </div>
+                <button class="nav-item has-dropdown" data-dropdown="civilDrop"><span>Civil</span><span class="arrow"><i class="fas fa-chevron-right"></i></span></button>
+                <div class="dropdown-wrap" id="civilDrop">
+                    <button class="nav-item" data-page="cases" data-filter="Civil" data-subfilter="Magistrate">Magistrate Court</button>
+                    <button class="nav-item" data-page="cases" data-filter="Civil" data-subfilter="High Court">High Court</button>
+                </div>
+                <button class="nav-item" data-page="cases" data-filter="Tribunal" data-subfilter="">Tribunal</button>
+                <button class="nav-item has-dropdown" data-dropdown="divorceDrop"><span>Divorce</span><span class="arrow"><i class="fas fa-chevron-right"></i></span></button>
+                <div class="dropdown-wrap" id="divorceDrop">
+                    <button class="nav-item" data-page="cases" data-filter="Divorce" data-subfilter="Magistrate">Magistrate Court</button>
+                    <button class="nav-item" data-page="cases" data-filter="Divorce" data-subfilter="High Court">High Court</button>
+                </div>
+                <button class="nav-item" data-page="cases" data-filter="Conveyancing" data-subfilter="">Conveyancing</button>
+                <button class="nav-item" data-page="cases" data-filter="Running Down" data-subfilter="">Running Downs</button>
+                <button class="nav-item" data-page="cases" data-filter="Children" data-subfilter="">Children</button>
+                <button class="nav-item" data-page="cases" data-filter="Employment" data-subfilter="">Employment &amp; Labor</button>
+                <button class="nav-item" data-page="cases" data-filter="Kadhi" data-subfilter="">Kadhi</button>
+            </div>
+          <button class="nav-item has-dropdown" data-dropdown="docsDrop"><i class="fas fa-file-alt"></i><span>Documents</span><span class="arrow"><i class="fas fa-chevron-right"></i></span></button>
+<div class="dropdown-wrap" id="docsDrop">
+    <!-- Rendered dynamically from settings/docSections -->
+</div>
+            <button class="nav-item" data-page="calendar" data-filter="" data-subfilter=""><i class="fas fa-calendar-check"></i><span>Calendar</span></button>
+            <button class="nav-item" data-page="targets" data-filter="" data-subfilter=""><i class="fas fa-bullseye"></i><span>Practice Targets</span></button>
+            <button class="nav-item" data-page="payments" data-filter="" data-subfilter=""><i class="fas fa-coins"></i><span>Payments &amp; Receipts</span></button>
+            <button class="nav-item" data-page="fees" data-filter="" data-subfilter=""><i class="fas fa-hand-holding-usd"></i><span>Client Fees &amp; Installments</span></button>
+            <button class="nav-item" data-page="accidentClients" data-filter="" data-subfilter=""><i class="fas fa-car-burst"></i><span>Accident Clients</span></button>
+            <button class="nav-item" data-page="activity" data-filter="" data-subfilter=""><i class="fas fa-history"></i><span>Activity Log</span></button>
+            <button class="nav-item" data-page="ai" data-filter="" data-subfilter=""><i class="fas fa-robot"></i><span>AI Tools</span></button>
+            <button class="nav-item" data-page="integrations" data-filter="" data-subfilter=""><i class="fas fa-plug"></i><span>Integration</span></button>
+            <button class="nav-item" data-page="reports" data-filter="" data-subfilter=""><i class="fas fa-chart-line"></i><span>Reports</span></button>
+            <button class="nav-item" data-page="settings" data-filter="" data-subfilter=""><i class="fas fa-cog"></i><span>Settings</span></button>
+            <button class="nav-item admin-only" data-page="users" data-filter="" data-subfilter=""><i class="fas fa-user-shield"></i><span>Users</span></button>
+            <button class="nav-item admin-only" data-page="portal" data-filter="" data-subfilter=""><i class="fas fa-user-check"></i><span>Portal Requests</span><span class="badge red" id="portalRequestsBadge" style="display:none;margin-left:auto;">0</span></button>
+        </nav>
+        <div class="bottom">
+            <div class="contact-line"><i class="fas fa-map-pin"></i><span>Ntugi House, 1st flr rm 10, Meru Town</span></div>
+            <div class="contact-line"><i class="fas fa-phone"></i><span>0725799752 / 0726780451</span></div>
+        </div>
+    </div>
+
+    <div class="main" id="mainApp" style="display:none;">
+        <div class="topbar">
+            <div class="left-section">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
+                <div class="page-title" id="pageTitle">Dashboard</div>
+            </div>
+            <div class="actions">
+                <div class="search-wrap" id="globalSearchWrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="globalSearchInput" placeholder="Search..." autocomplete="off">
+                    <span class="clear-search" id="clearSearchBtn">&times;</span>
+                    <div class="search-results-dropdown" id="searchResultsDropdown"></div>
+                </div>
+                <div class="user-badge" id="userBadge">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span id="userNameDisplay">Admin</span>
+                    <span class="user-role" id="userRoleDisplay">Admin</span>
+                    <button class="logout-btn" id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content" id="mainContent">
+
+            <div id="page-dashboard" class="page active">
+
+    <!-- ══════════════════ HERO BANNER ══════════════════ -->
+    <div class="dash-hero">
+        <div class="dash-hero-inner">
+            <div class="dash-hero-left">
+                <div class="dash-eyebrow" id="dashEyebrow">Chambers · Dashboard</div>
+                <h1 class="dash-title">
+                    <span id="dashGreeting">Good morning</span>,
+                    <em id="dashUserName">Counsel</em>
+                </h1>
+                <p class="dash-sub">
+                    <i class="fas fa-calendar-day"></i>
+                    <span id="dashToday">—</span>
+                    <span class="dash-dot">·</span>
+                    <i class="fas fa-scale-balanced"></i>
+                    Kuria Karatu &amp; Company Advocates
+                </p>
+            </div>
+            <div class="dash-hero-right">
+                <div class="dash-hero-meta">
+                    <div class="dhm-label">Today</div>
+                    <div class="dhm-value" id="dashHeroTasks">0</div>
+                    <div class="dhm-sub">scheduled tasks</div>
+                </div>
+                <div class="dash-hero-meta">
+                    <div class="dhm-label">Pending Fees</div>
+                    <div class="dhm-value" id="dashHeroPending">KES 0</div>
+                    <div class="dhm-sub">to collect</div>
+                </div>
+                <div class="dash-hero-meta">
+                    <div class="dhm-label">Active Files</div>
+                    <div class="dhm-value" id="dashHeroCases">0</div>
+                    <div class="dhm-sub">in progress</div>
+                </div>
+            </div>
+        </div>
+        <div class="dash-hero-rule"></div>
+    </div>
+
+    <!-- ══════════════════ NOTIFICATIONS ══════════════════ -->
+    <div id="notificationBanner" class="notification-banner">
+        <div class="notif-title"><i class="fas fa-bell"></i> Upcoming Tasks, Activities &amp; Fee Reminders</div>
+        <div id="notificationList"></div>
+    </div>
+
+    <!-- ══════════════════ BENTO KPI GRID ══════════════════ -->
+    <div class="bento-grid">
+
+        <div class="bento-card kpi kpi-cases">
+            <div class="kpi-top">
+                <span class="kpi-icon"><i class="fas fa-briefcase"></i></span>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> active</span>
+            </div>
+            <div class="kpi-label">Active Cases</div>
+            <div class="kpi-value" id="dashActiveCases">0</div>
+            <div class="kpi-foot">
+                <span class="kpi-line" data-spark="cases"></span>
+                <span class="kpi-foot-text">currently in litigation</span>
+            </div>
+        </div>
+
+        <div class="bento-card kpi kpi-revenue">
+            <div class="kpi-top">
+                <span class="kpi-icon"><i class="fas fa-check-circle"></i></span>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> earned</span>
+            </div>
+            <div class="kpi-label">Earned (Filed Cases)</div>
+            <div class="kpi-value" id="dashRevenue">KES 0</div>
+            <div class="kpi-foot">
+                <span class="kpi-line" data-spark="revenue"></span>
+                <span class="kpi-foot-text">recognised on filing</span>
+            </div>
+        </div>
+
+        <div class="bento-card kpi kpi-pending">
+            <div class="kpi-top">
+                <span class="kpi-icon"><i class="fas fa-hourglass-half"></i></span>
+                <span class="kpi-trend warn"><i class="fas fa-clock"></i> awaiting</span>
+            </div>
+            <div class="kpi-label">Pending Fees</div>
+            <div class="kpi-value" id="dashPendingFees">KES 0</div>
+            <div class="kpi-foot">
+                <span class="kpi-line" data-spark="pending"></span>
+                <span class="kpi-foot-text">agreed, not yet filed</span>
+            </div>
+        </div>
+
+        <div class="bento-card kpi kpi-tasks" id="taskPriorityCard">
+            <div class="kpi-top">
+                <span class="kpi-icon"><i class="fas fa-tasks"></i></span>
+                <span class="kpi-trend"><i class="fas fa-list-check"></i> priority</span>
+            </div>
+            <div class="kpi-label">Tasks by Priority</div>
+            <div class="kpi-value" id="dashTotalTasks">0</div>
+            <div class="priority-breakdown" id="dashPriorityBreakdown">
+                <span class="p-item"><span class="dot high"></span> High: <span class="count" id="dashHighCount">0</span></span>
+                <span class="p-item"><span class="dot medium"></span> Med: <span class="count" id="dashMedCount">0</span></span>
+                <span class="p-item"><span class="dot low"></span> Low: <span class="count" id="dashLowCount">0</span></span>
+            </div>
+            <div class="kpi-foot">
+                <span class="kpi-foot-text"><i class="fas fa-calendar-check"></i> <span id="dashTaskChange">0</span> scheduled</span>
+            </div>
+        </div>
+
+        <div class="bento-card kpi kpi-clients">
+            <div class="kpi-top">
+                <span class="kpi-icon"><i class="fas fa-users"></i></span>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> active</span>
+            </div>
+            <div class="kpi-label">Active Clients</div>
+            <div class="kpi-value" id="dashActiveClients">0</div>
+            <div class="kpi-foot">
+                <span class="kpi-line" data-spark="clients"></span>
+                <span class="kpi-foot-text">on the books</span>
+            </div>
+        </div>
+                <!-- ═══ NEW 6th KPI ═══ -->
+     <div class="bento-card kpi kpi-filed">
+    <div class="kpi-top">
+        <span class="kpi-icon"><i class="fas fa-stamp"></i></span>
+        <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> filed</span>
+    </div>
+    <div class="kpi-label">Cases Filed</div>
+    <div class="kpi-value" id="dashFiledCases">0</div>
+    <div class="kpi-foot">
+        <span class="kpi-line" data-spark="filed"></span>
+        <span class="kpi-foot-text">this calendar year</span>
+    </div>
+</div>
+
+        <!-- Wide feature card — eFiling -->
+        <div class="bento-card bento-wide bento-efiling">
+            <div class="efiling-left">
+                <div class="efiling-eyebrow">Kenya Judiciary</div>
+                <h3 class="efiling-title"><i class="fas fa-gavel"></i> Goverment of Kenya Judiciary eFiling Portal</h3>
+                <p class="efiling-sub">Access the official eFiling system without leaving the app.</p>
+                <div class="efiling-chips">
+                    <span class="chip"><i class="fas fa-shield-halved"></i> Official</span>
+                    <span class="chip"><i class="fas fa-bolt"></i> One-click</span>
+                    <span class="chip"><i class="fas fa-lock"></i> Secure session</span>
+                </div>
+            </div>
+            <div class="efiling-right">
+                <a class="btn btn-primary efiling-cta" href="https://efiling.court.go.ke" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-external-link-alt"></i> Open eFiling
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════ UPCOMING TASKS — TIMELINE ══════════════════ -->
+    <div class="dash-section">
+        <div class="dash-section-head">
+            <h3><i class="fas fa-calendar-check"></i> Upcoming Tasks &amp; Activities</h3>
+            <button class="btn btn-outline btn-sm" onclick="navigate('calendar','','')">
+                <i class="fas fa-arrow-right"></i> Open Calendar
+            </button>
+        </div>
+        <div id="dashboardUpcomingTasks" class="dash-timeline">
+            <p class="text-muted" style="padding:1rem 0;">No upcoming tasks scheduled.</p>
+        </div>
+    </div>
+
+    <!-- ══════════════════ CHARTS ══════════════════ -->
+    <div class="dash-section">
+        <div class="dash-section-head">
+            <h3><i class="fas fa-chart-line"></i> Firm Analytics</h3>
+            <div class="dash-chip-row">
+                <span class="chip active"><i class="fas fa-calendar"></i> This year</span>
+                <span class="chip"><i class="fas fa-layer-group"></i> By practice</span>
+                <span class="chip"><i class="fas fa-coins"></i> Revenue</span>
+            </div>
+        </div>
+        <div class="chart-row">
+            <div class="chart-box">
+                <h4>Revenue by Practice Area</h4>
+                <canvas id="dashChart1" height="150"></canvas>
+            </div>
+            <div class="chart-box">
+                <h4>Monthly Billable Hours</h4>
+                <canvas id="dashChart2" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════ RECENT ACTIVITY — FEED ══════════════════ -->
+    <div class="dash-section">
+        <div class="dash-section-head">
+            <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+            <button class="btn btn-outline btn-sm" onclick="navigate('activity','','')">
+                <i class="fas fa-list"></i> View Log
+            </button>
+        </div>
+        <div class="dash-feed" id="dashRecentActivity">
+            <p class="text-muted" style="padding:1rem 0;">No recent activity.</p>
+        </div>
+    </div>
+
+</div>
+
+            <div id="page-clients" class="page">
+                <div id="clientsListView">
+                    <div class="table-wrap">
+                        <div class="flex-between mb-1">
+                            <h3><i class="fas fa-users"></i> All Clients <span class="filter-badge" id="clientsFilterBadge">All</span></h3>
+                            <div><span class="text-muted fs-small" id="clientCountLabel">0 clients</span>
+                                <button class="btn btn-primary btn-sm" id="addClientBtn"><i class="fas fa-plus"></i> Add Client</button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table id="clientsTable">
+                                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Cases</th><th>Total Invoiced</th><th>Expenses</th><th>Fee Balance</th><th>Outstanding</th><th style="text-align:center;">Action</th></tr></thead>
+                                <tbody id="clientsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="clientDetailView" style="display:none;">
+                    <button class="back-btn" id="backToClientsList"><i class="fas fa-arrow-left"></i> Back to Clients</button>
+                    <div class="case-detail-view" id="clientDetailContainer"></div>
+                </div>
+            </div>
+
+            <div id="page-portal" class="page">
+                <div class="table-wrap">
+                    <h3><i class="fas fa-user-check"></i> Client Portal Requests <span class="filter-badge" id="portalFilterBadge">Pending</span></h3>
+                    <div class="permission-note"><i class="fas fa-info-circle"></i> Clients who sign up on the Client Portal appear here. Approve a request to give the client read access to their case file, payments, documents, document requests and appointments in real time.</div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:0.75rem;">
+                        <button class="btn btn-sm btn-primary" onclick="loadPortalRequests()"><i class="fas fa-sync"></i> Refresh</button>
+                        <label class="text-muted fs-small">Filter:</label>
+                        <select id="portalStatusFilter" onchange="loadPortalRequests()" style="padding:0.3rem 0.6rem;border:1px solid #d1d9e6;border-radius:0.4rem;font-size:0.8rem;">
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="all">All</option>
+                        </select>
+                        <span class="text-muted fs-small" id="portalCountLabel">0 requests</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table id="portalRequestsTable">
+                            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Case Ref</th><th>Requested</th><th>Status</th><th style="text-align:center;">Actions</th></tr></thead>
+                            <tbody id="portalRequestsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <h3><i class="fas fa-users-cog"></i> Approved Portal Accounts</h3>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th>Name</th><th>Email</th><th>Linked Client</th><th>Approved</th><th>Last Sign In</th><th style="text-align:center;">Actions</th></tr></thead>
+                            <tbody id="portalAccountsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-invoices" class="page">
+                <div class="table-wrap">
+                    <div class="flex-between mb-1">
+                        <h3><i class="fas fa-file-invoice"></i> All Invoices <span class="filter-badge" id="invoicesFilterBadge">All</span></h3>
+                        <div><span class="text-muted fs-small" id="invoiceCountLabel">0 invoices</span>
+                            <button class="btn btn-primary btn-sm" id="addGlobalInvoiceBtn"><i class="fas fa-plus"></i> Add Invoice</button>
+                        </div>
+                    </div>
+                    <div class="permission-note"><i class="fas fa-share-alt"></i> Invoices carry the firm logo and can be <strong>shared via WhatsApp</strong>, <strong>emailed</strong>, or <strong>downloaded</strong>.</div>
+                    <div style="overflow-x:auto;">
+                        <table id="invoicesTable">
+                            <thead><tr><th>Client</th><th>Case</th><th>Description</th><th>Amount</th><th>Date</th><th>Terms</th><th>Status</th><th style="text-align:center;">Actions</th></tr></thead>
+                            <tbody id="invoicesBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-cases" class="page">
+                <div id="casesListView">
+                    <div class="table-wrap">
+                        <div class="flex-between mb-1">
+                            <h3><i class="fas fa-folder-open"></i> All Cases <span class="filter-badge" id="casesFilterBadge">All</span></h3>
+                            <div><span class="text-muted fs-small" id="caseCountLabel">0 cases</span>
+                                <button class="btn btn-primary btn-sm" id="addCaseBtn"><i class="fas fa-plus"></i> Add Case</button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table id="casesTable">
+                                <thead><tr><th>Case No.</th><th>Case Name</th><th>Client</th><th>Tracking</th><th>Practice</th><th>Court</th><th>Filed?</th><th>Status</th><th>Filing Date</th><th style="text-align:center;">Action</th></tr></thead>
+                                <tbody id="casesBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="casesDetailView" style="display:none;">
+                    <button class="back-btn" id="backToCasesList"><i class="fas fa-arrow-left"></i> Back to Cases</button>
+                    <div class="case-detail-view" id="caseDetailContainer"></div>
+                </div>
+            </div>
+
+            <div id="page-documents" class="page">
+              <div class="flex-between mb-1">
+    <h3><i class="fas fa-file-pdf"></i> Documents <span class="filter-badge" id="docsFilterBadge">All</span></h3>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" id="manageSectionsBtn"><i class="fas fa-sitemap"></i> Manage Sections</button>
+        <button class="btn btn-teal btn-sm" id="uploadFolderBtn"><i class="fas fa-folder-open"></i> Upload Folder</button>
+        <button class="btn btn-primary btn-sm" id="addDocBtn"><i class="fas fa-plus"></i> Add Document</button>
+    </div>
+</div>
+                <div class="permission-note"><i class="fas fa-info-circle"></i> <strong>Clerk access:</strong> You can view all documents and sub-documents, upload new documents, and download existing ones. Deleting is reserved for Admin/Developer.</div>
+                <div class="table-wrap">
+                    <div style="overflow-x:auto;">
+                        <table id="docsTable">
+                            <thead><tr><th>File</th><th>Category</th><th>Matter</th><th>Uploaded</th><th>Size</th><th style="text-align:center;">Actions</th></tr></thead>
+                            <tbody id="docsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-calendar" class="page">
+                <div class="table-wrap">
+                    <h3><i class="fas fa-calendar-day"></i> Case Calendar</h3>
+                    <div class="cal-nav">
+                        <div class="cal-month-year" id="calMonthYear">August 2026</div>
+                        <div class="cal-nav-buttons">
+                            <button id="calPrevMonth"><i class="fas fa-chevron-left"></i> Prev</button>
+                            <button id="calTodayBtn">Today</button>
+                            <button id="calNextMonth">Next <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div id="calendarGrid" class="cal-grid"></div>
+                </div>
+                <div class="table-wrap">
+                    <h3><i class="fas fa-list"></i> Upcoming Events</h3>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Date</th><th>Event</th><th>Matter</th><th>Type</th></tr></thead><tbody id="calendarEventsBody"></tbody></table>
+                    </div>
+                </div>
+                <div class="table-wrap" id="tasksSection">
+                    <h3><i class="fas fa-tasks"></i> Tasks &amp; Activities <span class="filter-badge" id="taskFilterBadge">All Tasks</span></h3>
+                    <div id="addTaskFormContainer" style="background:#f8fafc;border-radius:0.75rem;padding:1rem;margin-bottom:1.25rem;border:1px solid #e9edf2;">
+                        <h4 style="margin-bottom:0.5rem;font-size:0.95rem;"><i class="fas fa-plus-circle" style="color:#3b82f6;"></i> Create New Task</h4>
+                        <form id="addTaskForm">
+                            <div class="form-group"><label>Task Title *</label><input type="text" id="taskTitle" placeholder="e.g. Draft discovery responses" required></div>
+                            <div class="form-group"><label>Case <span class="text-muted">(optional)</span></label><select id="taskCase"><option value="">General (No Case)</option></select></div>
+                            <div class="form-group"><label>Client <span class="text-muted">(optional — auto-filled if case chosen)</span></label><select id="taskClient"><option value="">No specific client</option></select></div>
+                            <div class="form-group"><label>Date *</label><input type="date" id="taskDate" required></div>
+                            <div class="form-group"><label>Time *</label><input type="time" id="taskTime" required></div>
+                            <div class="form-group"><label>Reminder Date</label><input type="date" id="taskReminderDate"></div>
+                            <div class="form-group"><label>Reminder Time</label><input type="time" id="taskReminderTime"></div>
+                            <div class="form-group"><label>Location</label><input type="text" id="taskLocation" placeholder="e.g. Court Room 3"></div>
+                            <div class="form-group"><label>Amount (KES)</label><input type="number" id="taskAmount" placeholder="e.g. 3500" min="0" step="1"></div>
+                            <div class="form-group"><label>Priority *</label><select id="taskPriority" required><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select></div>
+                            <div class="form-group"><label>Status</label><select id="taskStatus"><option value="Scheduled">Scheduled</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select></div>
+                            <div class="form-group full-width"><label>Description</label><textarea id="taskDescription" rows="2" placeholder="Brief description..." style="min-height:45px;"></textarea></div>
+                            <div class="form-group full-width"><label>Attach Document <span class="text-muted">(optional)</span></label><input type="file" id="taskDocument" style="padding:0.35rem;"></div>
+                            <div style="grid-column:1/-1;display:flex;gap:0.5rem;justify-content:flex-end;flex-wrap:wrap;padding-top:0.25rem;">
+                                <button type="reset" class="btn btn-outline btn-sm">Clear</button>
+                                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add Task</button>
+                            </div>
+                        </form>
+                        <div id="taskFormError" style="color:#ef4444;font-size:0.8rem;margin-top:0.5rem;display:none;"></div>
+                        <div class="fs-small text-muted" style="margin-top:0.5rem;"><i class="fas fa-info-circle"></i> Set a <strong>Reminder Date/Time</strong> and the system will alert you when due.</div>
+                    </div>
+                    <div class="flex-between mb-1">
+                        <span class="text-muted fs-small" id="taskCountLabel">0 tasks</span>
+                        <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+                            <label class="text-muted fs-small">Case:</label>
+                            <select id="taskFilterCase" style="padding:0.25rem 0.5rem;border:1px solid #d1d9e6;border-radius:0.4rem;font-size:0.75rem;"><option value="all">All</option><option value="general">General</option></select>
+                            <label class="text-muted fs-small">Status:</label>
+                            <select id="taskFilterStatus" style="padding:0.25rem 0.5rem;border:1px solid #d1d9e6;border-radius:0.4rem;font-size:0.75rem;"><option value="all">All</option><option value="Scheduled">Scheduled</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option></select>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table id="tasksTable">
+                            <thead><tr><th>Title</th><th>Case</th><th>Client</th><th>Date &amp; Time</th><th>Reminder</th><th>Location</th><th>Amount</th><th>Priority</th><th>Status</th><th style="text-align:center;">Actions</th></tr></thead>
+                            <tbody id="tasksBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-targets" class="page">
+                <div class="flex-between mb-1">
+                    <h3><i class="fas fa-bullseye" style="color:#3b82f6;"></i> Practice Area Targets <span class="filter-badge" id="targetsYearBadge">2026</span></h3>
+                    <button class="btn btn-primary btn-sm" id="refreshTargetsBtn"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+                <div class="targets-overview-grid" id="targetsOverview">
+                    <div class="target-overview-card"><div class="ov-label">Total Revenue Target</div><div class="ov-value" id="ovTotalRevenue">KES 0</div><div class="ov-sub" id="ovRevenueProgress">0% achieved</div></div>
+                    <div class="target-overview-card"><div class="ov-label">Total Cases Won Target</div><div class="ov-value" id="ovTotalWon">0</div><div class="ov-sub" id="ovWonProgress">0% achieved</div></div>
+                    <div class="target-overview-card"><div class="ov-label">Total Cases Filed Target</div><div class="ov-value" id="ovTotalFiled">0</div><div class="ov-sub" id="ovFiledProgress">0% achieved</div></div>
+                    <div class="target-overview-card"><div class="ov-label">Active Practices</div><div class="ov-value" id="ovActivePractices">0</div><div class="ov-sub" id="ovPracticesWithTargets">with targets set</div></div>
+                </div>
+                <div class="practice-target-grid" id="practiceTargetGrid"></div>
+            </div>
+
+            <div id="page-payments" class="page">
+                <div class="table-wrap">
+                    <h3><i class="fas fa-receipt"></i> Payment Tracking &amp; Receipts</h3>
+                    <div class="payment-summary-grid" id="paymentSummaryGrid">
+                        <div class="payment-summary-item"><div class="ps-label">Total Paid</div><div class="ps-value" id="psTotalPaid">KES 0</div></div>
+                        <div class="payment-summary-item"><div class="ps-label">Total Outstanding</div><div class="ps-value" id="psTotalOutstanding">KES 0</div></div>
+                        <div class="payment-summary-item"><div class="ps-label">Overdue Invoices</div><div class="ps-value" id="psOverdueCount">0</div></div>
+                        <div class="payment-summary-item"><div class="ps-label">Upcoming Reminders</div><div class="ps-value" id="psRemindersCount">0</div></div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Client</th><th>Invoice #</th><th>Amount</th><th>Date</th><th>Status</th><th>Paid Date</th><th>Balance</th><th style="text-align:center;">Actions</th></tr></thead><tbody id="paymentsBody"></tbody></table>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <h3><i class="fas fa-receipt"></i> Receipts <span class="filter-badge" id="receiptFilterBadge">All</span></h3>
+                    <button class="btn btn-primary btn-sm mb-1" id="generateReceiptBtn"><i class="fas fa-plus"></i> Generate Receipt</button>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Receipt #</th><th>Client</th><th>Invoice #</th><th>Amount</th><th>Date</th><th>Stamp</th><th style="text-align:center;">Actions</th></tr></thead><tbody id="receiptsBody"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-fees" class="page">
+                <div class="targets-overview-grid">
+                    <div class="target-overview-card"><div class="ov-label">Total Agreed Fees</div><div class="ov-value" id="feeTotalAll">KES 0</div><div class="ov-sub">across all clients</div></div>
+                    <div class="target-overview-card"><div class="ov-label">Total Collected</div><div class="ov-value" id="feePaidAll">KES 0</div><div class="ov-sub" id="feePaidPct">0% of total</div></div>
+                    <div class="target-overview-card"><div class="ov-label">Outstanding Balance</div><div class="ov-value" id="feeOutstandingAll">KES 0</div><div class="ov-sub">to be collected</div></div>
+                    <div class="target-overview-card"><div class="ov-label">Due / Overdue Installments</div><div class="ov-value" id="feeDueCount">0</div><div class="ov-sub">need attention</div></div>
+                </div>
+                <div class="table-wrap">
+                    <div class="flex-between mb-1">
+                        <h3><i class="fas fa-hand-holding-usd"></i> Client Fee Agreements</h3>
+                        <button class="btn btn-warning btn-sm" id="sendAllDueRemindersBtn"><i class="fas fa-bell"></i> Send Due Reminders</button>
+                    </div>
+                    <div class="permission-note"><i class="fas fa-info-circle"></i> Each client agrees on a total fee, pays a deposit, and then pays the remaining balance through scheduled installments. Payments recorded here automatically deduct from the balance.</div>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Client</th><th>Total Fees</th><th>Paid</th><th>Balance</th><th>Progress</th><th>Next Due</th><th>Contact</th><th style="text-align:center;">Actions</th></tr></thead><tbody id="feesBody"></tbody></table>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <h3><i class="fas fa-calendar-day"></i> Installment Schedule</h3>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Client</th><th>Installment</th><th>Due Date</th><th>Amount</th><th>Status</th><th style="text-align:center;">Actions</th></tr></thead><tbody id="installmentsBody"></tbody></table>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <h3><i class="fas fa-money-bill-wave"></i> Payment History <span class="filter-badge" id="paymentHistoryBadge">All Payments</span></h3>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Date</th><th>Client</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th><th>Recorded By</th><th style="text-align:center;">Actions</th></tr></thead><tbody id="paymentHistoryBody"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-accidentClients" class="page">
+                <div id="accListView">
+                    <div class="acc-summary-grid">
+                        <div class="acc-summary-card"><div class="as-label">Total Accident Clients</div><div class="as-value" id="accTotalClients">0</div><div class="as-sub">all claims on record</div></div>
+                        <div class="acc-summary-card"><div class="as-label">Total Advances Paid Out</div><div class="as-value" id="accTotalAdvances">KES 0</div><div class="as-sub">handed to clients across all claims</div></div>
+                        <div class="acc-summary-card"><div class="as-label">Total Settled Amount</div><div class="as-value" id="accTotalSettled">KES 0</div><div class="as-sub">from finalized claims</div></div>
+                        <div class="acc-summary-card"><div class="as-label">Balance Recoverable</div><div class="as-value" id="accTotalRecoverable">KES 0</div><div class="as-sub">advances to be recovered from settlements</div></div>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="flex-between mb-1">
+                            <h3><i class="fas fa-car-burst"></i> Accident Claim Clients <span class="filter-badge" id="accFilterBadge">All</span></h3>
+                            <div><span class="text-muted fs-small" id="accCountLabel">0 clients</span>
+                                <button class="btn btn-primary btn-sm" id="addAccidentClientBtn"><i class="fas fa-plus"></i> Add Accident Client</button>
+                            </div>
+                        </div>
+                        <div class="permission-note"><i class="fas fa-info-circle"></i> Accident advances are paid via <strong>M-PESA only</strong> with a mandatory reference number, and are capped at <strong>50% of the firm fee</strong> for each claim (cumulative).</div>
+                        <div style="overflow-x:auto;">
+                            <table id="accClientsTable">
+                                <thead><tr><th>Name</th><th>Claim No.</th><th>Insurer</th><th>Status</th><th>Advances</th><th>Est. Settlement</th><th>Net to Client</th><th>Balance</th><th style="text-align:center;">Actions</th></tr></thead>
+                                <tbody id="accClientsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="accDetailView" style="display:none;">
+                    <button class="back-btn" id="backToAccList"><i class="fas fa-arrow-left"></i> Back to Accident Clients</button>
+                    <div class="case-detail-view" id="accDetailContainer"></div>
+                </div>
+            </div>
+
+            <div id="page-activity" class="page">
+                <div class="table-wrap">
+                    <h3><i class="fas fa-history"></i> System Activity Log</h3>
+                    <div style="margin-bottom:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+                        <input type="text" id="activityFilter" placeholder="Filter by user or action..." style="padding:0.35rem 0.7rem;border:1px solid #d1d9e6;border-radius:0.4rem;font-size:0.8rem;flex:1;min-width:150px;">
+                        <button class="btn btn-sm btn-outline" id="clearActivityFilter"><i class="fas fa-times"></i> Clear</button>
+                        <button class="btn btn-sm btn-danger" id="clearActivityLog"><i class="fas fa-trash"></i> Clear Log</button>
+                    </div>
+                    <div id="activityLogContainer" style="max-height:500px;overflow-y:auto;"><p class="text-muted" style="padding:1rem 0;text-align:center;">No activity logged yet.</p></div>
+                </div>
+            </div>
+
+            <div id="page-users" class="page">
+                <div class="table-wrap">
+                    <h3><i class="fas fa-user-shield"></i> User Management <span class="filter-badge" id="usersFilterBadge">Admin / Developer</span></h3>
+                    <div class="permission-note"><i class="fas fa-info-circle"></i> <strong>Roles & Permissions:</strong> <span class="role-chip admin">Admin</span> – Full system control. <span class="role-chip developer">Developer</span> – Can edit all data and manage users. <span class="role-chip clerk">Clerk</span> – <strong>View only</strong> for Documents, Calendar, Invoices, Cases, and Clients.</div>
+                    <button class="btn btn-primary btn-sm mb-1" id="addUserBtn"><i class="fas fa-plus"></i> Add User</button>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Email</th><th>Role</th><th>Created</th><th>Last Login</th><th style="text-align:center;">Actions</th></tr></thead><tbody id="usersBody"></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-ai" class="page">
+                <div class="two-col">
+                    <div class="table-wrap"><h3><i class="fas fa-robot"></i> Research With AI Lawyer</h3><p><strong>Visit Haki Yako</strong> for AI review.</p><a href="https://www.elma.co.ke/haki.html" target="_blank"><button class="btn" style="margin:0.5rem 0;"><i class="fas fa-cloud-upload-alt"></i> Open Haki Yako</button></a><p style="font-size:0.85rem;color:#64748b;">Haki Yako AI can flag risks, extract dates, and suggest clauses.</p></div>
+                    <div class="table-wrap"><h3><i class="fas fa-magic"></i> Document Generation</h3><p>Generate documents from templates:</p><a href="https://www.kuriakaratuadvocates.com/generator.html" target="_self"><button class="btn" id="openDocGeneratorBtn">
+  <i class="fas fa-file-export"></i> Open Document Generator
+</button></a></div>
+                </div>
+            </div>
+            <div id="page-integrations" class="page">
+                <div class="table-wrap"><h3><i class="fas fa-plug"></i> Connected Services</h3><div style="overflow-x:auto;"><table><tr><th>Service</th><th>Status</th><th>Action</th></tr><tr><td><i class="fas fa-globe" style="color:#0078d4;"></i> Official Website</td><td><span class="badge green">Connected</span></td><td><a href="https://www.elma.co.ke/kuria1.html" target="_blank"><button class="btn btn-outline btn-sm">View</button></a></td></tr><tr><td><i class="fas fa-file-export" style="color:#ea4335;"></i> Document Generator</td><td><span class="badge green">Connected</span></td><td><a href="https://www.vectafunds.com/draft.html" target="_blank"><button class="btn btn-outline btn-sm">View</button></a></td></tr><tr><td><i class="fas fa-balance-scale" style="color:#0078d4;"></i> Haki Yako AI</td><td><span class="badge yellow">Connected</span></td><td><a href="https://www.elma.co.ke/haki.html" target="_blank"><button class="btn btn-sm">View</button></a></td></tr></table></div></div>
+            </div>
+            <div id="page-reports" class="page">
+                <div class="chart-row">
+                    <div class="chart-box"><h4>Revenue by Month</h4><canvas id="reportsChart1" height="150"></canvas></div>
+                    <div class="chart-box"><h4>Cases by Practice Area</h4><canvas id="reportsChart2" height="150"></canvas></div>
+                </div>
+                <div class="table-wrap"><h3><i class="fas fa-file-alt"></i> Monthly Summary</h3><div style="overflow-x:auto;"><table><tr><th>Month</th><th>New Cases</th><th>Closed Cases</th><th>Revenue (KES)</th><th>Billable Hours</th></tr><tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">No data yet.</td></tr></table></div></div>
+            </div>
+
+            <div id="page-settings" class="page">
+                <div class="table-wrap">
+                    <h3><i class="fas fa-image"></i> Company Logo <span class="filter-badge">Used on Invoices &amp; Receipts</span></h3>
+                    <div class="permission-note"><i class="fas fa-info-circle"></i> Upload the firm logo (JPG/PNG). Stored as <strong>base64 in Firestore</strong>.</div>
+                    <div class="logo-preview-box" id="logoPreviewBox">
+                        <img id="logoPreviewImg" src="" alt="Logo preview" style="display:none;">
+                        <div class="logo-preview-empty" id="logoPreviewEmpty">No logo uploaded yet. The default fallback will be used.</div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+                        <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" style="padding:0.35rem;border:1px solid #d1d9e6;border-radius:0.4rem;background:white;max-width:100%;">
+                        <button class="btn btn-primary btn-sm" id="saveLogoBtn"><i class="fas fa-save"></i> Save Logo</button>
+                        <button class="btn btn-danger btn-sm" id="removeLogoBtn"><i class="fas fa-trash"></i> Remove Logo</button>
+                    </div>
+                    <div class="table-wrap" style="border:2px solid #ef4444;">
+                        <h3 style="color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Danger Zone — Permanent Data Deletion</h3>
+                        <div class="permission-note" style="background:#fee2e2;border-left-color:#ef4444;"><i class="fas fa-skull-crossbones" style="color:#ef4444;"></i> <strong>These actions are irreversible.</strong></div>
+                        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fef2f2;border-radius:0.5rem;border:1px solid #fecaca;flex-wrap:wrap;gap:0.5rem;">
+                                <div><strong>Clear Portal Requests</strong><div class="fs-small text-muted">Deletes all docs in <code>portalRequests</code>.</div></div>
+                                <button class="btn btn-danger btn-sm" onclick="purgePortalRequests()"><i class="fas fa-trash"></i> Purge</button>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fef2f2;border-radius:0.5rem;border:1px solid #fecaca;flex-wrap:wrap;gap:0.5rem;">
+                                <div><strong>Clear All Client Portal Accounts</strong><div class="fs-small text-muted">Deletes <code>clientAccounts</code> docs.</div></div>
+                                <button class="btn btn-danger btn-sm" onclick="purgeClientAccounts()"><i class="fas fa-user-slash"></i> Purge</button>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fef2f2;border-radius:0.5rem;border:1px solid #fecaca;flex-wrap:wrap;gap:0.5rem;">
+                                <div><strong>Clear All Staff Users (except yourself)</strong></div>
+                                <button class="btn btn-danger btn-sm" onclick="purgeStaffUsers()"><i class="fas fa-users-slash"></i> Purge</button>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:#fef2f2;border-radius:0.5rem;border:1px solid #fecaca;flex-wrap:wrap;gap:0.5rem;">
+                                <div><strong>Reset Demo (Full Wipe of Auth)</strong></div>
+                                <button class="btn btn-danger btn-sm" onclick="purgeAuthOnly()"><i class="fas fa-bomb"></i> Reset</button>
+                            </div>
+                            <div id="purgeProgress" style="display:none;padding:0.75rem;background:#f0f7ff;border-radius:0.5rem;border:1px solid #dbeafe;">
+                                <div class="fs-small" id="purgeProgressText">Working...</div>
+                                <div class="progress-bar" style="margin-top:0.4rem;"><div id="purgeProgressBar" style="width:0%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <h3><i class="fas fa-cog"></i> Firm Settings</h3>
+                    <form id="firmSettingsForm">
+                        <div class="form-group"><label>Firm Name</label><input type="text" id="settingFirmName" value="Kuria Karatu &amp; Company Advocates"></div>
+                        <div class="form-group"><label>Office Address</label><input type="text" id="settingFirmAddress" value="Ntugi House, 1st floor room number 10, Meru Town"></div>
+                        <div class="form-group"><label>Phone Number</label><input type="text" id="settingFirmPhone" value="0725799752 / 0726780451"></div>
+                        <div class="form-group"><label>Default Billing Rate (KES/hr)</label><input type="number" id="settingFirmRate" value="0"></div>
+                        <div class="form-group"><label>Trust Account Number</label><input type="text" id="settingFirmTrust" value="****-****-1234"></div>
+                        <div class="form-group"><label>Notifications</label><select id="settingFirmNotif"><option>Email &amp; In-app</option><option>Email only</option></select></div>
+                        <button class="btn" type="submit"><i class="fas fa-save"></i> Save Settings</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addClientModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-user-plus"></i> Add New Client</h2><button class="modal-close" onclick="closeModal('addClientModal')">&times;</button></div>
+            <form id="addClientForm">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="clientName" placeholder="e.g. John Doe" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="clientEmail" placeholder="john@example.com"></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="clientPhone" placeholder="+254 712 345 678"></div>
+                <div class="form-group"><label>Address</label><input type="text" id="clientAddress" placeholder="Nairobi, Kenya"></div>
+                <div class="form-group"><label>Notes</label><textarea id="clientNotes" rows="2" placeholder="Any additional information..."></textarea></div>
+                <div class="fee-section">
+                    <h4><i class="fas fa-hand-holding-usd" style="color:#3b82f6;"></i> Fee Agreement &amp; Installments</h4>
+                    <div class="form-group"><label>Total Agreed Case Fees (KES)</label><input type="number" id="clientTotalFees" placeholder="e.g. 100000" min="0" step="1"></div>
+                    <div class="form-group"><label>Initial Deposit (KES)</label><input type="number" id="clientDeposit" placeholder="e.g. 25000" min="0" step="1"></div>
+                    <div class="form-group"><label>Deposit Date</label><input type="date" id="clientDepositDate"></div>
+                    <div class="form-group"><label>Deposit Payment Reference (optional)</label><input type="text" id="clientDepositRef" placeholder="e.g. M-PESA ref"></div>
+                    <div class="form-group"><label>Number of Scheduled Installments</label><input type="number" id="clientInstallmentCount" min="0" max="24" step="1" value="0"></div>
+                    <div id="clientInstallmentsContainer"></div>
+                    <div class="fee-summary-box" id="clientFeeSummary">Enter the agreed fees above to see the installment summary.</div>
+                </div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addClientModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editClientModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-edit"></i> Edit Client</h2><button class="modal-close" onclick="closeModal('editClientModal')">&times;</button></div>
+            <form id="editClientForm">
+                <input type="hidden" id="editClientId">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="editClientName" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="editClientEmail"></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="editClientPhone"></div>
+                <div class="form-group"><label>Address</label><input type="text" id="editClientAddress"></div>
+                <div class="form-group"><label>Notes</label><textarea id="editClientNotes" rows="2"></textarea></div>
+                <div class="fee-section">
+                    <h4><i class="fas fa-hand-holding-usd" style="color:#3b82f6;"></i> Fee Agreement &amp; Installments</h4>
+                    <div class="form-group"><label>Total Agreed Case Fees (KES)</label><input type="number" id="editClientTotalFees" min="0" step="1"></div>
+                    <div class="form-group"><label>Initial Deposit (KES)</label><input type="number" id="editClientDeposit" min="0" step="1"></div>
+                    <div class="form-group"><label>Deposit Date</label><input type="date" id="editClientDepositDate"></div>
+                    <div class="form-group"><label>Deposit Payment Reference</label><input type="text" id="editClientDepositRef"></div>
+                    <div class="form-group"><label>Number of Scheduled Installments</label><input type="number" id="editClientInstallmentCount" min="0" max="24" step="1" value="0"></div>
+                    <div id="editClientInstallmentsContainer"></div>
+                    <div class="fee-summary-box" id="editClientFeeSummary">Adjust the fee agreement above.</div>
+                </div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editClientModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addInvoiceModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-file-invoice"></i> Add Invoice</h2><button class="modal-close" onclick="closeModal('addInvoiceModal')">&times;</button></div>
+            <form id="addInvoiceForm">
+                <div class="form-group"><label>Client *</label><select id="invoiceClient" required><option value="">Select a client...</option></select></div>
+                <div class="form-group"><label>Case (optional)</label><select id="invoiceCase"><option value="">None</option></select></div>
+                <div class="form-group"><label>Amount (KES) *</label><input type="number" id="invoiceAmount" placeholder="e.g. 15000" min="0" step="1" required></div>
+                <div class="form-group"><label>Date *</label><input type="date" id="invoiceDate" required></div>
+                <div class="form-group"><label>Payment Terms (days)</label><input type="number" id="invoiceTerms" placeholder="e.g. 30" min="1" value="30"></div>
+                <div class="form-group"><label>Status</label><select id="invoiceStatus"><option value="Unpaid">Unpaid</option><option value="Paid">Paid</option><option value="Overdue">Overdue</option></select></div>
+                <div class="form-group"><label>Description</label><input type="text" id="invoiceDescription" placeholder="e.g. Legal services for case XYZ"></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addInvoiceModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editInvoiceModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-edit"></i> Edit Invoice</h2><button class="modal-close" onclick="closeModal('editInvoiceModal')">&times;</button></div>
+            <form id="editInvoiceForm">
+                <input type="hidden" id="editInvoiceId">
+                <div class="form-group"><label>Client</label><input type="text" id="editInvoiceClient" disabled style="background:#f1f5f9;"></div>
+                <div class="form-group"><label>Case</label><input type="text" id="editInvoiceCase" disabled style="background:#f1f5f9;"></div>
+                <div class="form-group"><label>Amount (KES) *</label><input type="number" id="editInvoiceAmount" min="0" step="1" required></div>
+                <div class="form-group"><label>Date *</label><input type="date" id="editInvoiceDate" required></div>
+                <div class="form-group"><label>Payment Terms (days)</label><input type="number" id="editInvoiceTerms" min="1" value="30"></div>
+                <div class="form-group"><label>Status</label><select id="editInvoiceStatus"><option value="Unpaid">Unpaid</option><option value="Paid">Paid</option><option value="Overdue">Overdue</option></select></div>
+                <div class="form-group"><label>Description</label><input type="text" id="editInvoiceDescription"></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editInvoiceModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="viewInvoiceModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-eye"></i> Invoice Details</h2>
+                <div>
+                    <button class="btn btn-primary btn-sm" onclick="printInvoiceFromView()"><i class="fas fa-print"></i> Print</button>
+                    <button class="btn btn-sm" style="background:#25D366;color:#fff;" onclick="shareInvoiceFromView()"><i class="fab fa-whatsapp"></i></button>
+                    <button class="btn btn-sm" style="background:#ea4335;color:#fff;" onclick="emailInvoiceFromView()"><i class="fas fa-envelope"></i></button>
+                    <button class="btn btn-sm" style="background:#0f172a;color:#fff;" onclick="downloadInvoiceFromView()"><i class="fas fa-download"></i></button>
+                    <button class="modal-close" onclick="closeModal('viewInvoiceModal')">&times;</button>
+                </div>
+            </div>
+            <div id="viewInvoiceContent" class="print-invoice-content"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="printInvoiceModal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-print"></i> Invoice / Receipt Preview</h2>
+                <div class="print-actions">
+                    <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                    <button class="modal-close" onclick="closeModal('printInvoiceModal')">&times;</button>
+                </div>
+            </div>
+            <div class="print-invoice-content" id="printInvoiceContent"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addCaseModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-plus-circle"></i> Add New Case</h2><button class="modal-close" onclick="closeModal('addCaseModal')">&times;</button></div>
+            <form id="addCaseForm">
+                <div class="form-group"><label>Case Number *</label><input type="text" id="caseNo" placeholder="e.g. CIV/01/2026" required></div>
+                <div class="form-group"><label>Case Name *</label><input type="text" id="caseName" placeholder="e.g. Smith v. Acme" required></div>
+                <div class="form-group"><label>Client</label><select id="caseClientSelect"><option value="">Select existing client...</option></select><input type="text" id="caseClient" placeholder="Or type new client name" style="margin-top:0.3rem;"></div>
+                <div class="form-group"><label>Practice Area *</label><select id="caseArea" required><option value="">Select...</option><option value="ELCs">ELCs</option><option value="Criminal">Criminal</option><option value="Succession">Succession</option><option value="Civil">Civil</option><option value="Tribunal">Tribunal</option><option value="Divorce">Divorce</option><option value="Conveyancing">Conveyancing</option><option value="Running Down">Running Down</option><option value="Children">Children</option><option value="Employment">Employment</option><option value="Kadhi">Kadhi</option></select></div>
+                <div class="form-group"><label>Court Type</label><select id="caseCourtType"><option value="">N/A</option><option value="Magistrate">Magistrate</option><option value="High Court">High Court</option><option value="Tribunal">Tribunal</option><option value="Kadhi">Kadhi</option></select></div>
+                <div class="form-group"><label>Status *</label><select id="caseStatus" required><option value="Active">Active</option><option value="Pending">Pending</option><option value="Closed">Closed</option></select></div>
+                <div class="form-group"><label>Filing Date *</label><input type="date" id="caseFilingDate" required></div>
+                <div class="form-group"><label>Tracking No.</label><input type="text" id="caseTracking" placeholder="e.g. TRK-001-2026"></div>
+                <div class="form-group"><label>Citation</label><input type="text" id="caseCitation" placeholder="e.g. [2026] eKLR 456"></div>
+                <div class="form-group"><label>Partner</label><input type="text" id="casePartner" placeholder="Partner name"></div>
+                <div class="form-group"><label>Case Agreed Fee (KES) <span class="text-muted fs-small">— recognised as revenue only when filed</span></label><input type="number" id="caseFee" placeholder="e.g. 100000" min="0" step="1"></div>
+                <div class="form-group"><label>Court Fees (KES) <span class="text-muted fs-small">— deducted from firm fee</span></label><input type="number" id="caseCourtFees" placeholder="e.g. 5000" min="0" step="1"></div>
+                <div class="form-group"><label style="display:flex;align-items:center;gap:0.4rem;"><input type="checkbox" id="caseFiled" style="width:auto;"> <span>Case has been Filed (mark filed to recognise fee as revenue)</span></label></div>
+                <div class="form-group" id="caseFiledDateWrap" style="display:none;"><label>Filed Date</label><input type="date" id="caseFiledDate"></div>
+                <div class="form-group"><label>Summary</label><textarea id="caseSummary" rows="3" placeholder="Brief case summary"></textarea></div>
+                <div class="form-group"><label>Court Decision</label><select id="caseDecision"><option value="Pending">Pending</option><option value="In our favour">In our favour</option><option value="Against us">Against us</option></select></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addCaseModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Case</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editCaseModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-edit"></i> Edit Case</h2><button class="modal-close" onclick="closeModal('editCaseModal')">&times;</button></div>
+            <form id="editCaseForm">
+                <input type="hidden" id="editCaseId">
+                <div class="form-group"><label>Case Number *</label><input type="text" id="editCaseNo" required></div>
+                <div class="form-group"><label>Case Name *</label><input type="text" id="editCaseName" required></div>
+                <div class="form-group"><label>Client</label><select id="editCaseClientSelect"><option value="">Select existing client...</option></select><input type="text" id="editCaseClient" placeholder="Or type new client name" style="margin-top:0.3rem;"></div>
+                <div class="form-group"><label>Practice Area *</label><select id="editCaseArea" required><option value="">Select...</option><option value="ELCs">ELCs</option><option value="Criminal">Criminal</option><option value="Succession">Succession</option><option value="Civil">Civil</option><option value="Tribunal">Tribunal</option><option value="Divorce">Divorce</option><option value="Conveyancing">Conveyancing</option><option value="Running Down">Running Down</option><option value="Children">Children</option><option value="Employment">Employment</option><option value="Kadhi">Kadhi</option></select></div>
+                <div class="form-group"><label>Court Type</label><select id="editCaseCourtType"><option value="">N/A</option><option value="Magistrate">Magistrate</option><option value="High Court">High Court</option><option value="Tribunal">Tribunal</option><option value="Kadhi">Kadhi</option></select></div>
+                <div class="form-group"><label>Status *</label><select id="editCaseStatus" required><option value="Active">Active</option><option value="Pending">Pending</option><option value="Closed">Closed</option></select></div>
+                <div class="form-group"><label>Filing Date *</label><input type="date" id="editCaseFilingDate" required></div>
+                <div class="form-group"><label>Tracking No.</label><input type="text" id="editCaseTracking" placeholder="e.g. TRK-001-2026"></div>
+                <div class="form-group"><label>Citation</label><input type="text" id="editCaseCitation" placeholder="e.g. [2026] eKLR 456"></div>
+                <div class="form-group"><label>Partner</label><input type="text" id="editCasePartner" placeholder="Partner name"></div>
+                <div class="form-group"><label>Case Agreed Fee (KES)</label><input type="number" id="editCaseFee" min="0" step="1"></div>
+                <div class="form-group"><label>Court Fees (KES) <span class="text-muted fs-small">— deducted from firm fee</span></label><input type="number" id="editCaseCourtFees" min="0" step="1"></div>
+                <div class="form-group"><label style="display:flex;align-items:center;gap:0.4rem;"><input type="checkbox" id="editCaseFiled" style="width:auto;"> <span>Case has been Filed</span></label></div>
+                <div class="form-group" id="editCaseFiledDateWrap" style="display:none;"><label>Filed Date</label><input type="date" id="editCaseFiledDate"></div>
+                <div class="form-group"><label>Summary</label><textarea id="editCaseSummary" rows="3" placeholder="Brief case summary"></textarea></div>
+                <div class="form-group"><label>Court Decision</label><select id="editCaseDecision"><option value="Pending">Pending</option><option value="In our favour">In our favour</option><option value="Against us">Against us</option></select></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editCaseModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Case</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="markCaseFiledModal">
+        <div class="modal" style="max-width:520px;">
+            <div class="modal-header"><h2><i class="fas fa-stamp"></i> Mark Case as Filed</h2><button class="modal-close" onclick="closeModal('markCaseFiledModal')">&times;</button></div>
+            <form id="markCaseFiledForm">
+                <input type="hidden" id="markFiledCaseId">
+                <div class="form-group"><label>Case</label><input type="text" id="markFiledCaseName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="permission-note"><i class="fas fa-info-circle"></i> Filing a case recognises its agreed fee as <strong>earned revenue</strong> on the finance panel.</div>
+                <div class="form-group"><label>Case Agreed Fee (KES) *</label><input type="number" id="markFiledCaseFee" min="0" step="1" required></div>
+                <div class="form-group"><label>Court Fees (KES)</label><input type="number" id="markFiledCourtFees" min="0" step="1" value="0"></div>
+                <div class="form-group"><label>Filed Date *</label><input type="date" id="markFiledDate" required></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('markCaseFiledModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Confirm Filing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addDocModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-plus-circle"></i> Add Document</h2><button class="modal-close" onclick="closeModal('addDocModal')">&times;</button></div>
+            <form id="addDocForm">
+                <div class="form-group"><label>Select File *</label><input type="file" id="docFile" required></div>
+        <div class="form-group"><label>Section *</label><select id="docCategory" required onchange="onDocCategoryChange()"><option value="">Select...</option></select></div>
+<div class="form-group"><label>Sub-Section <span class="text-muted">(optional)</span></label><select id="docSubCategory"><option value="">General</option></select></div>
+                <div class="form-group"><label>Matter (Case) *</label><select id="docMatter" required><option value="">Select a case...</option></select></div>
+                <div class="form-group"><label>Uploaded Date *</label><input type="date" id="docUploaded" required></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addDocModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitDocBtn"><i class="fas fa-plus"></i> Add Document</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="generateReceiptModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-receipt"></i> Generate Electronic Receipt</h2><button class="modal-close" onclick="closeModal('generateReceiptModal')">&times;</button></div>
+            <form id="generateReceiptForm">
+                <div class="form-group"><label>Invoice *</label><select id="receiptInvoiceSelect" required><option value="">Select an unpaid invoice...</option></select></div>
+                <div class="form-group"><label>Receipt Date *</label><input type="date" id="receiptDate" required></div>
+                <div class="form-group"><label>Payment Reference</label><input type="text" id="receiptRef" placeholder="e.g. M-PESA or Bank Ref"></div>
+                <div class="form-group"><label>Notes</label><textarea id="receiptNotes" rows="2" placeholder="Payment notes..."></textarea></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('generateReceiptModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-stamp"></i> Generate &amp; Stamp</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="recordPaymentModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-money-bill-wave"></i> Record Fee Payment</h2><button class="modal-close" onclick="closeModal('recordPaymentModal')">&times;</button></div>
+            <form id="recordPaymentForm">
+                <input type="hidden" id="paymentClientId">
+                <div class="form-group"><label>Client</label><input type="text" id="paymentClientName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="form-group" style="background:#f0f7ff;padding:0.6rem;border-radius:0.5rem;border:1px solid #dbeafe;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;font-size:0.8rem;">
+                        <div><span class="text-muted">Agreed Total</span><br><strong id="paymentTotalFees">KES 0</strong></div>
+                        <div><span class="text-muted">Already Paid</span><br><strong id="paymentAlreadyPaid" style="color:#22c55e;">KES 0</strong></div>
+                        <div><span class="text-muted">Balance</span><br><strong id="paymentBalance" style="color:#ef4444;">KES 0</strong></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Amount Paid (KES) *</label>
+                    <input type="number" id="paymentAmount" placeholder="e.g. 25000" min="1" step="1" required>
+                    <div class="fs-small text-muted" style="margin-top:0.2rem;"><i class="fas fa-info-circle"></i> <a href="javascript:void(0)" onclick="fillFullBalance()" style="color:#3b82f6;">Fill full balance</a></div>
+                </div>
+                <div class="form-group"><label>Payment Date *</label><input type="date" id="paymentDate" required></div>
+                <div class="form-group"><label>Payment Method *</label><select id="paymentMethod" required><option value="M-PESA">M-PESA</option><option value="Bank Transfer">Bank Transfer</option><option value="Cash">Cash</option><option value="Cheque">Cheque</option><option value="Card">Card</option><option value="Other">Other</option></select></div>
+                <div class="form-group"><label>Reference / Transaction Code</label><input type="text" id="paymentReference" placeholder="e.g. QK12345678"></div>
+                <div class="form-group"><label>Notes</label><textarea id="paymentNotes" rows="2"></textarea></div>
+                <div class="form-group" style="background:#f8fafc;padding:0.5rem;border-radius:0.5rem;border:1px solid #e9edf2;">
+                    <label style="display:flex;align-items:center;gap:0.4rem;font-weight:500;margin-bottom:0;"><input type="checkbox" id="paymentLinkInstallment" style="width:auto;margin:0;"> <span>Mark the next due installment as paid with this payment (if applicable)</span></label>
+                </div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('recordPaymentModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Record Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addChargeModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-plus"></i> Add Charge / Invoice Line</h2><button class="modal-close" onclick="closeModal('addChargeModal')">&times;</button></div>
+            <form id="addChargeForm">
+                <input type="hidden" id="chargeClientId">
+                <div class="form-group"><label>Client</label><input type="text" id="chargeClientName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="form-group"><label>Charge Description *</label><input type="text" id="chargeDescription" placeholder="e.g. Court filing fee" required></div>
+                <div class="form-group"><label>Amount (KES) *</label><input type="number" id="chargeAmount" min="1" step="1" required></div>
+                <div class="form-group"><label>Charge Date *</label><input type="date" id="chargeDate" required></div>
+                <div class="form-group"><label>Apply to which case (optional)</label><select id="chargeCase"><option value="">None / General</option></select></div>
+                <div class="form-group"><label style="display:flex;align-items:center;gap:0.4rem;font-weight:500;"><input type="checkbox" id="chargeAddToFeeTotal" style="width:auto;margin:0;"> <span>Add this charge to the client's agreed total fees</span></label></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addChargeModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Charge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addExpenseModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-receipt"></i> Add Expense</h2><button class="modal-close" onclick="closeModal('addExpenseModal')">&times;</button></div>
+            <form id="addExpenseForm">
+                <input type="hidden" id="expenseClientId">
+                <div class="form-group"><label>Client</label><input type="text" id="expenseClientName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="form-group"><label>Expense Title *</label><input type="text" id="expenseTitle" placeholder="e.g. Filing fee, Transport, Search fee" required></div>
+                <div class="form-group"><label>Amount (KES) *</label><input type="number" id="expenseAmount" min="1" step="1" required></div>
+                <div class="form-group"><label>Expense Type *</label>
+                    <select id="expenseType" required>
+                        <option value="client">Client-side expense (paid on client's behalf)</option>
+                        <option value="firm">Firm-side expense (firm's own cost)</option>
+                        <option value="court">Court Fee (deducted from firm fee)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Category</label>
+                    <select id="expenseCategory">
+                        <option value="General">General</option>
+                        <option value="Court Fee">Court Fee</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Filing">Filing</option>
+                        <option value="Search">Search</option>
+                        <option value="Photocopy">Photocopy</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Date *</label><input type="date" id="expenseDate" required></div>
+                <div class="form-group"><label>Linked Case (optional)</label><select id="expenseCase"><option value="">None / General</option></select></div>
+                <div class="form-group"><label>Notes</label><textarea id="expenseNotes" rows="2"></textarea></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addExpenseModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="requestDocumentModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-file-circle-plus"></i> Request Document from Client</h2><button class="modal-close" onclick="closeModal('requestDocumentModal')">&times;</button></div>
+            <form id="requestDocumentForm">
+                <input type="hidden" id="requestDocClientId">
+                <div class="form-group"><label>Client</label><input type="text" id="requestDocClientName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="form-group"><label>Document Title *</label><input type="text" id="requestDocTitle" placeholder="e.g. Copy of ID, Title Deed" required></div>
+                <div class="form-group"><label>Description / Instructions</label><textarea id="requestDocDescription" rows="2" placeholder="Describe what exactly is needed..."></textarea></div>
+                <div class="form-group"><label>Due Date</label><input type="date" id="requestDocDueDate"></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('requestDocumentModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="attachClientDocModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-paperclip"></i> Attach Document to Client</h2><button class="modal-close" onclick="closeModal('attachClientDocModal')">&times;</button></div>
+            <form id="attachClientDocForm">
+                <input type="hidden" id="attachDocClientId">
+                <div class="form-group"><label>Client</label><input type="text" id="attachDocClientName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="form-group"><label>Select File *</label><input type="file" id="attachDocFile" required></div>
+                <div class="form-group"><label>Description</label><input type="text" id="attachDocDescription" placeholder="e.g. Signed retainer, Court order copy"></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('attachClientDocModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Attach</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="uploadRequestedDocModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-cloud-upload-alt"></i> Upload Requested Document</h2><button class="modal-close" onclick="closeModal('uploadRequestedDocModal')">&times;</button></div>
+            <form id="uploadRequestedDocForm">
+                <input type="hidden" id="uploadReqClientId">
+                <input type="hidden" id="uploadReqId">
+                <div class="form-group"><label>Request</label><input type="text" id="uploadReqTitle" disabled style="background:#f1f5f9;"></div>
+                <div class="form-group"><label>Select File *</label><input type="file" id="uploadReqFile" required></div>
+                <div class="form-group"><label>Notes</label><textarea id="uploadReqNotes" rows="2"></textarea></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;margin-top:0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('uploadRequestedDocModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Mark as Received</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addAccidentClientModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-car-burst"></i> Add Accident Claim Client</h2><button class="modal-close" onclick="closeModal('addAccidentClientModal')">&times;</button></div>
+            <form id="addAccidentClientForm">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="accName" required></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="accPhone" placeholder="+254 7XX XXX XXX"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="accEmail" placeholder="client@example.com"></div>
+                <div class="form-group"><label>ID Number</label><input type="text" id="accIdNumber"></div>
+                <div class="form-group"><label>Address</label><input type="text" id="accAddress"></div>
+                <div class="form-group"><label>Claim Number *</label><input type="text" id="accClaimNumber" required></div>
+                <div class="form-group"><label>Insurer</label><input type="text" id="accInsurer"></div>
+                <div class="form-group"><label>Policy Number</label><input type="text" id="accPolicyNumber"></div>
+                <div class="form-group"><label>Accident Date</label><input type="date" id="accAccidentDate"></div>
+                <div class="form-group"><label>Accident Location</label><input type="text" id="accAccidentLocation"></div>
+                <div class="form-group"><label>Advocate (Handling Lawyer)</label><input type="text" id="accAdvocate"></div>
+                <div class="form-group"><label>Claim Status *</label><select id="accClaimStatus" required><option value="Ongoing" selected>Ongoing</option><option value="Negotiation">Negotiation</option><option value="Settled">Settled</option><option value="Closed">Closed</option></select></div>
+                <div class="form-group"><label>Estimated Settlement (KES)</label><input type="number" id="accEstimatedSettlement" min="0" step="1"></div>
+                <div class="form-group"><label>Date of Settlement</label><input type="date" id="accDateOfSettlement"></div>
+                <div class="form-group"><label>Settlement Amount (KES)</label><input type="number" id="accSettlementAmount" min="0" step="1"></div>
+                <div class="form-group"><label>Firm Fee (KES)</label><input type="number" id="accFirmFee" min="0" step="1"></div>
+                <div class="form-group"><label>Notes</label><textarea id="accNotes" rows="2"></textarea></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addAccidentClientModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Accident Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editAccidentClientModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-edit"></i> Edit Accident Claim Client</h2><button class="modal-close" onclick="closeModal('editAccidentClientModal')">&times;</button></div>
+            <form id="editAccidentClientForm">
+                <input type="hidden" id="editAccId">
+                <div class="form-group"><label>Full Name *</label><input type="text" id="editAccName" required></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="editAccPhone"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="editAccEmail"></div>
+                <div class="form-group"><label>ID Number</label><input type="text" id="editAccIdNumber"></div>
+                <div class="form-group"><label>Address</label><input type="text" id="editAccAddress"></div>
+                <div class="form-group"><label>Claim Number *</label><input type="text" id="editAccClaimNumber" required></div>
+                <div class="form-group"><label>Insurer</label><input type="text" id="editAccInsurer"></div>
+                <div class="form-group"><label>Policy Number</label><input type="text" id="editAccPolicyNumber"></div>
+                <div class="form-group"><label>Accident Date</label><input type="date" id="editAccAccidentDate"></div>
+                <div class="form-group"><label>Accident Location</label><input type="text" id="editAccAccidentLocation"></div>
+                <div class="form-group"><label>Advocate (Handling Lawyer)</label><input type="text" id="editAccAdvocate"></div>
+                <div class="form-group"><label>Claim Status *</label><select id="editAccClaimStatus" required><option value="Ongoing">Ongoing</option><option value="Negotiation">Negotiation</option><option value="Settled">Settled</option><option value="Closed">Closed</option></select></div>
+                <div class="form-group"><label>Estimated Settlement (KES)</label><input type="number" id="editAccEstimatedSettlement" min="0" step="1"></div>
+                <div class="form-group"><label>Date of Settlement</label><input type="date" id="editAccDateOfSettlement"></div>
+                <div class="form-group"><label>Settlement Amount (KES)</label><input type="number" id="editAccSettlementAmount" min="0" step="1"></div>
+                <div class="form-group"><label>Firm Fee (KES)</label><input type="number" id="editAccFirmFee" min="0" step="1"></div>
+                <div class="form-group"><label>Notes</label><textarea id="editAccNotes" rows="2"></textarea></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editAccidentClientModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addAdvanceModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-money-bill-transfer"></i> Record Advance to Client</h2><button class="modal-close" onclick="closeModal('addAdvanceModal')">&times;</button></div>
+            <form id="addAdvanceForm">
+                <input type="hidden" id="advanceClientId">
+                <div class="form-group"><label>Client</label><input type="text" id="advanceClientName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="permission-note" style="background:#fef3c7;border-left-color:#f59e0b;margin-bottom:0.75rem;">
+                    <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
+                    <strong>Policy:</strong> Advances are <strong>M-PESA only</strong> with a mandatory reference. Cumulative advances <strong>cannot exceed 50% of the firm fee</strong> for this claim. Available room: <strong id="advanceRoomText">KES 0</strong>
+                </div>
+                <div class="form-group"><label>Amount (KES) *</label><input type="number" id="advanceAmount" min="1" step="1" required placeholder="e.g. 10000"></div>
+                <div class="form-group"><label>Date *</label><input type="date" id="advanceDate" required></div>
+                <div class="form-group"><label>Purpose *</label>
+                    <select id="advancePurpose" required>
+                        <option value="Medical Expenses">Medical Expenses</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Living Expenses">Living Expenses</option>
+                        <option value="Funeral Expenses">Funeral Expenses</option>
+                        <option value="School Fees">School Fees</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Received By (Client / Signatory) *</label><input type="text" id="advanceReceivedBy" required></div>
+                <div class="form-group"><label>Witness (Staff Member) *</label><input type="text" id="advanceWitness" required></div>
+                <div class="form-group"><label>Payment Method *</label>
+                    <select id="advanceMethod" required disabled>
+                        <option value="M-PESA" selected>M-PESA (only accepted method)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>M-PESA Reference / Transaction Code *</label><input type="text" id="advanceReference" required placeholder="e.g. QK12345678"></div>
+                <div class="form-group"><label>Notes</label><textarea id="advanceNotes" rows="2"></textarea></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addAdvanceModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Record Advance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editAdvanceModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-edit"></i> Edit Advance</h2><button class="modal-close" onclick="closeModal('editAdvanceModal')">&times;</button></div>
+            <form id="editAdvanceForm">
+                <input type="hidden" id="editAdvanceClientId">
+                <input type="hidden" id="editAdvanceId">
+                <div class="form-group"><label>Client</label><input type="text" id="editAdvanceClientName" disabled style="background:#f1f5f9;font-weight:600;"></div>
+                <div class="form-group"><label>Amount (KES) *</label><input type="number" id="editAdvanceAmount" min="1" step="1" required></div>
+                <div class="form-group"><label>Date *</label><input type="date" id="editAdvanceDate" required></div>
+                <div class="form-group"><label>Purpose *</label>
+                    <select id="editAdvancePurpose" required>
+                        <option value="Medical Expenses">Medical Expenses</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Living Expenses">Living Expenses</option>
+                        <option value="Funeral Expenses">Funeral Expenses</option>
+                        <option value="School Fees">School Fees</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Received By *</label><input type="text" id="editAdvanceReceivedBy" required></div>
+                <div class="form-group"><label>Witness (Staff Member) *</label><input type="text" id="editAdvanceWitness" required></div>
+                <div class="form-group"><label>Method *</label>
+                    <select id="editAdvanceMethod" required disabled>
+                        <option value="M-PESA" selected>M-PESA (only accepted method)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>M-PESA Reference *</label><input type="text" id="editAdvanceReference" required></div>
+                <div class="form-group"><label>Notes</label><textarea id="editAdvanceNotes" rows="2"></textarea></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editAdvanceModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="viewAccStatementModal">
+        <div class="modal" style="max-width:820px;">
+            <div class="modal-header"><h2><i class="fas fa-file-invoice-dollar"></i> Statement of Advances</h2>
+                <div><button class="btn btn-primary btn-sm" onclick="printAccStatementModal()"><i class="fas fa-print"></i> Print</button><button class="modal-close" onclick="closeModal('viewAccStatementModal')">&times;</button></div>
+            </div>
+            <div id="accStatementContent"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editTargetsModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header"><h2><i class="fas fa-bullseye"></i> Set Targets for <span id="targetModalPracticeName">Practice</span></h2><button class="modal-close" onclick="closeModal('editTargetsModal')">&times;</button></div>
+            <form id="editTargetsForm">
+                <input type="hidden" id="targetModalPracticeId">
+                <div class="target-form-grid">
+                    <div class="form-group"><label>Revenue Target (KES)</label><input type="number" id="targetRevenue" placeholder="e.g. 500000" min="0" step="1000"></div>
+                    <div class="form-group"><label>Cases Won Target</label><input type="number" id="targetWon" placeholder="e.g. 12" min="0" step="1"></div>
+                    <div class="form-group"><label>Cases Filed Target</label><input type="number" id="targetFiled" placeholder="e.g. 20" min="0" step="1"></div>
+                    <div class="form-group"><label>Active Cases Target</label><input type="number" id="targetActive" placeholder="e.g. 15" min="0" step="1"></div>
+                    <div class="form-group full-width" style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;padding-top:0.5rem;border-top:1px solid #e9edf2;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('editTargetsModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Targets</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-user-plus"></i> Add New User</h2><button class="modal-close" onclick="closeModal('addUserModal')">&times;</button></div>
+            <form id="addUserForm">
+                <div class="form-group"><label>Email *</label><input type="email" id="newUserEmail" placeholder="user@example.com" required></div>
+                <div class="form-group"><label>Password *</label><input type="password" id="newUserPassword" placeholder="Enter password" required minlength="6"></div>
+                <div class="form-group"><label>Role *</label><select id="newUserRole" required><option value="admin">Admin (Full Access)</option><option value="developer">Developer (Edit + User Mgmt)</option><option value="clerk">Clerk (View only)</option></select></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('addUserModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editUserModal">
+        <div class="modal">
+            <div class="modal-header"><h2><i class="fas fa-edit"></i> Edit User</h2><button class="modal-close" onclick="closeModal('editUserModal')">&times;</button></div>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group"><label>Email</label><input type="email" id="editUserEmail" disabled style="background:#f1f5f9;"></div>
+                <div class="form-group"><label>New Password (leave blank to keep current)</label><input type="password" id="editUserPassword" placeholder="New password..."></div>
+                <div class="form-group"><label>Role *</label><select id="editUserRole" required><option value="admin">Admin (Full Access)</option><option value="developer">Developer (Edit + User Mgmt)</option><option value="clerk">Clerk (View only)</option></select></div>
+                <div style="display:flex;gap:0.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editUserModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- eFiling Portal Modal -->
+<div class="modal-overlay" id="efilingModal">
+    <div class="modal" style="max-width:96vw;width:96vw;height:92vh;max-height:92vh;display:flex;flex-direction:column;">
+        <div class="modal-header" style="flex-shrink:0;">
+            <h2><i class="fas fa-gavel"></i> Kenya Judiciary eFiling Portal</h2>
+            <div>
+                <a class="btn btn-outline btn-sm" href="https://efiling.court.go.ke" target="_blank" rel="noopener">
+                    <i class="fas fa-external-link-alt"></i> Open in New Tab
+                </a>
+                <button class="modal-close" onclick="closeModal('efilingModal')">&times;</button>
+            </div>
+        </div>
+        <div style="flex:1;overflow:hidden;border-radius:0.5rem;border:1px solid #e9edf2;background:#f8fafc;position:relative;">
+            <div id="efilingFallback" style="display:none;position:absolute;inset:0;padding:2rem;text-align:center;color:#475569;overflow:auto;">
+                <i class="fas fa-shield-halved" style="font-size:3rem;color:#94a3b8;"></i>
+                <h3 style="margin-top:1rem;">The eFiling portal blocks embedding</h3>
+                <p style="margin-top:0.5rem;max-width:500px;margin-left:auto;margin-right:auto;">Kenya's eFiling site sets security headers that prevent it from loading inside another app. Click below to open it in a new tab — your session in this app will be preserved.</p>
+                <a class="btn btn-primary" href="https://efiling.court.go.ke" target="_blank" rel="noopener" style="margin-top:1rem;padding:0.6rem 1.4rem;">
+                    <i class="fas fa-external-link-alt"></i> Open eFiling in New Tab
+                </a>
+            </div>
+            <iframe id="efilingIframe" src="about:blank" style="width:100%;height:100%;border:none;background:#fff;" referrerpolicy="no-referrer" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Manage Document Sections Modal -->
+<div class="modal-overlay" id="manageSectionsModal">
+    <div class="modal" style="max-width:720px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-sitemap"></i> Manage Document Sections</h2>
+            <button class="modal-close" onclick="closeModal('manageSectionsModal')">&times;</button>
+        </div>
+        <div class="permission-note"><i class="fas fa-info-circle"></i> Add, rename, reorder or delete top-level sections and their sub-sections. Changes appear live in the sidebar and in the Add Document form.</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+            <input type="text" id="newSectionName" placeholder="New section name (e.g. Insurance Claims)" style="flex:1;min-width:200px;padding:0.5rem 0.7rem;border:1px solid #d1d9e6;border-radius:0.5rem;font-size:0.85rem;">
+            <button class="btn btn-primary btn-sm" onclick="addTopSection()"><i class="fas fa-plus"></i> Add Section</button>
+        </div>
+        <div id="sectionsEditorList" style="max-height:60vh;overflow-y:auto;border:1px solid #e9edf2;border-radius:0.5rem;padding:0.5rem;background:#fafcfd;"></div>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.75rem;">
+            <button class="btn btn-outline" onclick="closeModal('manageSectionsModal')">Close</button>
+        </div>
+    </div>
+</div>
+<!-- Edit Document Classification Modal -->
+<div class="modal-overlay" id="editDocClassifyModal">
+    <div class="modal" style="max-width:500px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-tags"></i> Change Document Classification</h2>
+            <button class="modal-close" onclick="closeModal('editDocClassifyModal')">&times;</button>
+        </div>
+        <input type="hidden" id="editDocClassifyId">
+        <div class="form-group">
+            <label>File</label>
+            <input type="text" id="editDocClassifyName" disabled style="background:#f1f5f9;font-weight:600;">
+        </div>
+        <div class="form-group">
+            <label>Section *</label>
+            <select id="editDocClassifySection" onchange="onEditDocSectionChange()" required style="width:100%;padding:0.5rem;border:1px solid #d1d9e6;border-radius:0.5rem;"></select>
+        </div>
+        <div class="form-group">
+            <label>Sub-Section <span class="text-muted">(optional)</span></label>
+            <select id="editDocClassifySub" style="width:100%;padding:0.5rem;border:1px solid #d1d9e6;border-radius:0.5rem;">
+                <option value="">General</option>
+            </select>
+        </div>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('editDocClassifyModal')">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="saveEditedDocClassify()"><i class="fas fa-save"></i> Save</button>
+        </div>
+    </div>
+</div>
+<!-- Folder Upload Modal -->
+<div class="modal-overlay" id="folderUploadModal">
+    <div class="modal" style="max-width:1000px;width:95vw;">
+        <div class="modal-header">
+            <h2><i class="fas fa-folder-open"></i> Folder / Bulk Document Upload</h2>
+            <button class="modal-close" onclick="closeModal('folderUploadModal')">&times;</button>
+        </div>
+        <div class="permission-note"><i class="fas fa-info-circle"></i> Choose a folder. All files share the <strong>Matter</strong> and default <strong>Section</strong> below. The <strong>Sub-Section</strong> is auto-detected from each filename and can be overridden per row.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+            <div class="form-group" style="margin:0;">
+                <label>Matter / Case *</label>
+                <select id="folderMatter" required style="width:100%;padding:0.5rem;border:1px solid #d1d9e6;border-radius:0.5rem;"></select>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Default Section *</label>
+                <select id="folderCategory" required style="width:100%;padding:0.5rem;border:1px solid #d1d9e6;border-radius:0.5rem;"></select>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Uploaded Date *</label>
+                <input type="date" id="folderUploadedDate" required style="width:100%;padding:0.5rem;border:1px solid #d1d9e6;border-radius:0.5rem;">
+            </div>
+        </div>
+        <div style="margin-bottom:0.75rem;">
+            <input type="file" id="folderFileInput" webkitdirectory directory multiple style="padding:0.5rem;border:2px dashed #d1d9e6;border-radius:0.5rem;background:#f8fafc;width:100%;cursor:pointer;">
+        </div>
+<div id="folderReviewWrap" style="display:none;">
+    <div class="flex-between mb-1">
+        <strong id="folderReviewCount">0 files ready</strong>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="bulkAssignSectionPrompt()"><i class="fas fa-layer-group"></i> Bulk Set Section</button>
+            <button class="btn btn-outline btn-sm" onclick="bulkAssignSubPrompt()"><i class="fas fa-layer-group"></i> Bulk Set Sub-Section</button>
+            <button class="btn btn-outline btn-sm" onclick="reAutoDetectAll()"><i class="fas fa-wand-magic-sparkles"></i> Re-Detect All</button>
+        </div>
+    </div>
+    <div class="permission-note" style="margin-bottom:0.5rem;">
+        <i class="fas fa-info-circle"></i> Choose the <strong>Section</strong> and <strong>Sub-Section</strong> for each file. Auto-detected values are pre-filled — change any row you want. New sub-sections typed below are created automatically on upload.
+    </div>
+    <div style="max-height:50vh;overflow:auto;border:1px solid #e9edf2;border-radius:0.5rem;">
+        <table style="min-width:100%;font-size:0.8rem;">
+            <thead style="position:sticky;top:0;background:#f1f5f9;z-index:2;">
+                <tr>
+                    <th style="width:32%;">File</th>
+                    <th style="width:34%;">Section</th>
+                    <th style="width:34%;">Sub-Section</th>
+                </tr>
+            </thead>
+            <tbody id="folderReviewBody"></tbody>
+        </table>
+    </div>
+    <div id="folderProgressWrap" style="display:none;margin-top:0.75rem;">
+        <div class="fs-small" id="folderProgressText">Uploading...</div>
+        <div class="progress-bar" style="background:#e2e8f0;height:8px;border-radius:4px;overflow:hidden;margin-top:0.3rem;">
+            <div id="folderProgressBar" style="width:0%;height:100%;background:#3b82f6;transition:width 0.2s;"></div>
+        </div>
+    </div>
+</div>
+            <div id="folderProgressWrap" style="display:none;margin-top:0.75rem;">
+                <div class="fs-small" id="folderProgressText">Uploading...</div>
+                <div class="progress-bar" style="background:#e2e8f0;height:8px;border-radius:4px;overflow:hidden;margin-top:0.3rem;">
+                    <div id="folderProgressBar" style="width:0%;height:100%;background:#3b82f6;transition:width 0.2s;"></div>
+                </div>
+            </div>
+            
+        </div>
+      
+    </div>
+</div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <div id="loginCurtain" aria-hidden="true">
+    <div class="curtain-line"></div>
+</div>
+<!-- Document Generator Slide-Over -->
+<div id="docGenBackdrop" class="docgen-backdrop"></div>
+<aside id="docGenPanel" class="docgen-panel" aria-hidden="true">
+    <div class="docgen-panel-header">
+        <button class="btn btn-outline btn-sm" id="docGenBackBtn" title="Back to AI Tools">
+            <i class="fas fa-arrow-left"></i> Back to AI Tools
+        </button>
+        <h2><i class="fas fa-file-signature"></i> Document Generator</h2>
+        <div class="docgen-panel-actions">
+            <button class="btn btn-outline btn-sm" id="docGenOpenStandalone" title="Open in new tab">
+                <i class="fas fa-external-link-alt"></i> Standalone
+            </button>
+            <button class="btn btn-danger btn-sm" id="docGenClosePanel" title="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <iframe id="docGenFrame" src="about:self" title="Document Generator"></iframe>
+</aside>
+      <script src="admin.js"></script>
+    <script src="sidebar-counters.js"></script>
+      
+</body>
+</html>

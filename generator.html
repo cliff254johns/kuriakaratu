@@ -1,0 +1,1692 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1220" />
+<meta name="description" content="Kuria Karatu & Company Advocates — Document Generator" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Document Generator — Kuria Karatu &amp; Company Advocates</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   KK ADVOCATES — DOCUMENT GENERATOR
+   Editorial × Legal Grade × Split-View Studio
+   ============================================================ */
+
+:root{
+  --ink:            #0b1220;
+  --navy:           #0f1f3d;
+  --navy-2:         #16294f;
+  --cobalt:         #3b82f6;
+  --cobalt-soft:    #c7d9f2;
+  --cobalt-tint:    #e4ecf5;
+  --forest:         #1e4a3c;
+  --forest-2:       #2f7d5b;
+  --forest-tint:    #e6efe9;
+  --gold:           #c8a24a;
+  --gold-soft:      #e7d7a6;
+  --gold-tint:      #fbf3dc;
+  --terra:          #b3542e;
+  --terra-2:        #8f3f21;
+  --terra-tint:     #fbe9e4;
+  --purple:         #4a2d7a;
+  --purple-tint:    #eee8f5;
+
+  --paper:          #f6f3ec;
+  --paper-2:        #eef1f7;
+  --paper-3:        #e2e8f2;
+  --rule:           #d3dbe8;
+  --muted:          #6b7280;
+  --muted-2:        #94a3b8;
+  --success:        #2f7d5b;
+  --warning:        #b8860b;
+  --danger:         #a83232;
+
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans:  'Inter', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  --font-mono:  'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --font-legal: 'Times New Roman', Times, 'Liberation Serif', serif;
+
+  --gutter: 1.5rem;
+  --radius: 12px;
+  --gap: 1rem;
+  --shadow-sm: 0 1px 2px rgba(11,18,32,.05), 0 1px 0 rgba(11,18,32,.03);
+  --shadow-md: 0 6px 22px rgba(11,18,32,.08);
+  --shadow-lg: 0 24px 60px rgba(11,18,32,.18);
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html, body{ height:100%; }
+html{ font-size:16px; }
+body{
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--paper);
+  overflow:hidden;
+  -webkit-tap-highlight-color: transparent;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+button, input, select, textarea{ font-family: inherit; font-size: inherit; color: inherit; }
+button{ cursor:pointer; border:none; background:none; }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+#genApp{
+  height:100vh; height:100dvh;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  background: var(--paper);
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.gen-topbar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding: 0.85rem 1.35rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom: 3px solid var(--gold);
+  flex-shrink:0;
+  gap:.75rem;
+  flex-wrap:wrap;
+}
+.gen-brand{
+  display:flex; align-items:center; gap:.75rem;
+  min-width:0;
+}
+.gen-brand img{
+  height: 36px; width:auto; max-width:60px;
+  object-fit:contain;
+  border-radius:3px;
+  background: rgba(255,255,255,.05);
+  padding: 3px;
+}
+.gen-brand .gen-brand-text{
+  display:flex; flex-direction:column; min-width:0;
+}
+.gen-brand .gen-brand-name{
+  font-family: var(--font-serif);
+  font-size: 1.05rem; font-weight:800;
+  letter-spacing:-0.01em;
+  color: var(--paper);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.gen-brand .gen-brand-sub{
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  opacity:.85;
+  margin-top:1px;
+}
+.gen-topbar-actions{
+  display:flex; align-items:center; gap:.5rem;
+  flex-wrap:wrap;
+}
+.gen-mode-switch{
+  display:inline-flex;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.gen-mode-switch button{
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight:600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(246,243,236,.7);
+  transition:.2s;
+  display:inline-flex; align-items:center; gap:.35rem;
+}
+.gen-mode-switch button i{ font-size:.7rem; }
+.gen-mode-switch button:hover{ color: var(--paper); }
+.gen-mode-switch button.active{
+  background: var(--gold);
+  color: var(--ink);
+}
+.gen-btn{
+  padding: 0.45rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight:600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display:inline-flex; align-items:center; gap:.4rem;
+  transition:.2s;
+  white-space:nowrap;
+  border:1px solid transparent;
+}
+.gen-btn-primary{ background: var(--gold); color: var(--ink); }
+.gen-btn-primary:hover{ background: var(--gold-soft); }
+.gen-btn-ghost{
+  background: rgba(255,255,255,.06);
+  color: var(--paper);
+  border-color: rgba(255,255,255,.15);
+}
+.gen-btn-ghost:hover{ background: rgba(255,255,255,.12); }
+
+/* ============================================================
+   SPLIT BODY
+   ============================================================ */
+.gen-body{
+  flex:1;
+  display:grid;
+  grid-template-columns: 480px 1fr;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* ============================================================
+   LEFT — FORM PANEL
+   ============================================================ */
+.gen-form-panel{
+  background: #fff;
+  border-right: 1px solid var(--rule);
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding: 1.25rem 1.35rem 3rem;
+  min-height:0;
+  position:relative;
+}
+.gen-form-panel::-webkit-scrollbar{ width:6px; }
+.gen-form-panel::-webkit-scrollbar-track{ background: var(--paper-2); }
+.gen-form-panel::-webkit-scrollbar-thumb{ background: var(--rule); }
+
+.gen-section{
+  background:#fff;
+  border:1px solid var(--rule);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  overflow:hidden;
+}
+.gen-section-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding: 0.75rem 1rem;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  cursor:pointer;
+  user-select:none;
+  gap:.5rem;
+}
+.gen-section-head h3{
+  font-family: var(--font-serif);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--ink);
+  display:flex; align-items:center; gap:.55rem;
+  letter-spacing:-0.01em;
+  margin:0;
+}
+.gen-section-head h3 i{ color: var(--cobalt); font-size:.9rem; }
+.gen-section-head .gen-collapse-icon{
+  color: var(--muted);
+  font-size:0.75rem;
+  transition: transform .25s;
+}
+.gen-section.collapsed .gen-collapse-icon{ transform: rotate(-90deg); }
+.gen-section.collapsed .gen-section-body{ display:none; }
+.gen-section-body{ padding: 1rem 1.1rem 1.15rem; }
+
+.gen-grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.gen-grid-3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: .65rem; }
+.gen-field{ display:flex; flex-direction:column; gap:.25rem; }
+.gen-field.full{ grid-column: 1 / -1; }
+.gen-field label{
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gen-field .hint{
+  font-size: 0.62rem;
+  color: var(--muted-2);
+  font-style: italic;
+  margin-top:1px;
+  letter-spacing: normal;
+  text-transform:none;
+  font-weight: 400;
+}
+.gen-field input,
+.gen-field select,
+.gen-field textarea{
+  width:100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background:#fff;
+  font-size: 0.82rem;
+  color: var(--ink);
+  transition: border-color .15s, box-shadow .15s;
+}
+.gen-field input:focus,
+.gen-field select:focus,
+.gen-field textarea:focus{
+  outline:none;
+  border-color: var(--cobalt);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.16);
+}
+.gen-field textarea{ min-height: 60px; resize: vertical; font-family: var(--font-sans); }
+.gen-field select{ cursor:pointer; }
+
+.gen-check{
+  display:flex; align-items:flex-start; gap:.5rem;
+  padding: 0.5rem 0.65rem;
+  border:1px solid var(--rule);
+  border-radius:4px;
+  cursor:pointer;
+  transition:.15s;
+  background:#fff;
+}
+.gen-check:hover{ background: var(--paper-2); border-color: var(--muted-2); }
+.gen-check input[type="checkbox"]{ margin-top:.15rem; cursor:pointer; accent-color: var(--cobalt); }
+.gen-check span{ font-size: 0.78rem; line-height:1.4; }
+.gen-check .gen-check-sub{
+  display:block; font-size:0.68rem; color:var(--muted); margin-top:2px;
+}
+
+/* Doc type picker */
+.gen-doc-picker{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap:.4rem;
+}
+.gen-doc-pick{
+  display:flex; align-items:flex-start; gap:.55rem;
+  padding:.6rem .7rem;
+  border:1px solid var(--rule);
+  border-radius:6px;
+  cursor:pointer;
+  transition:.15s;
+  background:#fff;
+}
+.gen-doc-pick:hover{ background: var(--paper-2); border-color: var(--cobalt-soft); }
+.gen-doc-pick.picked{
+  background: var(--cobalt-tint);
+  border-color: var(--cobalt);
+  box-shadow: inset 3px 0 0 var(--cobalt);
+}
+.gen-doc-pick input[type="checkbox"]{ margin-top:2px; accent-color: var(--cobalt); cursor:pointer; }
+.gen-doc-pick .pick-text{ min-width:0; }
+.gen-doc-pick .pick-title{
+  font-weight:600; font-size:0.78rem; color: var(--ink); line-height:1.25;
+}
+.gen-doc-pick .pick-cat{
+  font-family: var(--font-mono);
+  font-size:0.58rem;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color: var(--muted);
+  margin-top:2px;
+}
+
+/* Legal basis selector */
+.gen-legal-list{
+  display:flex; flex-direction:column; gap:.35rem;
+  max-height: 260px; overflow-y:auto;
+  border:1px solid var(--rule); border-radius:6px;
+  padding: .5rem;
+  background: var(--paper);
+}
+.gen-legal-item{
+  display:flex; align-items:flex-start; gap:.5rem;
+  padding:.4rem .5rem; border-radius:4px;
+  background:#fff; border:1px solid var(--rule);
+  font-size: 0.75rem;
+  cursor:pointer;
+  transition:.15s;
+}
+.gen-legal-item:hover{ background: var(--paper-2); }
+.gen-legal-item input{ margin-top:2px; accent-color: var(--cobalt); }
+.gen-legal-item .li-title{ font-weight:600; }
+.gen-legal-item .li-desc{
+  font-size:0.68rem; color:var(--muted); margin-top:2px; display:block;
+}
+
+/* Signature block selector */
+.gen-sig-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:.4rem;
+}
+
+/* Custom template list */
+.gen-custom-list{ display:flex; flex-direction:column; gap:.5rem; }
+.gen-custom-item{
+  border:1px solid var(--rule);
+  border-radius:6px;
+  padding:.65rem .75rem;
+  background:#fff;
+  display:flex; justify-content:space-between; align-items:center; gap:.5rem;
+  flex-wrap:wrap;
+}
+.gen-custom-item .ci-name{ font-weight:600; font-size:.82rem; }
+.gen-custom-item .ci-meta{
+  font-family: var(--font-mono); font-size:.6rem;
+  color:var(--muted); text-transform:uppercase;
+  letter-spacing:.05em; margin-top:2px;
+}
+.gen-custom-item .ci-actions{ display:flex; gap:.35rem; }
+
+/* ============================================================
+   RIGHT — PREVIEW
+   ============================================================ */
+.gen-preview-panel{
+  background:
+    linear-gradient(180deg, var(--paper-3) 0%, var(--paper-2) 100%);
+  overflow-y:auto;
+  padding: 1.5rem 2rem 3rem;
+  min-height:0;
+  position:relative;
+}
+.gen-preview-panel::-webkit-scrollbar{ width:8px; }
+.gen-preview-panel::-webkit-scrollbar-track{ background: var(--paper-2); }
+.gen-preview-panel::-webkit-scrollbar-thumb{ background: var(--rule); border-radius:4px; }
+
+.gen-preview-toolbar{
+  position:sticky; top:0;
+  z-index:5;
+  display:flex; justify-content:space-between; align-items:center;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(8px);
+  border:1px solid var(--rule);
+  border-radius:6px;
+  padding:.55rem .85rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+  gap:.5rem; flex-wrap:wrap;
+}
+.gen-preview-toolbar .label{
+  font-family: var(--font-mono);
+  font-size:0.62rem;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color: var(--muted);
+}
+.gen-preview-toolbar .actions{ display:flex; gap:.35rem; flex-wrap:wrap; }
+.gen-preview-toolbar .gen-btn{ border:1px solid var(--rule); color: var(--ink); background:#fff; }
+.gen-preview-toolbar .gen-btn:hover{ background: var(--paper-2); border-color: var(--ink); }
+.gen-preview-toolbar .gen-btn-primary{ background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.gen-preview-toolbar .gen-btn-primary:hover{ background: var(--navy-2); }
+
+/* A4 pages */
+.gen-page-stack{ display:flex; flex-direction:column; gap: 1.25rem; align-items:center; }
+
+.gen-page{
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(11,18,32,.12), 0 1px 3px rgba(11,18,32,.08);
+  padding: 18mm 20mm 20mm;
+  font-family: var(--font-legal);
+  font-size: 12pt;
+  line-height: 1.55;
+  color: #000;
+  position:relative;
+  word-wrap: break-word;
+  transition: box-shadow .2s;
+}
+.gen-page:hover{ box-shadow: 0 6px 32px rgba(11,18,32,.18), 0 1px 3px rgba(11,18,32,.08); }
+
+/* Letterhead */
+.gen-letterhead{
+  display:flex; justify-content:space-between; align-items:flex-start;
+  gap: 1rem;
+  padding-bottom: 8pt;
+  margin-bottom: 8pt;
+  border-bottom: 2.5pt double #0b1220;
+}
+.gen-letterhead .lh-left{
+  display:flex; align-items:center; gap: 10pt;
+}
+.gen-letterhead .lh-logo{
+  width: 22mm; height: 22mm;
+  object-fit:contain;
+  flex-shrink:0;
+}
+.gen-letterhead .lh-firm{
+  display:flex; flex-direction:column;
+}
+.gen-letterhead .lh-firm-name{
+  font-family: var(--font-legal);
+  font-size: 14pt;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0b1220;
+  line-height:1.15;
+}
+.gen-letterhead .lh-firm-tag{
+  font-family: var(--font-sans);
+  font-size: 8pt;
+  letter-spacing: 0.22em;
+  text-transform:uppercase;
+  color: #4a5568;
+  margin-top: 2pt;
+}
+.gen-letterhead .lh-right{
+  text-align:right;
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  color: #2d3748;
+  line-height: 1.55;
+  flex-shrink:0;
+  max-width: 60mm;
+}
+.gen-letterhead .lh-right strong{ font-weight:700; color:#0b1220; }
+.gen-letterhead .lh-right .lh-line{ display:block; }
+
+/* Footer */
+.gen-page-footer{
+  position:absolute;
+  bottom: 12mm; left: 20mm; right: 20mm;
+  padding-top: 6pt;
+  border-top: 1px solid #cbd5e0;
+  font-family: var(--font-sans);
+  font-size: 7.5pt;
+  color: #718096;
+  display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap;
+  letter-spacing: 0.03em;
+}
+
+/* Document body typography (Kenyan court style) */
+.gen-doc-body{ font-family: var(--font-legal); font-size: 12pt; line-height: 1.6; }
+
+.gen-doc-body .doc-ref{
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  color: #4a5568;
+  letter-spacing: 0.05em;
+  text-align:right;
+  margin-bottom: 12pt;
+}
+.gen-doc-body .doc-ref strong{ font-family: var(--font-mono); color:#0b1220; letter-spacing:0.04em; }
+
+.gen-doc-body .doc-court-header{
+  text-align:center;
+  margin-bottom: 18pt;
+}
+.gen-doc-body .doc-court-header .ch-line{
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12.5pt;
+}
+.gen-doc-body .doc-court-header .ch-sub{
+  font-size: 11pt;
+  margin-top: 2pt;
+}
+.gen-doc-body .doc-court-header .ch-case{
+  margin-top: 10pt;
+  font-weight: 700;
+  font-size: 12pt;
+}
+
+.gen-doc-body .doc-title{
+  text-align:center;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 13pt;
+  margin: 20pt 0 14pt;
+  text-decoration: underline;
+  text-underline-offset: 4pt;
+}
+
+.gen-doc-body .doc-parties{
+  margin: 14pt 0;
+  line-height: 1.7;
+}
+.gen-doc-body .doc-parties .party-row{
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: 8pt;
+}
+.gen-doc-body .doc-parties .party-left{ text-align:right; }
+.gen-doc-body .doc-parties .party-right{ text-align:left; }
+.gen-doc-body .doc-parties .party-mid{
+  font-weight: 700;
+  text-align:center;
+  font-style: italic;
+  font-size: 10.5pt;
+  letter-spacing: 0.04em;
+}
+.gen-doc-body .doc-parties .party-name{
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 11.5pt;
+}
+.gen-doc-body .doc-parties .party-role{
+  font-size: 10.5pt;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.gen-doc-body p{ margin-bottom: 8pt; text-align: justify; }
+.gen-doc-body ol, .gen-doc-body ul{ margin: 6pt 0 10pt 24pt; }
+.gen-doc-body ol li, .gen-doc-body ul li{ margin-bottom: 4pt; }
+
+.gen-doc-body .clause{ margin-bottom: 9pt; }
+.gen-doc-body .clause-num{
+  display:inline-block; min-width: 22pt; font-weight: 700;
+}
+.gen-doc-body .section-label{
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11pt;
+  margin: 14pt 0 6pt;
+}
+.gen-doc-body .legal-basis{
+  margin-top: 20pt;
+  padding-top: 10pt;
+  border-top: 1px solid #cbd5e0;
+  font-size: 10.5pt;
+  font-family: var(--font-legal);
+}
+.gen-doc-body .legal-basis .lb-title{
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10.5pt;
+  margin-bottom: 6pt;
+}
+.gen-doc-body .legal-basis ol{ margin-left: 20pt; }
+
+.gen-doc-body .sign-block{
+  margin-top: 28pt;
+  page-break-inside: avoid;
+}
+.gen-doc-body .sig-row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40pt;
+  margin-bottom: 28pt;
+}
+.gen-doc-body .sig-line{
+  border-top: 1px solid #000;
+  margin-top: 44pt;
+  padding-top: 4pt;
+  font-size: 10pt;
+  text-align:center;
+}
+.gen-doc-body .sig-line .sig-role{
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 9.5pt;
+}
+.gen-doc-body .sig-line .sig-detail{
+  font-size: 9pt;
+  color:#2d3748;
+  margin-top: 2pt;
+}
+
+.gen-doc-body .firm-stamp-block{
+  border: 1.5pt dashed #2d3748;
+  border-radius: 50%;
+  width: 34mm; height: 34mm;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+  font-family: var(--font-sans);
+  font-size: 8pt;
+  color: #4a5568;
+  letter-spacing: 0.05em;
+  margin: 14pt auto 8pt;
+  text-transform: uppercase;
+}
+.gen-doc-body .firm-stamp-block .stamp-inner{
+  padding: 6pt;
+  line-height:1.35;
+}
+
+.gen-doc-body .commissioner-block{
+  margin-top: 24pt;
+  padding: 12pt;
+  border: 1.5pt solid #000;
+  border-radius: 3pt;
+  page-break-inside: avoid;
+}
+.gen-doc-body .commissioner-block .cb-title{
+  text-align:center;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11pt;
+  margin-bottom: 8pt;
+}
+.gen-doc-body .commissioner-block .cb-lines{
+  font-family: var(--font-legal);
+  font-size: 11pt;
+  line-height: 2;
+}
+.gen-doc-body .commissioner-block .cb-lines .cb-line{
+  border-bottom: 1px solid #000;
+  display:inline-block; min-width: 60%;
+}
+
+.gen-doc-body .drafted-by{
+  margin-top: 22pt;
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  color: #2d3748;
+  line-height:1.55;
+  border-top: 1px solid #cbd5e0;
+  padding-top: 8pt;
+}
+.gen-doc-body .drafted-by .db-title{
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 8.5pt;
+  margin-bottom: 3pt;
+  color:#0b1220;
+}
+
+.gen-doc-body .doc-version{
+  position:absolute;
+  bottom: 4mm; right: 12mm;
+  font-family: var(--font-mono);
+  font-size: 6.5pt;
+  color: #a0aec0;
+  letter-spacing:0.08em;
+}
+
+/* Placeholder (empty preview) */
+.gen-empty-preview{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height: 60vh;
+  color: var(--muted);
+  text-align:center;
+  padding: 2rem;
+}
+.gen-empty-preview i{ font-size: 3rem; color: var(--cobalt-soft); margin-bottom: 1rem; }
+.gen-empty-preview h3{
+  font-family: var(--font-serif);
+  font-size: 1.35rem; color: var(--ink);
+  margin-bottom: .35rem; font-weight:700;
+}
+.gen-empty-preview p{ font-size:.85rem; max-width: 420px; }
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+.gen-modal-backdrop{
+  position:fixed; inset:0;
+  background: rgba(11,18,32,.55);
+  backdrop-filter: blur(3px);
+  z-index:9000;
+  display:none;
+  align-items:center; justify-content:center;
+  padding: 1.5rem;
+  overflow-y:auto;
+}
+.gen-modal-backdrop.active{ display:flex; }
+.gen-modal{
+  background:#fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  max-width: 720px;
+  width:100%;
+  max-height: 90vh;
+  overflow-y:auto;
+  border-top: 4px solid var(--gold);
+}
+.gen-modal-head{
+  display:flex; justify-content:space-between; align-items:center;
+  padding: 1.1rem 1.35rem;
+  border-bottom:1px solid var(--rule);
+  gap:.5rem; flex-wrap:wrap;
+}
+.gen-modal-head h2{
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight:700;
+  color: var(--ink);
+  display:flex; align-items:center; gap:.5rem;
+  margin:0;
+}
+.gen-modal-head h2 i{ color: var(--cobalt); }
+.gen-modal-close{
+  font-size:1.5rem;
+  color: var(--muted);
+  line-height:1;
+  padding: 0 .35rem;
+}
+.gen-modal-close:hover{ color: var(--danger); }
+.gen-modal-body{ padding: 1.25rem 1.35rem; }
+
+/* Wizard steps */
+.gen-wizard-steps{
+  display:flex; gap:.4rem;
+  padding: .85rem 1.35rem;
+  border-bottom:1px solid var(--rule);
+  background: var(--paper);
+  overflow-x:auto;
+}
+.gen-wizard-step{
+  padding:.35rem .75rem;
+  border-radius:999px;
+  font-size:0.68rem;
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  background:#fff;
+  border:1px solid var(--rule);
+  color:var(--muted);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.gen-wizard-step.active{
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.gen-wizard-step.done{
+  background: var(--cobalt-tint);
+  color: var(--cobalt);
+  border-color: var(--cobalt);
+}
+
+.gen-wizard-nav{
+  display:flex; justify-content:space-between; gap:.5rem;
+  padding: 1rem 1.35rem;
+  border-top:1px solid var(--rule);
+  background: var(--paper);
+  flex-wrap:wrap;
+}
+.gen-wizard-question{
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight:700;
+  color: var(--ink);
+  margin-bottom: .65rem;
+}
+.gen-wizard-hint{
+  font-size:.78rem;
+  color:var(--muted);
+  margin-bottom:1rem;
+}
+
+/* ============================================================
+   TOASTS
+   ============================================================ */
+.gen-toasts{
+  position:fixed; bottom: 1.25rem; right: 1.25rem;
+  z-index: 9999;
+  display:flex; flex-direction:column; gap:.5rem;
+  max-width: 360px; width: calc(100% - 2.5rem);
+  pointer-events:none;
+}
+.gen-toast{
+  pointer-events:auto;
+  background: var(--ink);
+  color: var(--paper);
+  padding: .75rem 1rem;
+  border-radius: 6px;
+  box-shadow: var(--shadow-lg);
+  font-size:.82rem;
+  border-left: 4px solid var(--cobalt);
+  display:flex; align-items:flex-start; gap:.5rem;
+  animation: genToastIn .3s ease;
+}
+.gen-toast.error{ border-left-color: var(--terra); }
+.gen-toast.warning{ border-left-color: var(--gold); }
+.gen-toast.success{ border-left-color: var(--forest-2); }
+.gen-toast i{ font-size:.95rem; flex-shrink:0; margin-top:.1rem; color: var(--cobalt); }
+.gen-toast.error i{ color: var(--terra); }
+.gen-toast.warning i{ color: var(--gold); }
+.gen-toast.success i{ color: var(--forest-2); }
+.gen-toast .t-close{ margin-left:auto; cursor:pointer; opacity:.6; }
+.gen-toast .t-close:hover{ opacity:1; }
+@keyframes genToastIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px){
+  .gen-body{ grid-template-columns: 420px 1fr; }
+}
+@media (max-width: 900px){
+  .gen-body{ grid-template-columns: 1fr; }
+  .gen-form-panel{ display:none; }
+  .gen-body.mobile-form-open .gen-form-panel{ display:block; }
+  .gen-body.mobile-form-open .gen-preview-panel{ display:none; }
+  .gen-page{ width: 100%; min-height:auto; padding: 12mm 14mm 16mm; font-size: 11pt; }
+}
+@media (max-width: 640px){
+  .gen-topbar{ padding:.7rem .85rem; }
+  .gen-brand .gen-brand-name{ font-size:.92rem; }
+  .gen-brand .gen-brand-sub{ font-size:.55rem; }
+  .gen-mode-switch button{ padding:.3rem .6rem; font-size:.6rem; }
+  .gen-preview-panel{ padding: 1rem .75rem 2rem; }
+  .gen-preview-toolbar .label{ font-size:.55rem; }
+  .gen-grid-2, .gen-grid-3{ grid-template-columns: 1fr; }
+  .gen-doc-picker{ grid-template-columns: 1fr; }
+  .gen-wizard-steps{ padding:.6rem .85rem; }
+}
+
+/* ============================================================
+   MOBILE FORM/PREVIEW TOGGLE
+   ============================================================ */
+.gen-mobile-toggle{
+  display:none;
+  position:fixed;
+  bottom: 1.25rem; right: 1.25rem;
+  z-index: 9998;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 999px;
+  padding: .85rem 1.2rem;
+  box-shadow: var(--shadow-lg);
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  align-items:center; gap:.5rem;
+}
+.gen-mobile-toggle i{ color: var(--gold); }
+@media (max-width: 900px){
+  .gen-mobile-toggle{ display:inline-flex; }
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print{
+  body, #genApp{ background:#fff !important; overflow:visible !important; height:auto !important; }
+  .gen-topbar, .gen-form-panel, .gen-preview-toolbar, .gen-mobile-toggle, .gen-toasts{ display:none !important; }
+  .gen-body{ display:block !important; grid-template-columns:1fr !important; }
+  .gen-preview-panel{ padding:0 !important; background:#fff !important; overflow:visible !important; }
+  .gen-page{
+    width: auto;
+    min-height: auto;
+    box-shadow:none;
+    padding: 12mm 15mm;
+    page-break-after: always;
+  }
+  .gen-page:last-child{ page-break-after:auto; }
+  @page{ size: A4; margin: 0; }
+}
+
+</style>
+</head>
+
+<body>
+<div id="genApp">
+
+  <!-- ============================================================
+       TOPBAR
+       ============================================================ -->
+  <header class="gen-topbar">
+    <div class="gen-brand">
+      <img id="genBrandLogo" alt="Kuria Karatu" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='37' fill='%230b1220'/%3E%3Ctext x='40' y='38' font-size='22' text-anchor='middle' fill='%23c8a24a' font-family='Georgia,serif' font-weight='700'%3EKK%3C/text%3E%3Ctext x='40' y='56' font-size='8' text-anchor='middle' fill='%23e7d7a6' font-family='Arial,sans-serif'%3EADVOCATES%3C/text%3E%3C/svg%3E">
+      <div class="gen-brand-text">
+        <div class="gen-brand-name">Kuria Karatu &amp; Company Advocates</div>
+        <div class="gen-brand-sub">Document Generator</div>
+      </div>
+    </div>
+
+    <div class="gen-topbar-actions">
+      <div class="gen-mode-switch" role="tablist" aria-label="Generator mode">
+        <button class="active" data-mode="smart"     title="Smart template matching"><i class="fas fa-bolt"></i> Smart</button>
+        <button            data-mode="wizard"    title="Guided wizard"><i class="fas fa-hat-wizard"></i> Wizard</button>
+        <button            data-mode="rule"      title="Rule-based"><i class="fas fa-sitemap"></i> Rule</button>
+        <button            data-mode="ai"        title="AI-assisted drafting"><i class="fas fa-robot"></i> AI</button>
+      </div>
+
+      <button class="gen-btn gen-btn-ghost" id="genSettingsBtn" title="Settings">
+        <i class="fas fa-cog"></i> Settings
+      </button>
+      <button class="gen-btn gen-btn-ghost" id="genHelpBtn" title="Help">
+        <i class="fas fa-circle-question"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       SPLIT BODY
+       ============================================================ -->
+  <div class="gen-body" id="genBody">
+
+    <!-- ===== LEFT — FORM ===== -->
+    <section class="gen-form-panel" id="genFormPanel">
+
+      <!-- §1 Client / Party Details -->
+      <div class="gen-section" data-section="client">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-user"></i> Client / Party Details</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-grid-2">
+            <div class="gen-field full">
+              <label for="fClientName">Client / Party Name</label>
+              <input type="text" id="fClientName" placeholder="e.g. John Mwangi Kariuki" autocomplete="off">
+              <div class="hint">If signed in to the admin app, start typing to auto-match an existing client.</div>
+            </div>
+            <div class="gen-field">
+              <label for="fClientId">National ID / Passport No.</label>
+              <input type="text" id="fClientId" placeholder="e.g. 12345678">
+            </div>
+            <div class="gen-field">
+              <label for="fClientPin">KRA PIN</label>
+              <input type="text" id="fClientPin" placeholder="e.g. A123456789X">
+            </div>
+            <div class="gen-field">
+              <label for="fClientEmail">Email</label>
+              <input type="email" id="fClientEmail" placeholder="client@example.com">
+            </div>
+            <div class="gen-field">
+              <label for="fClientPhone">Phone</label>
+              <input type="tel" id="fClientPhone" placeholder="+254 712 345 678">
+            </div>
+            <div class="gen-field full">
+              <label for="fClientAddress">Physical / Postal Address</label>
+              <input type="text" id="fClientAddress" placeholder="e.g. P.O. Box 1234-60200, Meru">
+            </div>
+            <div class="gen-field">
+              <label for="fClientOccupation">Occupation</label>
+              <input type="text" id="fClientOccupation" placeholder="e.g. Businessman">
+            </div>
+            <div class="gen-field">
+              <label for="fClientGender">Gender</label>
+              <select id="fClientGender">
+                <option value="">—</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other / Not stated">Other / Not stated</option>
+              </select>
+            </div>
+            <div class="gen-field full">
+              <label for="fClientNextOfKin">Next of Kin</label>
+              <input type="text" id="fClientNextOfKin" placeholder="Name and relationship">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §2 Case Details -->
+      <div class="gen-section" data-section="case">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-folder-open"></i> Case Details</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-grid-2">
+            <div class="gen-field">
+              <label for="fCaseNo">Case Number</label>
+              <input type="text" id="fCaseNo" placeholder="e.g. ELC 34 of 2026">
+            </div>
+            <div class="gen-field">
+              <label for="fCaseName">Case Name</label>
+              <input type="text" id="fCaseName" placeholder="e.g. Mwikali v. Mwangi">
+            </div>
+            <div class="gen-field">
+              <label for="fCourt">Court</label>
+              <select id="fCourt">
+                <option value="">—</option>
+                <option>Magistrate's Court</option>
+                <option>High Court</option>
+                <option>Court of Appeal</option>
+                <option>Supreme Court</option>
+                <option>Environment and Land Court (ELC)</option>
+                <option>Employment and Labour Relations Court (ELRC)</option>
+                <option>Kadhi's Court</option>
+                <option>Children's Court</option>
+                <option>Small Claims Court</option>
+                <option>Tribunal</option>
+              </select>
+            </div>
+            <div class="gen-field">
+              <label for="fStation">Station</label>
+              <select id="fStation">
+                <option value="">—</option>
+                <option>Meru</option>
+                <option>Nairobi</option>
+                <option>Nkubu</option>
+                <option>Maua</option>
+                <option>Chuka</option>
+                <option>Isiolo</option>
+                <option>Embu</option>
+                <option>Nyeri</option>
+                <option>Mombasa</option>
+                <option>Kisumu</option>
+                <option>Eldoret</option>
+                <option>Nakuru</option>
+                <option>Kerugoya</option>
+                <option>Marsabit</option>
+              </select>
+            </div>
+            <div class="gen-field">
+              <label for="fFilingDate">Filing Date</label>
+              <input type="date" id="fFilingDate">
+            </div>
+            <div class="gen-field">
+              <label for="fTracking">Tracking No.</label>
+              <input type="text" id="fTracking" placeholder="e.g. TRK-001-2026">
+            </div>
+            <div class="gen-field full">
+              <label for="fCitation">Citation</label>
+              <input type="text" id="fCitation" placeholder="e.g. [2026] eKLR">
+            </div>
+            <div class="gen-field full">
+              <label for="fCaseSummary">Case Summary</label>
+              <textarea id="fCaseSummary" rows="2" placeholder="Brief facts of the matter..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §3 Opposing Party (Defendant / Respondent) -->
+      <div class="gen-section collapsed" data-section="opposing">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-user-shield"></i> Opposing Party (Defendant / Respondent)</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-grid-2">
+            <div class="gen-field full">
+              <label for="fOppName">Name</label>
+              <input type="text" id="fOppName" placeholder="e.g. Jane Wanjiku Mwangi">
+            </div>
+            <div class="gen-field">
+              <label for="fOppId">National ID / Passport No.</label>
+              <input type="text" id="fOppId">
+            </div>
+            <div class="gen-field">
+              <label for="fOppPhone">Phone</label>
+              <input type="tel" id="fOppPhone">
+            </div>
+            <div class="gen-field full">
+              <label for="fOppAddress">Address</label>
+              <input type="text" id="fOppAddress" placeholder="Physical / Postal address for service">
+            </div>
+            <div class="gen-field full">
+              <label for="fOppAdvocate">Advocate (if known)</label>
+              <input type="text" id="fOppAdvocate" placeholder="Advocate's firm and address">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §4 Advocate / Firm (saved in Settings) -->
+      <div class="gen-section collapsed" data-section="advocate">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-user-tie"></i> Advocate &amp; Firm</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-grid-2">
+            <div class="gen-field full">
+              <label for="fAdvocateName">Advocate Full Name</label>
+              <input type="text" id="fAdvocateName" placeholder="e.g. Kuria Karatu, Advocate">
+              <div class="hint">Saved in Settings for future documents.</div>
+            </div>
+            <div class="gen-field">
+              <label for="fAdvocateLsk">LSK No.</label>
+              <input type="text" id="fAdvocateLsk" placeholder="e.g. P.105/1234/2020">
+            </div>
+            <div class="gen-field">
+              <label for="fPartner">Partner</label>
+              <input type="text" id="fPartner" placeholder="Handling partner">
+            </div>
+            <div class="gen-field full">
+              <label for="fFirmSign">Signature Block Title</label>
+              <input type="text" id="fFirmSign" placeholder="e.g. Kuria Karatu & Company Advocates">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §5 Document Picker -->
+      <div class="gen-section" data-section="picker">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-file-signature"></i> Documents to Generate</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-field" style="margin-bottom:.75rem;">
+            <label for="fDocSearch">Filter Documents</label>
+            <input type="text" id="fDocSearch" placeholder="Type to filter (e.g. 'affidavit', 'demand', 'land')">
+          </div>
+          <div class="gen-doc-picker" id="genDocPicker">
+            <!-- Populated by JS -->
+          </div>
+          <div style="margin-top:.85rem; display:flex; gap:.4rem; flex-wrap:wrap;">
+            <button class="gen-btn" style="border:1px solid var(--rule);" id="genPickAllBtn">
+              <i class="fas fa-check-double"></i> Select all shown
+            </button>
+            <button class="gen-btn" style="border:1px solid var(--rule);" id="genPickNoneBtn">
+              <i class="fas fa-times"></i> Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- §6 Legal Basis -->
+      <div class="gen-section collapsed" data-section="legal">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-scale-balanced"></i> Legal Basis &amp; Statutes</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <p style="font-size:.75rem; color:var(--muted); margin-bottom:.65rem;">
+            Tick any statute or constitutional article you want cited in the "Legal Basis" section of the document.
+          </p>
+          <div class="gen-legal-list" id="genLegalList">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- §7 Signature Blocks -->
+      <div class="gen-section collapsed" data-section="signature">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-pen-signature"></i> Signature Blocks</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-sig-grid">
+            <label class="gen-check">
+              <input type="checkbox" id="sigFirm" checked>
+              <span>Firm stamp space <span class="gen-check-sub">Round dashed stamp placeholder</span></span>
+            </label>
+            <label class="gen-check">
+              <input type="checkbox" id="sigClient" checked>
+              <span>Client signature + date <span class="gen-check-sub">Dotted line + date</span></span>
+            </label>
+            <label class="gen-check">
+              <input type="checkbox" id="sigAdvocate" checked>
+              <span>Advocate signature <span class="gen-check-sub">With LSK number</span></span>
+            </label>
+            <label class="gen-check">
+              <input type="checkbox" id="sigWitness">
+              <span>Witness block <span class="gen-check-sub">Name, ID, signature</span></span>
+            </label>
+            <label class="gen-check">
+              <input type="checkbox" id="sigCommissioner">
+              <span>Commissioner for Oaths <span class="gen-check-sub">For affidavits &amp; statutory declarations</span></span>
+            </label>
+            <label class="gen-check">
+              <input type="checkbox" id="sigDraftedBy" checked>
+              <span>Drafted by <span class="gen-check-sub">Firm footer line</span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- §8 Demand-specific options -->
+      <div class="gen-section collapsed" data-section="demand">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-envelope-open-text"></i> Demand / Notice Options</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-grid-2">
+            <div class="gen-field">
+              <label for="fStatutoryPeriod">Statutory Period</label>
+              <select id="fStatutoryPeriod">
+                <option value="7">7 days</option>
+                <option value="14" selected>14 days</option>
+                <option value="21">21 days</option>
+                <option value="30">30 days</option>
+              </select>
+            </div>
+            <div class="gen-field">
+              <label for="fClaimAmount">Claim Amount (KES)</label>
+              <input type="number" id="fClaimAmount" min="0" step="1" placeholder="e.g. 250000">
+            </div>
+            <div class="gen-field full">
+              <label for="fClaimDesc">Description of Claim / Debt</label>
+              <input type="text" id="fClaimDesc" placeholder="e.g. Outstanding loan balance under agreement dated...">
+            </div>
+            <label class="gen-check full">
+              <input type="checkbox" id="fInterestClaim">
+              <span>Claim interest at court rate <span class="gen-check-sub">"together with interest at court rate from the date of filing until payment in full"</span></span>
+            </label>
+            <label class="gen-check full">
+              <input type="checkbox" id="fCostsClaim" checked>
+              <span>Claim costs of the demand <span class="gen-check-sub">"costs of this demand shall be borne by you"</span></span>
+            </label>
+            <label class="gen-check full">
+              <input type="checkbox" id="fPriorAgreement">
+              <span>Reference prior agreement <span class="gen-check-sub">Include reference to a loan/tenancy/sale agreement</span></span>
+            </label>
+            <div class="gen-field full" id="fPriorAgreementWrap" style="display:none;">
+              <label for="fPriorAgreementDesc">Prior Agreement Reference</label>
+              <input type="text" id="fPriorAgreementDesc" placeholder="e.g. Loan agreement dated 12 March 2024">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §9 Land / Conveyancing options -->
+      <div class="gen-section collapsed" data-section="land">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-map-location-dot"></i> Land &amp; Conveyancing Options</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-grid-2">
+            <div class="gen-field full">
+              <label for="fParcel">Land Parcel / Title Number</label>
+              <input type="text" id="fParcel" placeholder="e.g. Meru/Municipality Block 1/234">
+            </div>
+            <div class="gen-field full">
+              <label for="fParcelLocation">Physical Location</label>
+              <input type="text" id="fParcelLocation" placeholder="e.g. Off Nkubu Road, Meru County">
+            </div>
+            <div class="gen-field">
+              <label for="fParcelArea">Area</label>
+              <input type="text" id="fParcelArea" placeholder="e.g. 0.45 Ha / 1.1 Acres">
+            </div>
+            <div class="gen-field">
+              <label for="fConsideration">Consideration (KES)</label>
+              <input type="number" id="fConsideration" min="0" step="1" placeholder="e.g. 3500000">
+            </div>
+            <div class="gen-field full">
+              <label for="fLcbConsent">Land Control Board Consent Ref</label>
+              <input type="text" id="fLcbConsent" placeholder="e.g. LCB/MERU/2026/0123">
+            </div>
+            <div class="gen-field full">
+              <label for="fSpousalConsent">Spousal Consent (Article 45(3))</label>
+              <input type="text" id="fSpousalConsent" placeholder="Spouse's name (if applicable)">
+            </div>
+            <div class="gen-field">
+              <label for="fStampDuty">iTax / Stamp Duty Ref</label>
+              <input type="text" id="fStampDuty" placeholder="e.g. SD/2026/00123">
+            </div>
+            <div class="gen-field">
+              <label for="fRatesClearance">Rates Clearance No.</label>
+              <input type="text" id="fRatesClearance" placeholder="e.g. RC/2026/456">
+            </div>
+            <label class="gen-check full">
+              <input type="checkbox" id="fLcbConsentOpt">
+              <span>Include Land Control Board consent section</span>
+            </label>
+            <label class="gen-check full">
+              <input type="checkbox" id="fSpousalConsentOpt">
+              <span>Include spousal consent section</span>
+            </label>
+            <label class="gen-check full">
+              <input type="checkbox" id="fStampDutyOpt">
+              <span>Include stamp duty declaration</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- §10 Accident / Running Down options -->
+      <div class="gen-section collapsed" data-section="accident">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-car-burst"></i> Accident &amp; Running Down Options</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <div class="gen-grid-2">
+            <div class="gen-field full">
+              <label for="fMotorReg">Motor Vehicle Registration</label>
+              <input type="text" id="fMotorReg" placeholder="e.g. KDA 123X">
+            </div>
+            <div class="gen-field full">
+              <label for="fClaimNumber">Insurance Claim Number</label>
+              <input type="text" id="fClaimNumber" placeholder="e.g. CLM/2026/7890">
+            </div>
+            <div class="gen-field full">
+              <label for="fInsurer">Insurer</label>
+              <input type="text" id="fInsurer" placeholder="e.g. Britam General Insurance">
+            </div>
+            <div class="gen-field">
+              <label for="fAccidentDate">Accident Date</label>
+              <input type="date" id="fAccidentDate">
+            </div>
+            <div class="gen-field">
+              <label for="fPoliceOb">Police OB Number</label>
+              <input type="text" id="fPoliceOb" placeholder="e.g. OB 12/34/2026">
+            </div>
+            <div class="gen-field full">
+              <label for="fAccidentLocation">Accident Location</label>
+              <input type="text" id="fAccidentLocation" placeholder="e.g. Meru-Nairobi Highway near Nkubu">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §11 Custom Template Builder -->
+      <div class="gen-section collapsed" data-section="custom">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-wand-magic-sparkles"></i> Custom Templates</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <p style="font-size:.75rem; color:var(--muted); margin-bottom:.65rem;">
+            Build your own templates with <code>{{placeholders}}</code>. Placeholders pull from the fields above — e.g.
+            <code>{{client.name}}</code>, <code>{{case.number}}</code>, <code>{{claim.amount}}</code>.
+          </p>
+          <div class="gen-custom-list" id="genCustomList">
+            <!-- Populated by JS -->
+          </div>
+          <div style="margin-top:.85rem;">
+            <button class="gen-btn gen-btn-primary" id="genAddCustomBtn">
+              <i class="fas fa-plus"></i> New custom template
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- §12 Session Options -->
+      <div class="gen-section collapsed" data-section="session">
+        <div class="gen-section-head" data-toggle>
+          <h3><i class="fas fa-sliders"></i> Session Options</h3>
+          <i class="fas fa-chevron-down gen-collapse-icon"></i>
+        </div>
+        <div class="gen-section-body">
+          <label class="gen-check">
+            <input type="checkbox" id="optAutosave" checked>
+            <span>Autosave draft locally <span class="gen-check-sub">Every 2 seconds — recoverable if browser crashes</span></span>
+          </label>
+          <label class="gen-check" style="margin-top:.5rem;">
+            <input type="checkbox" id="optSaveToFirestore" checked>
+            <span>Save generated documents to the admin app <span class="gen-check-sub">Appears in the case's Documents tab</span></span>
+          </label>
+          <label class="gen-check" style="margin-top:.5rem;">
+            <input type="checkbox" id="optDownloadCopy" checked>
+            <span>Auto-download a copy <span class="gen-check-sub">Saves as .html on this device</span></span>
+          </label>
+          <div style="margin-top:.85rem; display:flex; gap:.4rem; flex-wrap:wrap;">
+            <button class="gen-btn" style="border:1px solid var(--danger); color:var(--danger);" id="genClearDraftBtn">
+              <i class="fas fa-trash"></i> Clear draft
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== RIGHT — PREVIEW ===== -->
+    <section class="gen-preview-panel" id="genPreviewPanel">
+
+      <div class="gen-preview-toolbar">
+        <span class="label" id="genPreviewLabel">Preview — no document selected</span>
+        <div class="actions">
+          <button class="gen-btn" id="genPrintBtn" title="Print / Save as PDF">
+            <i class="fas fa-print"></i> Print
+          </button>
+          <button class="gen-btn" id="genDocxBtn" title="Download as .docx">
+            <i class="fas fa-file-word"></i> .docx
+          </button>
+          <button class="gen-btn" id="genHtmlBtn" title="Download as .html">
+            <i class="fas fa-file-code"></i> .html
+          </button>
+          <button class="gen-btn gen-btn-primary" id="genSaveBtn" title="Save to admin app">
+            <i class="fas fa-cloud-arrow-up"></i> Save
+          </button>
+        </div>
+      </div>
+
+      <div class="gen-page-stack" id="genPageStack">
+        <div class="gen-empty-preview" id="genEmptyPreview">
+          <i class="fas fa-file-signature"></i>
+          <h3>No document yet</h3>
+          <p>Fill in the client and case details on the left, then pick one or more documents from the picker. Your live preview appears here — ready to print, export, or save to the case file.</p>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <!-- Mobile toggle -->
+  <button class="gen-mobile-toggle" id="genMobileToggle">
+    <i class="fas fa-eye"></i> <span id="genMobileToggleText">Preview</span>
+  </button>
+
+</div>
+
+<!-- ============================================================
+     MODALS
+     ============================================================ -->
+
+<!-- Settings -->
+<div class="gen-modal-backdrop" id="genSettingsModal">
+  <div class="gen-modal" style="max-width:640px;">
+    <div class="gen-modal-head">
+      <h2><i class="fas fa-cog"></i> Generator Settings</h2>
+      <button class="gen-modal-close" data-close-modal="genSettingsModal">&times;</button>
+    </div>
+    <div class="gen-modal-body">
+      <h4 style="font-family:var(--font-serif); font-size:.95rem; margin-bottom:.5rem;"><i class="fas fa-building-columns"></i> Firm Details (used on all documents)</h4>
+      <div class="gen-grid-2">
+        <div class="gen-field full">
+          <label for="setFirmName">Firm Name</label>
+          <input type="text" id="setFirmName" value="Kuria Karatu & Company Advocates">
+        </div>
+        <div class="gen-field full">
+          <label for="setFirmAddress">Address</label>
+          <input type="text" id="setFirmAddress" value="Ntugi House, 1st floor room 10, Meru Town">
+        </div>
+        <div class="gen-field full">
+          <label for="setFirmPhone">Phone</label>
+          <input type="text" id="setFirmPhone" value="0725799752 / 0726780451">
+        </div>
+        <div class="gen-field full">
+          <label for="setFirmEmail">Email</label>
+          <input type="email" id="setFirmEmail" value="managingpartner@kuriakaratuadvocates.co.ke">
+        </div>
+        <div class="gen-field full">
+          <label for="setFirmWebsite">Website</label>
+          <input type="text" id="setFirmWebsite" value="www.kuriakaratuadvocates.co.ke">
+        </div>
+      </div>
+
+      <h4 style="font-family:var(--font-serif); font-size:.95rem; margin:.85rem 0 .5rem;"><i class="fas fa-image"></i> Logo</h4>
+      <div style="display:flex; gap:.75rem; align-items:center; flex-wrap:wrap;">
+        <img id="setLogoPreview" alt="Logo preview" style="height:56px; width:auto; max-width:100px; object-fit:contain; background:#f6f3ec; padding:6px; border-radius:4px; border:1px solid var(--rule);">
+        <input type="file" id="setLogoFile" accept="image/*" style="font-size:.75rem;">
+        <button class="gen-btn" style="border:1px solid var(--danger); color:var(--danger);" id="setLogoReset">
+          <i class="fas fa-undo"></i> Reset to default
+        </button>
+      </div>
+
+      <h4 style="font-family:var(--font-serif); font-size:.95rem; margin:.85rem 0 .5rem;"><i class="fas fa-user-tie"></i> Default Advocate</h4>
+      <div class="gen-grid-2">
+        <div class="gen-field full">
+          <label for="setAdvName">Advocate Name</label>
+          <input type="text" id="setAdvName" placeholder="e.g. Kuria Karatu, Advocate">
+        </div>
+        <div class="gen-field">
+          <label for="setAdvLsk">LSK No.</label>
+          <input type="text" id="setAdvLsk" placeholder="e.g. P.105/1234/2020">
+        </div>
+        <div class="gen-field">
+          <label for="setPartner">Partner</label>
+          <input type="text" id="setPartner" placeholder="Default partner">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1.25rem; flex-wrap:wrap;">
+        <button class="gen-btn" style="border:1px solid var(--rule);" data-close-modal="genSettingsModal">Cancel</button>
+        <button class="gen-btn gen-btn-primary" id="genSaveSettingsBtn">
+          <i class="fas fa-save"></i> Save settings
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Help -->
+<div class="gen-modal-backdrop" id="genHelpModal">
+  <div class="gen-modal" style="max-width:640px;">
+    <div class="gen-modal-head">
+      <h2><i class="fas fa-circle-question"></i> How the Generator Works</h2>
+      <button class="gen-modal-close" data-close-modal="genHelpModal">&times;</button>
+    </div>
+    <div class="gen-modal-body" style="font-size:.85rem; line-height:1.7; color:var(--ink);">
+      <h4 style="font-family:var(--font-serif); font-size:1rem; margin-bottom:.35rem;">Four ways to draft</h4>
+      <p><strong>Smart</strong> — pick a case type (ELC, Criminal, Succession, etc.); the generator pre-selects the right document templates.</p>
+      <p><strong>Wizard</strong> — answer a few questions ("Is this a land matter?", "Is the client the plaintiff or defendant?"); the generator assembles the correct document.</p>
+      <p><strong>Rule</strong> — pick documents directly; the generator combines pre-written clauses based on your choices (statutory period, interest, spousal consent, etc.).</p>
+      <p><strong>AI</strong> — describe what you need in plain English; the generator drafts the body text. Requires an AI hook to be configured.</p>
+
+      <h4 style="font-family:var(--font-serif); font-size:1rem; margin:1rem 0 .35rem;">Custom templates</h4>
+      <p>Any template you build yourself is stored locally and appears in the picker. Use <code>{{placeholders}}</code> to insert client, case, land, or demand fields — for example <code>{{client.name}}</code>, <code>{{case.number}}</code>, <code>{{parcel.title}}</code>.</p>
+
+      <h4 style="font-family:var(--font-serif); font-size:1rem; margin:1rem 0 .35rem;">Output</h4>
+      <p>Generated documents use standard Kenyan court formatting (Times New Roman 12pt, double-ruled letterhead). You can print to PDF, download as .docx, download as .html, or save directly to the case file in the admin app.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Wizard -->
+<div class="gen-modal-backdrop" id="genWizardModal">
+  <div class="gen-modal" style="max-width:640px;">
+    <div class="gen-modal-head">
+      <h2><i class="fas fa-hat-wizard"></i> Guided Wizard</h2>
+      <button class="gen-modal-close" data-close-modal="genWizardModal">&times;</button>
+    </div>
+    <div class="gen-wizard-steps" id="genWizardSteps">
+      <!-- Populated by JS -->
+    </div>
+    <div class="gen-modal-body" id="genWizardBody">
+      <!-- Populated by JS -->
+    </div>
+    <div class="gen-wizard-nav">
+      <button class="gen-btn" style="border:1px solid var(--rule);" id="genWizardBack">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
+      <button class="gen-btn gen-btn-primary" id="genWizardNext">
+        Next <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- AI panel -->
+<div class="gen-modal-backdrop" id="genAiModal">
+  <div class="gen-modal" style="max-width:680px;">
+    <div class="gen-modal-head">
+      <h2><i class="fas fa-robot"></i> AI-Assisted Drafting</h2>
+      <button class="gen-modal-close" data-close-modal="genAiModal">&times;</button>
+    </div>
+    <div class="gen-modal-body">
+      <div class="gen-field full" style="margin-bottom:.75rem;">
+        <label for="aiPrompt">Describe the document you need</label>
+        <textarea id="aiPrompt" rows="5" placeholder="Example: Draft a demand letter to John Mwangi for KES 250,000 outstanding under a loan agreement dated 12 March 2024, giving 14 days to pay, and threatening legal proceedings under the Civil Procedure Act."></textarea>
+      </div>
+      <div class="gen-field full" style="margin-bottom:.75rem;">
+        <label for="aiDocType">Document type hint (optional)</label>
+        <input type="text" id="aiDocType" placeholder="e.g. Demand letter, Affidavit, Plaint">
+      </div>
+      <div class="gen-field full">
+        <label for="aiTone">Tone / Style</label>
+        <select id="aiTone">
+          <option value="formal-legal" selected>Formal — Kenyan court register</option>
+          <option value="assertive">Assertive — demand letter</option>
+          <option value="conciliatory">Conciliatory — negotiation posture</option>
+          <option value="neutral">Neutral — administrative</option>
+        </select>
+      </div>
+      <div id="aiStatus" style="margin-top:.85rem; font-size:.78rem; color:var(--muted); display:none;"></div>
+      <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1.25rem; flex-wrap:wrap;">
+        <button class="gen-btn" style="border:1px solid var(--rule);" data-close-modal="genAiModal">Cancel</button>
+        <button class="gen-btn gen-btn-primary" id="genAiRunBtn">
+          <i class="fas fa-wand-magic-sparkles"></i> Draft
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom template editor -->
+<div class="gen-modal-backdrop" id="genCustomModal">
+  <div class="gen-modal" style="max-width:760px;">
+    <div class="gen-modal-head">
+      <h2><i class="fas fa-wand-magic-sparkles"></i> Custom Template</h2>
+      <button class="gen-modal-close" data-close-modal="genCustomModal">&times;</button>
+    </div>
+    <div class="gen-modal-body">
+      <input type="hidden" id="customEditId">
+      <div class="gen-grid-2">
+        <div class="gen-field">
+          <label for="customName">Template Name</label>
+          <input type="text" id="customName" placeholder="e.g. Notice to Quit — Nkubu">
+        </div>
+        <div class="gen-field">
+          <label for="customCategory">Category</label>
+          <select id="customCategory">
+            <option>Agreements</option>
+            <option>Affidavits</option>
+            <option>Demand</option>
+            <option>Consent</option>
+            <option>Authorities</option>
+            <option>Land</option>
+            <option>Acknowledgement Receipts</option>
+            <option>Retainer</option>
+            <option>General</option>
+            <option>Custom</option>
+          </select>
+        </div>
+        <div class="gen-field full">
+          <label for="customDescription">Short Description</label>
+          <input type="text" id="customDescription" placeholder="One-line summary shown in the picker">
+        </div>
+        <div class="gen-field full">
+          <label for="customBody">Template Body (HTML allowed)</label>
+          <textarea id="customBody" rows="14" style="font-family:var(--font-mono); font-size:.72rem;" placeholder="<div class='doc-title'>NOTICE TO QUIT</div>
+<p>To: {{opposing.name}}, of {{opposing.address}}.</p>
+<p>TAKE NOTICE that you are hereby required to vacate the premises known as {{parcel.title}} within {{demand.period}} days of service of this notice, failing which we shall institute legal proceedings against you under the Civil Procedure Act (Cap 21).</p>"></textarea>
+        </div>
+      </div>
+      <div class="gen-field full" style="margin-top:.5rem;">
+        <label>Available Placeholders</label>
+        <div style="display:flex; gap:.3rem; flex-wrap:wrap; font-family:var(--font-mono); font-size:.68rem;">
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{client.name}}">{{client.name}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{client.id}}">{{client.id}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{client.address}}">{{client.address}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{case.number}}">{{case.number}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{case.name}}">{{case.name}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{court}}">{{court}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{station}}">{{station}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{opposing.name}}">{{opposing.name}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{demand.amount}}">{{demand.amount}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{demand.period}}">{{demand.period}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{parcel.title}}">{{parcel.title}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{parcel.location}}">{{parcel.location}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{advocate.name}}">{{advocate.name}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{advocate.lsk}}">{{advocate.lsk}}</span>
+          <span style="background:var(--paper-2); padding:2px 6px; border-radius:3px; cursor:pointer;" data-ph="{{today}}">{{today}}</span>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem; flex-wrap:wrap;">
+        <button class="gen-btn" style="border:1px solid var(--rule);" data-close-modal="genCustomModal">Cancel</button>
+        <button class="gen-btn gen-btn-primary" id="genSaveCustomBtn">
+          <i class="fas fa-save"></i> Save template
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="gen-toasts" id="genToasts"></div>
+
+<script src="generator.js"></script>
+
+</body>
+</html>

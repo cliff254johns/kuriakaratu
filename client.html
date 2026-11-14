@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+<meta name="theme-color" content="#0a1428" />
+<meta name="description" content="Client Portal — Kuria Karatu & Company Advocates" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="KK Client Portal" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="/client-manifest.json" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<title>Client Portal — Kuria Karatu &amp; Company Advocates</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy-900:#0a1428;--navy-800:#0f172a;--navy-700:#1a2742;--navy-600:#1e3a5f;--navy-500:#2c4a7c;
+  --gold-600:#b8860b;--gold-500:#c9a227;--gold-400:#d4af37;--gold-100:#f7ecc8;
+  --blue-600:#2563eb;--blue-500:#3b82f6;--blue-100:#dbeafe;
+  --green-500:#10b981;--green-600:#059669;
+  --red-500:#ef4444;--red-600:#dc2626;
+  --amber-500:#f59e0b;
+  --slate-50:#f8fafc;--slate-100:#f1f5f9;--slate-200:#e2e8f0;--slate-300:#cbd5e1;
+  --slate-400:#94a3b8;--slate-500:#64748b;--slate-600:#475569;--slate-700:#334155;
+  --slate-800:#1e293b;--slate-900:#0f172a;
+  --max-content-width:80%;
+  --bottom-nav-height:68px;
+  --font-body:'Inter','Segoe UI',Roboto,system-ui,-apple-system,sans-serif;
+  --font-heading:'Playfair Display',Georgia,'Times New Roman',serif;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+  --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.12);
+  --shadow-xl:0 24px 60px rgba(15,23,42,.2);
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:24px;
+  --transition:.25s cubic-bezier(.4,0,.2,1);
+}
+html{height:100%;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;}
+body{height:100%;width:100%;font-family:var(--font-body);font-size:15px;line-height:1.55;color:var(--slate-800);
+  background:radial-gradient(1200px 600px at 100% -10%,rgba(59,130,246,.08),transparent 60%),
+    radial-gradient(900px 500px at -10% 110%,rgba(212,175,55,.06),transparent 60%),
+    linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior-y:none;}
+body.no-scroll{overflow:hidden;position:fixed;width:100%;}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:700;letter-spacing:-.01em;color:var(--navy-800);}
+a{color:var(--blue-600);text-decoration:none;}
+img,svg{max-width:100%;display:block;}
+
+#loadingOverlay{position:fixed;inset:0;z-index:10000;display:none;flex-direction:column;justify-content:center;
+  align-items:center;gap:1.5rem;padding:2rem;color:#fff;
+  background:radial-gradient(900px 500px at 50% -20%,rgba(212,175,55,.15),transparent 65%),
+    linear-gradient(135deg,var(--navy-900) 0%,var(--navy-600) 100%);
+  padding-top:calc(2rem + env(safe-area-inset-top));padding-bottom:calc(2rem + env(safe-area-inset-bottom));}
+#loadingOverlay.show{display:flex;}
+#loadingOverlay .spinner{width:64px;height:64px;border-radius:50%;border:3px solid rgba(212,175,55,.18);
+  border-top-color:var(--gold-400);border-right-color:var(--gold-400);animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#loadingOverlay .loading-text{font-family:var(--font-heading);font-size:1.15rem;font-weight:600;color:#fff;text-align:center;max-width:420px;}
+#loadingOverlay .loading-sub{font-size:.85rem;color:rgba(255,255,255,.62);text-align:center;max-width:420px;}
+#loadingOverlay .progress-steps{display:flex;gap:.6rem;}
+#loadingOverlay .step-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.18);transition:all var(--transition);}
+#loadingOverlay .step-dot.active{background:var(--gold-400);transform:scale(1.25);}
+#loadingOverlay .step-dot.done{background:var(--green-500);}
+
+#authOverlay{position:fixed;inset:0;z-index:9999;display:flex;justify-content:center;align-items:center;padding:1rem;overflow-y:auto;
+  background:radial-gradient(900px 500px at 50% -20%,rgba(212,175,55,.16),transparent 65%),
+    radial-gradient(800px 500px at 100% 100%,rgba(59,130,246,.14),transparent 60%),
+    linear-gradient(135deg,var(--navy-900) 0%,var(--navy-600) 100%);
+  padding-top:calc(1rem + env(safe-area-inset-top));padding-bottom:calc(1rem + env(safe-area-inset-bottom));}
+#authOverlay.hidden{display:none;}
+.auth-box{background:#fff;border-radius:var(--radius-xl);padding:2.75rem 2.5rem 2rem;max-width:440px;width:100%;margin:auto;
+  box-shadow:var(--shadow-xl),0 0 0 1px rgba(212,175,55,.15);position:relative;overflow:hidden;}
+.auth-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--gold-400),var(--gold-100),var(--gold-400));}
+.auth-box .logo{font-family:var(--font-heading);font-size:1.9rem;font-weight:700;color:var(--navy-800);text-align:center;
+  margin-bottom:.35rem;letter-spacing:-.02em;display:flex;align-items:center;justify-content:center;gap:.6rem;}
+.auth-box .logo i{color:var(--gold-500);font-size:1.6rem;}
+.auth-box .sub{color:var(--slate-500);font-size:.82rem;text-align:center;margin-bottom:1.75rem;letter-spacing:.02em;
+  text-transform:uppercase;font-weight:500;}
+.auth-box .tabs{display:flex;margin-bottom:1.75rem;border-bottom:1px solid var(--slate-200);}
+.auth-box .tabs button{flex:1;padding:.75rem .5rem;background:none;border:none;font-family:var(--font-body);font-weight:600;
+  color:var(--slate-500);cursor:pointer;font-size:.88rem;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.auth-box .tabs button.active{color:var(--navy-800);border-bottom-color:var(--gold-500);}
+.auth-box .form-group{margin-bottom:1.1rem;}
+.auth-box .form-group label{display:block;font-weight:600;font-size:.75rem;color:var(--slate-600);margin-bottom:.35rem;
+  letter-spacing:.04em;text-transform:uppercase;}
+.auth-box .form-group input,.auth-box .form-group select{width:100%;padding:.75rem .95rem;border:1.5px solid var(--slate-200);
+  border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.92rem;background:var(--slate-50);color:var(--slate-800);}
+.auth-box .form-group input:focus,.auth-box .form-group select:focus{outline:none;border-color:var(--gold-500);background:#fff;
+  box-shadow:0 0 0 3px rgba(212,175,55,.15);}
+.auth-box .btn{width:100%;justify-content:center;padding:.85rem;font-size:.92rem;margin-top:.65rem;}
+.auth-error{color:var(--red-500);font-size:.82rem;margin-top:.5rem;min-height:1.2rem;line-height:1.4;}
+.auth-info{color:var(--slate-800);background:var(--gold-100);padding:.75rem .9rem;border-radius:var(--radius-sm);
+  font-size:.82rem;margin-top:.75rem;border-left:3px solid var(--gold-500);}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.6rem 1.15rem;border:none;
+  border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;
+  background:var(--navy-800);color:#fff;transition:all var(--transition);box-shadow:var(--shadow-sm);}
+.btn:hover{background:var(--navy-700);transform:translateY(-1px);}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+.btn-primary{background:linear-gradient(135deg,var(--navy-800),var(--navy-600));color:#fff;}
+.btn-gold{background:linear-gradient(135deg,var(--gold-500),var(--gold-400));color:var(--navy-900);}
+.btn-success{background:linear-gradient(135deg,var(--green-600),var(--green-500));}
+.btn-outline{background:transparent;border:1.5px solid var(--slate-300);color:var(--slate-700);box-shadow:none;}
+.btn-outline:hover{background:var(--slate-100);color:var(--navy-800);}
+.btn-warning{background:var(--amber-500);color:#fff;}
+.btn-sm{padding:.35rem .75rem;font-size:.75rem;border-radius:6px;}
+
+#mainPortal{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;}
+.topbar{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;
+  padding:.85rem 1.5rem;padding-top:calc(.85rem + env(safe-area-inset-top));color:#fff;
+  background:linear-gradient(135deg,var(--navy-900) 0%,var(--navy-700) 100%);
+  box-shadow:0 2px 20px rgba(10,20,40,.25);border-bottom:1px solid rgba(212,175,55,.18);position:relative;}
+.topbar::after{content:'';position:absolute;bottom:-1px;left:0;width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-400),transparent);opacity:.5;}
+.topbar .brand{display:flex;align-items:center;gap:.65rem;font-family:var(--font-heading);font-size:1.02rem;font-weight:700;}
+.topbar .brand i{color:var(--gold-400);font-size:1.5rem;filter:drop-shadow(0 0 8px rgba(212,175,55,.4));}
+.topbar .user-info{display:flex;align-items:center;gap:.55rem;font-size:.82rem;color:rgba(255,255,255,.85);font-weight:500;}
+.topbar .user-info .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-heading);font-weight:700;font-size:.85rem;color:var(--navy-900);
+  background:linear-gradient(135deg,var(--gold-400),var(--gold-100));}
+.topbar .user-info button{background:transparent;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:.95rem;padding:.35rem;border-radius:6px;position:relative;}
+.topbar .user-info .notif-btn .notif-count{position:absolute;top:-4px;right:-4px;background:var(--red-500);color:#fff;
+  font-size:.55rem;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.tabs-bar{flex-shrink:0;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;
+  border-bottom:1px solid var(--slate-200);padding:0 1rem;scrollbar-width:none;box-shadow:var(--shadow-sm);}
+.tabs-bar::-webkit-scrollbar{display:none;}
+.tabs-bar button{padding:1rem 1.15rem;background:none;border:none;font-family:var(--font-body);font-weight:600;
+  color:var(--slate-500);cursor:pointer;font-size:.85rem;white-space:nowrap;border-bottom:2px solid transparent;
+  display:inline-flex;align-items:center;gap:.45rem;}
+.tabs-bar button.active{color:var(--navy-800);border-bottom-color:var(--gold-500);}
+.tabs-bar button.active i{color:var(--gold-500);}
+.content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+  padding:1.75rem 2rem;padding-bottom:calc(1.75rem + env(safe-area-inset-bottom));}
+.content>.panel{max-width:var(--max-content-width);margin:0 auto;width:100%;}
+.panel{display:none;animation:fadeUp .35s ease;}
+.panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.1rem;margin-bottom:1.75rem;}
+.stat-card{background:#fff;border-radius:var(--radius-lg);padding:1.35rem 1.4rem 1.25rem;border:1px solid var(--slate-200);
+  box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:all var(--transition);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;
+  background:linear-gradient(180deg,var(--gold-400),var(--gold-500));opacity:.85;}
+.stat-card .label{font-size:.68rem;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.08em;}
+.stat-card .value{font-family:var(--font-heading);font-size:1.65rem;font-weight:700;color:var(--navy-800);margin-top:.15rem;}
+.stat-card .sub{font-size:.72rem;color:var(--slate-500);margin-top:.4rem;}
+.stat-card i{position:absolute;top:1.15rem;right:1.15rem;font-size:1.35rem;color:var(--gold-400);opacity:.55;}
+
+.chart-box,.table-box{background:#fff;border-radius:var(--radius-lg);padding:1.5rem 1.5rem 1.25rem;
+  border:1px solid var(--slate-200);box-shadow:var(--shadow-sm);margin-bottom:1.5rem;overflow-x:auto;}
+.chart-box h3,.table-box h3{font-size:1rem;font-weight:700;color:var(--navy-800);margin-bottom:1rem;
+  display:flex;align-items:center;gap:.55rem;padding-bottom:.75rem;border-bottom:1px solid var(--slate-100);}
+.chart-box h3 i,.table-box h3 i{color:var(--gold-500);font-size:.95rem;}
+.chart-box canvas{max-height:280px;}
+table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:520px;}
+thead{background:var(--slate-50);}
+th{text-align:left;padding:.75rem .6rem;font-size:.68rem;font-weight:700;color:var(--slate-600);
+  text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid var(--slate-200);white-space:nowrap;}
+td{padding:.75rem .6rem;border-bottom:1px solid var(--slate-100);color:var(--slate-700);vertical-align:middle;}
+tbody tr:hover{background:var(--slate-50);}
+.clickable{cursor:pointer;transition:background .15s;}
+.clickable:hover{background:#f1f5f9;}
+
+.badge{display:inline-block;padding:.2rem .7rem;border-radius:20px;font-size:.68rem;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
+.badge.green{background:#d1fae5;color:#065f46;}
+.badge.yellow{background:#fef3c7;color:#92400e;}
+.badge.red{background:#fee2e2;color:#991b1b;}
+.badge.blue{background:var(--blue-100);color:#1e40af;}
+.badge.gray{background:var(--slate-100);color:var(--slate-600);}
+.badge.gold{background:var(--gold-100);color:var(--gold-600);}
+.badge.purple{background:#ede9fe;color:#5b21b6;}
+
+.progress-bar{width:100%;height:8px;background:var(--slate-100);border-radius:6px;overflow:hidden;margin:.35rem 0;}
+.progress-bar>div{height:100%;background:linear-gradient(90deg,var(--green-500),var(--green-600));border-radius:6px;transition:width .6s ease;}
+
+.upload-area{border:2px dashed var(--slate-300);border-radius:var(--radius-lg);padding:2rem 1.5rem;text-align:center;
+  background:var(--slate-50);cursor:pointer;transition:all var(--transition);margin-bottom:1.25rem;position:relative;}
+.upload-area:hover,.upload-area.dragover{border-color:var(--gold-500);background:#fff;}
+.upload-area i{font-size:2.5rem;color:var(--gold-500);margin-bottom:.75rem;display:block;}
+.upload-area p{font-size:.9rem;color:var(--slate-600);}
+.upload-area .hint{font-size:.75rem;color:var(--slate-400);}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-progress{display:none;margin-top:1rem;}
+.upload-progress.show{display:block;}
+.upload-progress .bar{width:100%;height:6px;background:var(--slate-200);border-radius:4px;overflow:hidden;}
+.upload-progress .bar>div{height:100%;background:linear-gradient(90deg,var(--gold-400),var(--gold-500));width:0%;transition:width .3s;}
+.upload-progress .label{font-size:.78rem;color:var(--slate-500);margin-top:.4rem;text-align:center;}
+
+.modal-overlay{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;padding:1rem;
+  background:rgba(10,20,40,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#fff;border-radius:var(--radius-xl);padding:2rem;max-width:520px;width:100%;
+  max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-xl);animation:modalIn .3s ease;}
+.modal-box.wide{max-width:760px;}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-box h3{font-size:1.15rem;margin-bottom:.5rem;color:var(--navy-800);display:flex;align-items:center;gap:.5rem;}
+.modal-box h3 i{color:var(--gold-500);}
+.modal-box .modal-sub{font-size:.85rem;color:var(--slate-500);margin-bottom:1.25rem;}
+.modal-box .form-group{margin-bottom:1rem;}
+.modal-box .form-group label{display:block;font-weight:600;font-size:.75rem;color:var(--slate-600);margin-bottom:.35rem;
+  letter-spacing:.04em;text-transform:uppercase;}
+.modal-box .form-group input,.modal-box .form-group select,.modal-box .form-group textarea{width:100%;padding:.7rem .9rem;
+  border:1.5px solid var(--slate-200);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.9rem;
+  background:var(--slate-50);color:var(--slate-800);}
+.modal-box .form-group input:focus,.modal-box .form-group select:focus,.modal-box .form-group textarea:focus{
+  outline:none;border-color:var(--gold-500);background:#fff;box-shadow:0 0 0 3px rgba(212,175,55,.15);}
+.modal-box .modal-actions{display:flex;gap:.6rem;margin-top:1.5rem;}
+.modal-box .modal-actions .btn{flex:1;}
+
+.floating-buttons{position:fixed;bottom:calc(1.5rem + env(safe-area-inset-bottom));right:1.5rem;
+  display:flex;flex-direction:column;gap:.7rem;z-index:500;}
+.floating-btn{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;color:#fff;border:none;cursor:pointer;text-decoration:none;box-shadow:var(--shadow-lg);transition:all var(--transition);}
+.floating-btn.call{background:linear-gradient(135deg,var(--navy-700),var(--navy-500));}
+.floating-btn.whatsapp{background:linear-gradient(135deg,#128C7E,#25D366);}
+.floating-btn.top{background:linear-gradient(135deg,var(--gold-500),var(--gold-400));color:var(--navy-900);
+  width:44px;height:44px;font-size:1rem;margin-left:6px;}
+
+.pending-screen{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;
+  text-align:center;background:linear-gradient(180deg,var(--slate-50),var(--slate-100));}
+.pending-screen .box{background:#fff;border-radius:var(--radius-xl);padding:2.75rem 2.25rem;max-width:520px;width:100%;
+  box-shadow:var(--shadow-xl);border:1px solid rgba(212,175,55,.2);position:relative;overflow:hidden;}
+.pending-screen .box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--gold-400),var(--gold-100),var(--gold-400));}
+.pending-screen .icon{width:90px;height:90px;margin:0 auto 1.25rem;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:2.25rem;color:var(--gold-600);background:linear-gradient(135deg,var(--gold-100),#fef9e7);}
+.pending-screen h2{font-size:1.5rem;color:var(--navy-800);margin-bottom:.75rem;}
+.pending-screen p{color:var(--slate-600);font-size:.92rem;line-height:1.65;}
+.pending-screen .actions{display:flex;gap:.6rem;justify-content:center;margin-top:1.75rem;flex-wrap:wrap;}
+
+.toast-container{position:fixed;bottom:calc(6rem + env(safe-area-inset-bottom));right:1.5rem;z-index:9999;
+  display:flex;flex-direction:column;gap:.55rem;max-width:380px;width:calc(100% - 3rem);pointer-events:none;}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:.7rem;padding:.85rem 1.1rem;border-radius:var(--radius-md);
+  background:var(--navy-800);color:#fff;font-size:.85rem;font-weight:500;box-shadow:var(--shadow-xl);
+  border-left:4px solid var(--green-500);animation:slideUp .35s;}
+.toast.error{border-left-color:var(--red-500);}
+.toast.warning{border-left-color:var(--amber-500);}
+.toast .close{margin-left:auto;cursor:pointer;opacity:.55;font-size:1.15rem;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.invoice-sheet{font-family:'Segoe UI',sans-serif;padding:1rem;background:#fff;}
+.invoice-sheet .inv-head{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0f172a;
+  padding-bottom:.5rem;margin-bottom:1rem;gap:1rem;flex-wrap:wrap;}
+.invoice-sheet .inv-head h2{font-size:1.35rem;font-weight:700;color:#0f172a;}
+.invoice-sheet .inv-logo{height:64px;width:auto;max-width:140px;object-fit:contain;}
+.invoice-sheet .inv-company{text-align:right;font-size:.8rem;color:#475569;}
+.invoice-sheet .inv-meta{display:flex;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;font-size:.85rem;}
+.invoice-sheet table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem;min-width:unset;}
+.invoice-sheet th{background:#f1f5f9;padding:.55rem;text-align:left;font-size:.72rem;text-transform:uppercase;color:#475569;}
+.invoice-sheet td{padding:.55rem;border-bottom:1px solid #e9edf2;}
+.invoice-sheet .inv-total{font-weight:700;font-size:1.05rem;border-top:2px solid #0f172a;padding-top:.55rem;text-align:right;}
+.invoice-sheet .inv-foot{margin-top:1.5rem;text-align:center;color:#64748b;font-size:.72rem;border-top:1px solid #e9edf2;padding-top:.75rem;}
+.digital-stamp{display:inline-block;border:2px solid #3b82f6;border-radius:50%;padding:.4rem .7rem;font-size:.6rem;
+  font-weight:700;color:#3b82f6;text-align:center;background:#f0f7ff;}
+
+.mobile-bottom-nav{display:none;}
+
+@media (min-width:1400px){:root{--max-content-width:80%;}body{font-size:15.5px;}}
+@media (min-width:1025px) and (max-width:1399px){:root{--max-content-width:88%;}}
+@media (max-width:1024px){:root{--max-content-width:92%;}.card-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}}
+
+@media (max-width:768px){
+  :root{--max-content-width:100%;--bottom-nav-height:72px;}
+  body{font-size:14.5px;background:var(--slate-50);}
+  .topbar{padding:.7rem 1rem;padding-top:calc(.7rem + env(safe-area-inset-top));flex-wrap:nowrap;}
+  .topbar .brand{font-size:.92rem;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .topbar .brand i{font-size:1.25rem;flex-shrink:0;}
+  .topbar .brand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .topbar .user-info>span:not(.avatar){display:none;}
+  .topbar .user-info .avatar{width:30px;height:30px;font-size:.78rem;}
+  .tabs-bar{display:none!important;}
+  .content{padding:1rem;padding-bottom:calc(var(--bottom-nav-height) + 1.5rem + env(safe-area-inset-bottom));}
+  .content>.panel{max-width:100%;}
+  .mobile-bottom-nav{display:flex!important;position:fixed;bottom:0;left:0;right:0;
+    height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);
+    background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border-top:1px solid var(--slate-200);box-shadow:0 -4px 24px rgba(15,23,42,.08);z-index:800;
+    overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .mobile-bottom-nav::-webkit-scrollbar{display:none;}
+  .mobile-bottom-nav button{flex:1 0 auto;min-width:62px;max-width:110px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:.25rem;padding:.6rem .3rem .7rem;background:none;border:none;
+    color:var(--slate-500);font-family:var(--font-body);font-size:.6rem;font-weight:600;cursor:pointer;
+    position:relative;-webkit-tap-highlight-color:transparent;}
+  .mobile-bottom-nav button i{font-size:1.1rem;}
+  .mobile-bottom-nav button.active{color:var(--navy-800);}
+  .mobile-bottom-nav button.active i{color:var(--gold-500);transform:translateY(-2px) scale(1.08);}
+  .mobile-bottom-nav button.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:26px;height:3px;background:linear-gradient(90deg,var(--gold-400),var(--gold-500));border-radius:0 0 3px 3px;}
+  .card-grid{grid-template-columns:repeat(2,1fr);gap:.75rem;}
+  .stat-card{padding:1rem .95rem .9rem;border-radius:var(--radius-md);}
+  .stat-card .value{font-size:1.15rem;}
+  .stat-card .label{font-size:.6rem;}
+  .stat-card i{top:.85rem;right:.85rem;font-size:1rem;opacity:.45;}
+  .chart-box,.table-box{padding:1.15rem 1rem 1rem;border-radius:var(--radius-md);margin-bottom:1rem;}
+  .chart-box h3,.table-box h3{font-size:.9rem;}
+  .chart-box canvas{max-height:220px;}
+  table{font-size:.78rem;min-width:460px;}
+  th{padding:.6rem .5rem;font-size:.62rem;}
+  td{padding:.6rem .5rem;}
+  .auth-box{padding:2rem 1.5rem 1.6rem;border-radius:var(--radius-lg);}
+  .auth-box .logo{font-size:1.55rem;}
+  .upload-area{padding:1.5rem 1rem;}
+  .upload-area i{font-size:2rem;}
+  .floating-buttons{bottom:calc(var(--bottom-nav-height) + 1rem + env(safe-area-inset-bottom));right:1rem;}
+  .floating-btn{width:48px;height:48px;font-size:1.2rem;}
+  .floating-btn.top{width:40px;height:40px;font-size:.9rem;}
+  .toast-container{bottom:calc(var(--bottom-nav-height) + 1rem + env(safe-area-inset-bottom));right:1rem;left:1rem;max-width:none;width:auto;}
+  .modal-box{padding:1.5rem 1.25rem;}
+}
+@media (max-width:480px){
+  body{font-size:14px;}
+  .topbar{padding:.6rem .85rem;}
+  .topbar .brand{font-size:.85rem;max-width:55%;}
+  .card-grid{gap:.6rem;}
+  .stat-card{padding:.85rem .8rem .75rem;}
+  .stat-card .value{font-size:1.05rem;}
+  table{font-size:.72rem;min-width:420px;}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+:focus-visible{outline:2px solid var(--gold-500);outline-offset:2px;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Signing you in...</div>
+  <div class="loading-sub" id="loadingSub">Please wait while we verify your account</div>
+  <div class="progress-steps">
+    <div class="step-dot active" data-step="0"></div>
+    <div class="step-dot" data-step="1"></div>
+    <div class="step-dot" data-step="2"></div>
+  </div>
+</div>
+
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="logo"><i class="fas fa-scale-balanced"></i> Kuria Karatu</div>
+    <div class="sub">Client Portal — Advocates &amp; Legal Consultants</div>
+
+    <div class="tabs">
+      <button id="tabLogin" class="active" onclick="switchAuthTab('login')">Sign In</button>
+      <button id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+
+    <form id="loginForm" style="display:block;">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password" required>
+      </div>
+      <div class="auth-error" id="loginError"></div>
+      <div style="text-align:center;margin-top:.5rem;">
+        <button type="button" id="forgotBtn" style="background:none;border:none;color:#3b82f6;font-size:.8rem;cursor:pointer;text-decoration:underline;">
+          Forgot password?
+        </button>
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+    </form>
+
+    <form id="signupForm" style="display:none;">
+      <div class="auth-info" style="display:block;margin-bottom:1rem;">
+        <strong>Already our client?</strong> Use the same <strong>email</strong> or <strong>phone number</strong> on file and you'll get instant access. Otherwise, your account will be reviewed by our advocates.
+      </div>
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="signupName" placeholder="Your full name" required>
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="signupEmail" placeholder="your@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="signupPhone" placeholder="+254 712 345 678">
+      </div>
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" id="signupPassword" placeholder="Min 6 characters" required minlength="6">
+      </div>
+      <div class="form-group">
+        <label>Case Reference <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
+        <input type="text" id="signupCaseRef" placeholder="e.g. CIV/01/2026">
+      </div>
+      <div class="auth-error" id="signupError"></div>
+      <div id="signupInfo" class="auth-info" style="display:none;"></div>
+      <button type="submit" class="btn btn-primary" id="signupBtn">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="pendingScreen" class="pending-screen" style="display:none;">
+  <div class="box">
+    <div class="icon"><i class="fas fa-hourglass-half fa-spin" style="animation-duration:3s;"></i></div>
+    <h2>Account Pending Approval</h2>
+    <p>Your account has been created and is awaiting approval from our advocates. You'll be granted access as soon as your case file is linked.</p>
+    <p style="margin-top:.75rem;font-size:.8rem;">You can safely close this page — you'll be redirected automatically once approved.</p>
+    <div class="actions">
+      <button class="btn btn-outline btn-sm" onclick="checkApproval()"><i class="fas fa-sync"></i> Check Again</button>
+      <button class="btn btn-outline btn-sm" onclick="portalLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+</div>
+
+<div id="mainPortal" style="display:none;">
+  <div class="topbar">
+    <div class="brand"><i class="fas fa-scale-balanced"></i><span>Kuria Karatu Client Portal</span></div>
+    <div class="user-info">
+      <button class="notif-btn" onclick="switchTab('notifications')" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notif-count" id="notifCount" style="display:none;">0</span>
+      </button>
+      <div class="avatar" id="userAvatar">C</div>
+      <span id="userNameDisplay">Client</span>
+      <button onclick="portalLogout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+
+  <div class="tabs-bar" id="tabsBar">
+    <button class="active" data-tab="overview" onclick="switchTab('overview')"><i class="fas fa-chart-pie"></i> Overview</button>
+    <button data-tab="cases" onclick="switchTab('cases')"><i class="fas fa-folder-open"></i> My Cases</button>
+    <button data-tab="payments" onclick="switchTab('payments')"><i class="fas fa-money-bill-wave"></i> Payments</button>
+    <button data-tab="documents" onclick="switchTab('documents')"><i class="fas fa-file-pdf"></i> Documents</button>
+    <button data-tab="appointments" onclick="switchTab('appointments')"><i class="fas fa-calendar-check"></i> Appointments</button>
+    <button data-tab="requests" onclick="switchTab('requests')"><i class="fas fa-file-circle-plus"></i> Requests</button>
+    <button data-tab="messages" onclick="switchTab('messages')"><i class="fas fa-comments"></i> Messages</button>
+    <button data-tab="notifications" onclick="switchTab('notifications')"><i class="fas fa-bell"></i> Notifications</button>
+    <button data-tab="profile" onclick="switchTab('profile')"><i class="fas fa-user"></i> Profile</button>
+    <button data-tab="report" onclick="switchTab('report')"><i class="fas fa-download"></i> Report</button>
+  </div>
+
+  <div class="content" id="contentArea">
+
+    <div class="panel active" id="panel-overview">
+      <div class="card-grid">
+        <div class="stat-card"><i class="fas fa-folder-open"></i><div class="label">Active Cases</div>
+          <div class="value" id="ovActiveCases">0</div><div class="sub">of <span id="ovTotalCases">0</span> total</div></div>
+        <div class="stat-card"><i class="fas fa-hand-holding-usd"></i><div class="label">Agreed Fees</div>
+          <div class="value" id="ovTotalFees">KES 0</div><div class="sub">total agreed</div></div>
+        <div class="stat-card"><i class="fas fa-check-circle"></i><div class="label">Total Paid</div>
+          <div class="value" id="ovPaid" style="color:#22c55e;">KES 0</div><div class="sub" id="ovPaidPct">0% of total</div></div>
+        <div class="stat-card"><i class="fas fa-balance-scale"></i><div class="label">Balance</div>
+          <div class="value" id="ovBalance" style="color:#ef4444;">KES 0</div><div class="sub">outstanding</div></div>
+      </div>
+
+      <div class="chart-box"><h3><i class="fas fa-chart-line"></i> Payment Progress</h3><canvas id="chartPaymentProgress"></canvas></div>
+      <div class="chart-box"><h3><i class="fas fa-chart-pie"></i> Fee Breakdown</h3><canvas id="chartFeeBreakdown"></canvas></div>
+      <div class="chart-box"><h3><i class="fas fa-chart-bar"></i> Cases by Practice Area</h3><canvas id="chartCasesByArea"></canvas></div>
+
+      <div class="table-box">
+        <h3><i class="fas fa-bell"></i> Upcoming Appointments &amp; Reminders</h3>
+        <div id="overviewUpcoming"><p style="color:#64748b;font-size:.85rem;">No upcoming appointments.</p></div>
+      </div>
+
+      <div class="table-box">
+        <h3><i class="fas fa-clock"></i> Recent Case Activity</h3>
+        <div id="overviewActivity"><p style="color:#64748b;font-size:.85rem;">No recent activity.</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-cases">
+      <div class="table-box">
+        <h3><i class="fas fa-folder-open"></i> My Cases <span class="badge blue" id="caseCountBadge">0</span></h3>
+        <p style="font-size:.82rem;color:#64748b;margin-bottom:.75rem;">Click any row to view full case details.</p>
+        <table>
+          <thead><tr><th>Case No.</th><th>Name</th><th>Practice</th><th>Court</th><th>Filed?</th><th>Status</th><th>Filing Date</th></tr></thead>
+          <tbody id="casesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-payments">
+      <div class="card-grid">
+        <div class="stat-card"><div class="label">Total Agreed</div><div class="value" id="pmTotal">KES 0</div></div>
+        <div class="stat-card"><div class="label">Total Paid</div><div class="value" id="pmPaid" style="color:#22c55e;">KES 0</div></div>
+        <div class="stat-card"><div class="label">Balance</div><div class="value" id="pmBalance" style="color:#ef4444;">KES 0</div></div>
+        <div class="stat-card"><div class="label">Next Due</div><div class="value" id="pmNextDue" style="font-size:1rem;">—</div>
+          <div class="sub" id="pmNextDueAmt">—</div></div>
+      </div>
+
+      <div class="table-box">
+        <h3><i class="fas fa-list-ol"></i> Scheduled Installments</h3>
+        <table>
+          <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="installmentsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="table-box">
+        <h3><i class="fas fa-receipt"></i> Payment History <span class="badge gray">Tap a row for details</span></h3>
+        <table>
+          <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+          <tbody id="paymentsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="table-box">
+        <h3><i class="fas fa-file-invoice"></i> Charges &amp; Invoices <span class="badge gray">Tap a row to view</span></h3>
+        <table>
+          <thead><tr><th>Date</th><th>Description</th><th>Case</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="invoicesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-documents">
+      <div class="chart-box">
+        <h3><i class="fas fa-cloud-upload-alt"></i> Upload Document</h3>
+        <p style="font-size:.85rem;color:#475569;margin-bottom:1rem;">
+          Upload documents requested by the firm or relevant to your case. Files are attached to your case file and visible to your advocate.
+        </p>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Select Case (if applicable)</label>
+          <select id="uploadCaseSelect" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+            <option value="">— General / Not case-specific —</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Document Category</label>
+          <select id="uploadCategory" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+            <option value="General">General</option>
+            <option value="Evidence">Evidence</option>
+            <option value="Correspondence">Correspondence</option>
+            <option value="Identification">Identification</option>
+            <option value="Court Filing">Court Filing</option>
+            <option value="Contract">Contract</option>
+            <option value="Receipt">Receipt</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="upload-area" id="uploadArea">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Tap to select a file or drag &amp; drop</p>
+          <span class="hint">PDF, DOC, DOCX, JPG, PNG — max 10MB</span>
+          <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        </div>
+        <div class="upload-progress" id="uploadProgress">
+          <div class="bar"><div id="uploadBar"></div></div>
+          <div class="label" id="uploadLabel">Uploading...</div>
+        </div>
+        <div id="uploadError" style="color:#ef4444;font-size:.82rem;margin-top:.5rem;min-height:1.2rem;"></div>
+      </div>
+
+      <div class="table-box">
+        <h3><i class="fas fa-file-pdf"></i> My Documents <span class="badge blue" id="docCountBadge">0</span></h3>
+        <table>
+          <thead><tr><th>File</th><th>Category</th><th>Matter</th><th>Uploaded</th><th>Size</th><th style="text-align:center;">Actions</th></tr></thead>
+          <tbody id="documentsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-appointments">
+      <div class="table-box">
+        <h3><i class="fas fa-calendar-check"></i> Upcoming Appointments</h3>
+        <p style="font-size:.82rem;color:#64748b;margin-bottom:.75rem;">Click any row to request a cancellation or reschedule.</p>
+        <table>
+          <thead><tr><th>Title</th><th>Case</th><th>Date</th><th>Time</th><th>Location</th><th>Priority</th><th>Status</th></tr></thead>
+          <tbody id="appointmentsBody"></tbody>
+        </table>
+      </div>
+      <div class="table-box">
+        <h3><i class="fas fa-history"></i> Past Appointments</h3>
+        <table>
+          <thead><tr><th>Title</th><th>Case</th><th>Date</th><th>Time</th><th>Location</th><th>Status</th></tr></thead>
+          <tbody id="pastAppointmentsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-requests">
+      <div class="table-box">
+        <h3><i class="fas fa-file-circle-plus"></i> Document Requests from Firm</h3>
+        <p style="font-size:.85rem;color:#475569;margin-bottom:1rem;">
+          Your advocate has requested the following documents. Upload each one to fulfil the request.
+        </p>
+        <div id="docRequestsList"><p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem;">No document requests at the moment.</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-messages">
+      <div class="chart-box">
+        <h3><i class="fas fa-comments"></i> Send Message to Firm</h3>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Regarding Case (optional)</label>
+          <select id="messageCaseSelect" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+            <option value="">— General —</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Subject</label>
+          <input type="text" id="messageSubject" placeholder="Brief subject" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Message</label>
+          <textarea id="messageBody" rows="4" placeholder="Type your message here..." style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;resize:vertical;"></textarea>
+        </div>
+        <button class="btn btn-primary" id="sendMessageBtn" onclick="sendClientMessage()">
+          <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+        <div id="messageStatus" style="font-size:.82rem;margin-top:.5rem;min-height:1.2rem;"></div>
+      </div>
+      <div class="table-box">
+        <h3><i class="fas fa-inbox"></i> Message History</h3>
+        <div id="messagesList"><p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem;">No messages yet.</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-notifications">
+      <div class="table-box">
+        <h3><i class="fas fa-bell"></i> Notifications</h3>
+        <div id="notificationsList"><p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem;">No notifications yet.</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-profile">
+      <div class="chart-box">
+        <h3><i class="fas fa-user-circle"></i> My Profile</h3>
+        <p style="font-size:.82rem;color:#64748b;margin-bottom:1rem;">These details are shown to your advocate. Update contact information so we can reach you quickly.</p>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Full Name</label>
+          <input type="text" id="profileName" readonly style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f1f5f9;color:#64748b;">
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Email</label>
+          <input type="email" id="profileEmail" readonly style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f1f5f9;color:#64748b;">
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Phone</label>
+          <input type="tel" id="profilePhone" placeholder="+254 712 345 678" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Address</label>
+          <input type="text" id="profileAddress" placeholder="Your physical address" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Preferred Contact Method</label>
+          <select id="profilePreferredContact" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Email">Email</option>
+            <option value="SMS">SMS</option>
+            <option value="Phone Call">Phone Call</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveProfile()" style="margin-top:.5rem;">
+          <i class="fas fa-save"></i> Save Profile
+        </button>
+        <div id="profileStatus" style="font-size:.82rem;margin-top:.5rem;min-height:1.2rem;"></div>
+      </div>
+
+      <div class="chart-box">
+        <h3><i class="fas fa-key"></i> Change Password</h3>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Current Password</label>
+          <input type="password" id="pwdCurrent" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>New Password</label>
+          <input type="password" id="pwdNew" placeholder="Min 6 characters" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem;">
+          <label>Confirm New Password</label>
+          <input type="password" id="pwdConfirm" style="width:100%;padding:.7rem .9rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;background:#f8fafc;">
+        </div>
+        <button class="btn btn-gold" onclick="changePassword()" style="margin-top:.5rem;">
+          <i class="fas fa-lock"></i> Update Password
+        </button>
+        <div id="pwdStatus" style="font-size:.82rem;margin-top:.5rem;min-height:1.2rem;"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-report">
+      <div class="chart-box">
+        <h3><i class="fas fa-file-alt"></i> Download Full Report</h3>
+        <p style="font-size:.9rem;color:#475569;margin-bottom:1rem;">
+          Generate a complete, printable statement with all your case information, payment history, charges, balances, and charts.
+        </p>
+        <button class="btn btn-primary" onclick="downloadFullReport()"><i class="fas fa-download"></i> Download My Full Report</button>
+        <button class="btn btn-success" onclick="printClientSummary()" style="margin-left:.5rem;"><i class="fas fa-print"></i> Print My Summary</button>
+        <button class="btn btn-outline" onclick="window.print()" style="margin-left:.5rem;"><i class="fas fa-print"></i> Print Page</button>
+      </div>
+      <div class="chart-box">
+        <h3><i class="fas fa-eye"></i> Report Preview</h3>
+        <div id="reportPreviewContent">
+          <p style="color:#64748b;font-size:.85rem;">Click "Download My Full Report" to generate a complete printable file.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button data-tab="overview" class="active" onclick="switchTab('overview')"><i class="fas fa-chart-pie"></i><span>Home</span></button>
+    <button data-tab="cases" onclick="switchTab('cases')"><i class="fas fa-folder-open"></i><span>Cases</span></button>
+    <button data-tab="payments" onclick="switchTab('payments')"><i class="fas fa-money-bill-wave"></i><span>Pay</span></button>
+    <button data-tab="documents" onclick="switchTab('documents')"><i class="fas fa-file-pdf"></i><span>Docs</span></button>
+    <button data-tab="appointments" onclick="switchTab('appointments')"><i class="fas fa-calendar-check"></i><span>Appts</span></button>
+    <button data-tab="requests" onclick="switchTab('requests')"><i class="fas fa-file-circle-plus"></i><span>Requests</span></button>
+    <button data-tab="messages" onclick="switchTab('messages')"><i class="fas fa-comments"></i><span>Msgs</span></button>
+    <button data-tab="notifications" onclick="switchTab('notifications')"><i class="fas fa-bell"></i><span>Alerts</span></button>
+    <button data-tab="profile" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>Profile</span></button>
+    <button data-tab="report" onclick="switchTab('report')"><i class="fas fa-download"></i><span>Report</span></button>
+  </nav>
+</div>
+
+<div class="floating-buttons" id="floatingButtons" style="display:none;">
+  <a href="tel:0725799752" class="floating-btn call" title="Call the firm"><i class="fas fa-phone"></i></a>
+  <a href="https://wa.me/254725799752?text=Hello%20Kuria%20Karatu%20%26%20Company%20Advocates%2C%20I%20am%20a%20client%20using%20your%20portal." target="_blank" class="floating-btn whatsapp" title="WhatsApp the firm"><i class="fab fa-whatsapp"></i></a>
+  <button class="floating-btn top" onclick="scrollToTop()" title="Back to top"><i class="fas fa-arrow-up"></i></button>
+</div>
+
+<div class="modal-overlay" id="uploadRequestModal">
+  <div class="modal-box">
+    <h3><i class="fas fa-cloud-upload-alt"></i> Upload Requested Document</h3>
+    <p class="modal-sub" id="uploadRequestSub">Fulfil the firm's document request</p>
+    <div id="uploadRequestInfo" style="background:#f0f7ff;padding:0.75rem;border-radius:0.5rem;border:1px solid #dbeafe;margin-bottom:1rem;font-size:0.85rem;"></div>
+    <div class="form-group">
+      <label>Select File *</label>
+      <input type="file" id="uploadRequestFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+    </div>
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <textarea id="uploadRequestNotes" rows="2" placeholder="Any additional notes..."></textarea>
+    </div>
+    <div id="uploadRequestError" style="color:#ef4444;font-size:.82rem;min-height:1.2rem;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeUploadRequestModal()">Cancel</button>
+      <button class="btn btn-gold" id="uploadRequestBtn" onclick="submitRequestedDoc()"><i class="fas fa-upload"></i> Upload</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="caseDetailModal">
+  <div class="modal-box wide">
+    <h3><i class="fas fa-folder-open"></i> Case Details</h3>
+    <div id="caseDetailContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeCaseDetail()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="invoiceModal">
+  <div class="modal-box wide">
+    <h3><i class="fas fa-file-invoice"></i> Invoice</h3>
+    <div id="invoiceContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeInvoice()">Close</button>
+      <button class="btn btn-primary" onclick="printInvoice()"><i class="fas fa-print"></i> Print</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receiptModal">
+  <div class="modal-box wide">
+    <h3><i class="fas fa-receipt"></i> Payment Details</h3>
+    <div id="receiptContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeReceipt()">Close</button>
+      <button class="btn btn-primary" onclick="printReceipt()"><i class="fas fa-print"></i> Print</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="appointmentModal">
+  <div class="modal-box">
+    <h3><i class="fas fa-calendar-check"></i> Appointment Details</h3>
+    <div id="appointmentContent" style="font-size:.88rem;color:#334155;line-height:1.6;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeAppointment()">Close</button>
+      <button class="btn btn-warning" id="requestCancelBtn" onclick="requestCancellation()"><i class="fas fa-times-circle"></i> Request Cancellation</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ================================================================
+   FIREBASE INIT
+   ================================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAv35HANTesz9EqroXt3QaHpYvZwk2fa3o",
+  authDomain: "kuriakaratu-b5c90.firebaseapp.com",
+  databaseURL: "https://kuriakaratu-b5c90-default-rtdb.firebaseio.com",
+  projectId: "kuriakaratu-b5c90",
+  storageBucket: "kuriakaratu-b5c90.firebasestorage.app",
+  messagingSenderId: "14852374326",
+  appId: "1:14852374326:web:b171bd36719d8700953d97"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e => console.warn('Persistence:', e));
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+/* ================================================================
+   STATE
+   ================================================================ */
+let currentUser = null;
+let currentUserEmail = '';
+let currentClientId = null;
+let currentClientData = null;
+let myCases = [];
+let myInvoices = [];
+let myDocuments = [];
+let myTasks = [];
+let myMessages = [];
+let myNotifications = [];
+let myReceipts = [];
+let myFee = { total:0, paid:0, balance:0, pct:0, installments:[], payments:[], deposit:0, nextDue:null };
+let charts = {};
+let listenersAttached = false;
+let clientNameForMatching = '';
+let routeInProgress = false;
+let pendingRequestContext = null;
+let selectedCaseId = null;
+let selectedInvoiceId = null;
+let selectedReceiptId = null;
+let selectedAppointmentId = null;
+let firmLogoBase64 = '';
+
+let casesUnsub=null, invoicesUnsub=null, docsUnsub=null, tasksUnsub=null,
+    clientUnsub=null, accountUnsub=null, messagesUnsub=null,
+    notifUnsub=null, receiptsUnsub=null, settingsUnsub=null;
+
+/* ================================================================
+   LOADING OVERLAY
+   ================================================================ */
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingText = document.getElementById('loadingText');
+const loadingSub = document.getElementById('loadingSub');
+const stepDots = document.querySelectorAll('#loadingOverlay .step-dot');
+
+function showLoading(msg, sub) {
+  if (msg) loadingText.textContent = msg;
+  if (sub !== undefined) loadingSub.textContent = sub;
+  loadingOverlay.classList.add('show');
+}
+function hideLoading() { loadingOverlay.classList.remove('show'); }
+function setLoadingStep(step, label) {
+  stepDots.forEach((d,i) => {
+    d.classList.remove('active','done');
+    if (i < step) d.classList.add('done');
+    else if (i === step) d.classList.add('active');
+  });
+  if (label) loadingText.textContent = label;
+}
+
+/* ================================================================
+   HELPERS
+   ================================================================ */
+function showToast(msg, type='info', duration=4000) {
+  const c = document.getElementById('toastContainer');
+  if (!c) return;
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icon = type==='error' ? 'fa-circle-exclamation' : type==='warning' ? 'fa-triangle-exclamation' : 'fa-check-circle';
+  t.innerHTML = `<i class="fas ${icon}"></i><span>${msg}</span><span class="close" onclick="this.parentElement.remove()">&times;</span>`;
+  c.appendChild(t);
+  setTimeout(() => { if (t.parentElement) t.remove(); }, duration);
+}
+function formatCurrency(n) { return 'KES ' + Number(n||0).toLocaleString(); }
+function getToday() { return new Date().toISOString().slice(0,10); }
+function getDateTime() { return new Date().toISOString().replace('T',' ').slice(0,19); }
+function getAge(filingDate) {
+  if (!filingDate) return '—';
+  const days = Math.floor((Date.now() - new Date(filingDate).getTime())/86400000);
+  if (isNaN(days) || days < 0) return '—';
+  if (days < 30) return days + ' days';
+  if (days < 365) return Math.floor(days/30) + ' months';
+  return Math.floor(days/365) + ' years';
+}
+function scrollToTop() { const el = document.getElementById('contentArea'); if (el) el.scrollTop = 0; }
+function normalizeEmail(e) { return (e||'').trim().toLowerCase(); }
+function normalizePhone(p) {
+  if (!p) return '';
+  let c = String(p).replace(/[\s\-()]/g,'').replace(/^\+/,'');
+  if (c.startsWith('0')) c = '254' + c.substring(1);
+  if (!c.startsWith('254') && c.length <= 9) c = '254' + c;
+  return c;
+}
+function safeStr(v) { return (v===null||v===undefined) ? '' : String(v); }
+function escapeHtml(s) {
+  return safeStr(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  const k = 1024, sizes = ['B','KB','MB','GB'];
+  const i = Math.floor(Math.log(bytes)/Math.log(k));
+  return parseFloat((bytes/Math.pow(k,i)).toFixed(1)) + ' ' + sizes[i];
+}
+function isExtAllowed(name) {
+  const ext = (name.split('.').pop()||'').toLowerCase();
+  return ['pdf','doc','docx','jpg','jpeg','png'].includes(ext);
+}
+function isMimeAllowed(file) {
+  const allowed = ['application/pdf','application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg','image/png'];
+  return allowed.includes(file.type) || file.type === '';
+}
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error('Could not read file'));
+    r.readAsDataURL(file);
+  });
+}
+
+/* ================================================================
+   AUTH TAB SWITCHING
+   ================================================================ */
+function switchAuthTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('loginForm').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = tab==='signup' ? 'block' : 'none';
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('signupError').textContent = '';
+  document.getElementById('signupInfo').style.display = 'none';
+}
+
+/* ================================================================
+   LOGIN
+   ================================================================ */
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const email = normalizeEmail(document.getElementById('loginEmail').value);
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  errEl.textContent = ''; errEl.style.color = '';
+  if (!email || !password) { errEl.textContent = 'Please enter both email and password.'; return; }
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+  showLoading('Signing you in...', 'Verifying your credentials');
+  setLoadingStep(0, 'Signing you in...');
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (err) {
+    console.error('Login error:', err.code, err.message);
+    hideLoading();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+    let msg = err.message || 'Sign in failed.';
+    switch (err.code) {
+      case 'auth/user-not-found': msg = 'No account found with that email. Please sign up first.'; break;
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential': msg = 'Incorrect email or password. Use "Forgot password?" if needed.'; break;
+      case 'auth/too-many-requests': msg = 'Too many failed attempts. Wait a few minutes and try again.'; break;
+      case 'auth/network-request-failed': msg = 'Network error. Check your internet connection.'; break;
+      case 'auth/invalid-email': msg = 'Please enter a valid email address.'; break;
+      case 'auth/operation-not-allowed': msg = 'Email/password sign-in is disabled. Contact the firm.'; break;
+    }
+    errEl.textContent = msg;
+  }
+});
+
+/* ================================================================
+   FORGOT PASSWORD
+   ================================================================ */
+document.getElementById('forgotBtn').addEventListener('click', async function() {
+  const email = normalizeEmail(document.getElementById('loginEmail').value);
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = ''; errEl.style.color = '';
+  if (!email) {
+    errEl.style.color = '#ef4444';
+    errEl.textContent = 'Enter your email above first.';
+    return;
+  }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    errEl.style.color = '#22c55e';
+    errEl.textContent = 'Reset email sent to ' + email + '. Check your inbox.';
+    showToast('Password reset email sent.', 'info', 9000);
+  } catch (e) {
+    errEl.style.color = '#ef4444';
+    if (e.code === 'auth/user-not-found') errEl.textContent = 'No account found with that email.';
+    else if (e.code === 'auth/invalid-email') errEl.textContent = 'Please enter a valid email address.';
+    else errEl.textContent = 'Could not send reset email: ' + e.message;
+  }
+});
+
+/* ================================================================
+   SIGNUP — writes to BOTH clientAccounts AND portalRequests
+   so the admin's Portal Requests page reflects everything in real time
+   ================================================================ */
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const name = document.getElementById('signupName').value.trim();
+  const email = normalizeEmail(document.getElementById('signupEmail').value);
+  const phone = document.getElementById('signupPhone').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const caseRef = document.getElementById('signupCaseRef').value.trim();
+  const errEl = document.getElementById('signupError');
+  const infoEl = document.getElementById('signupInfo');
+  const btn = document.getElementById('signupBtn');
+
+  errEl.textContent = ''; infoEl.style.display = 'none';
+  if (!name || !email || !password) { errEl.textContent = 'Please fill all required fields.'; return; }
+  if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+  showLoading('Creating your account...', 'Setting up your secure profile');
+  setLoadingStep(0, 'Creating your account...');
+
+  let uid = null;
+  let matchedClient = null;
+  let matchReason = '';
+
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    uid = cred.user.uid;
+
+    setLoadingStep(1, 'Looking up your client record...');
+    showLoading('Looking up your client record...', 'Checking email and phone against our records');
+
+    // Match by email (exact lowercase)
+    try {
+      const snap = await db.collection('clients').where('email','==',email).limit(1).get();
+      if (!snap.empty) {
+        matchedClient = { id: snap.docs[0].id, ...snap.docs[0].data() };
+        matchReason = 'email';
+      }
+    } catch(err) { console.warn('Email match failed:', err); }
+
+    // Match by phone (normalized)
+    if (!matchedClient && phone) {
+      try {
+        const norm = normalizePhone(phone);
+        if (norm) {
+          const all = await db.collection('clients').limit(300).get();
+          all.forEach(doc => {
+            if (matchedClient) return;
+            if (normalizePhone(doc.data().phone) === norm) {
+              matchedClient = { id: doc.id, ...doc.data() };
+              matchReason = 'phone';
+            }
+          });
+        }
+      } catch(err) { console.warn('Phone match failed:', err); }
+    }
+
+    // Match by case reference (fallback only)
+    if (!matchedClient && caseRef) {
+      try {
+        let caseDoc = null;
+        const s1 = await db.collection('cases').where('caseNo','==',caseRef).limit(1).get();
+        if (!s1.empty) caseDoc = s1.docs[0].data();
+        if (!caseDoc) {
+          const s2 = await db.collection('cases').where('trackingNo','==',caseRef).limit(1).get();
+          if (!s2.empty) caseDoc = s2.docs[0].data();
+        }
+        if (caseDoc && caseDoc.client) {
+          const cl = await db.collection('clients').where('name','==',caseDoc.client).limit(1).get();
+          if (!cl.empty) {
+            matchedClient = { id: cl.docs[0].id, ...cl.docs[0].data() };
+            matchReason = 'case reference';
+          }
+        }
+      } catch(err) { console.warn('Case-ref match failed:', err); }
+    }
+
+    const nowIso = getDateTime();
+
+    // ---- 1. clientAccounts doc ----
+    const accountData = {
+      uid,
+      email,
+      name,
+      phone,
+      caseRef,
+      createdAt: nowIso,
+      approved: false,
+      clientId: null,
+      role: 'client'
+    };
+
+    if (matchedClient) {
+      accountData.approved = true;
+      accountData.clientId = matchedClient.id;
+      accountData.approvedAt = nowIso;
+      accountData.approvedBy = 'auto-match-' + matchReason;
+    }
+
+    await db.collection('clientAccounts').doc(uid).set(accountData);
+
+    // ---- 2. portalRequests doc (visible on admin Portal Requests page) ----
+    // Written in BOTH cases so the admin sees the full history.
+    const requestData = {
+      uid,
+      email,
+      name,
+      phone,
+      caseRef,
+      requestedAt: nowIso,
+      status: matchedClient ? 'approved' : 'pending',
+      approved: !!matchedClient,
+      clientId: matchedClient ? matchedClient.id : null,
+      reviewedAt: matchedClient ? nowIso : null,
+      reviewedBy: matchedClient ? ('auto-match-' + matchReason) : null,
+      source: 'client-signup'
+    };
+    await db.collection('portalRequests').doc(uid).set(requestData);
+
+    setLoadingStep(2, matchedClient ? 'Loading your dashboard...' : 'Awaiting approval...');
+    infoEl.textContent = matchedClient
+      ? `Welcome back! Your account was matched by ${matchReason} and is ready to use. Loading your dashboard...`
+      : 'Account created. Awaiting approval — you will be let in automatically once an admin approves you.';
+    infoEl.style.display = 'block';
+
+    if (!matchedClient) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    }
+  } catch (err) {
+    console.error('Signup error:', err.code, err.message);
+    hideLoading();
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    let msg = err.message || 'Sign up failed.';
+    switch (err.code) {
+      case 'auth/email-already-in-use': msg = 'Email already registered. Switch to "Sign In".'; break;
+      case 'auth/weak-password': msg = 'Password is too weak. Use at least 6 characters.'; break;
+      case 'auth/invalid-email': msg = 'Please enter a valid email address.'; break;
+      case 'auth/network-request-failed': msg = 'Network error. Check your connection.'; break;
+    }
+    errEl.textContent = msg;
+  }
+});
+
+/* ================================================================
+   AUTH STATE
+   ================================================================ */
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    currentUser = user;
+    currentUserEmail = user.email;
+    await routeUser(user);
+  } else {
+    currentUser = null; currentUserEmail = '';
+    currentClientId = null; currentClientData = null;
+    clientNameForMatching = ''; listenersAttached = false;
+    detachAllListenersIncludingAccount();
+    hideLoading();
+    showAuthScreen();
+  }
+});
+
+/* ================================================================
+   ROUTE USER
+   ================================================================ */
+async function routeUser(user) {
+  if (routeInProgress) return;
+  routeInProgress = true;
+  try {
+    setLoadingStep(0, 'Checking your account...');
+    showLoading('Checking your account...', 'Verifying portal access');
+
+    let accountDoc;
+    try {
+      accountDoc = await db.collection('clientAccounts').doc(user.uid).get();
+    } catch (readErr) {
+      console.error('clientAccounts read error:', readErr);
+      hideLoading();
+      const errEl = document.getElementById('loginError');
+      if (errEl) {
+        errEl.textContent = readErr.code === 'permission-denied'
+          ? 'Permission denied. Contact the firm to enable portal access.'
+          : 'Could not verify your account: ' + readErr.message;
+      }
+      showAuthScreen();
+      try { await auth.signOut(); } catch(e) {}
+      routeInProgress = false;
+      return;
+    }
+
+    if (!accountDoc.exists) {
+      hideLoading();
+      const errEl = document.getElementById('loginError');
+      if (errEl) errEl.textContent = 'This account is not registered in the Client Portal. Please sign up first.';
+      showAuthScreen();
+      try { await auth.signOut(); } catch(e) {}
+      routeInProgress = false;
+      return;
+    }
+
+    const account = accountDoc.data();
+    currentClientId = account.clientId || null;
+
+    if (account.approved && account.clientId) {
+      setLoadingStep(1, 'Loading your dashboard...');
+      await enterPortal();
+    } else {
+      hideLoading();
+      showPendingScreen();
+    }
+
+    // Live watcher — flips pending → approved when admin approves
+    if (accountUnsub) { try { accountUnsub(); } catch(e) {} accountUnsub = null; }
+    accountUnsub = db.collection('clientAccounts').doc(user.uid).onSnapshot(snap => {
+      if (!snap.exists) return;
+      const data = snap.data();
+      if (data.approved && data.clientId) {
+        const notInPortal = document.getElementById('mainPortal').style.display !== 'flex';
+        if (notInPortal || !currentClientData || currentClientData.id !== data.clientId) {
+          currentClientId = data.clientId;
+          showLoading('Access approved!', 'Loading your dashboard...');
+          setLoadingStep(1, 'Access approved!');
+          enterPortal().catch(e => { hideLoading(); showToast('Error: ' + e.message, 'error', 8000); });
+        }
+      } else {
+        if (document.getElementById('mainPortal').style.display !== 'flex') showPendingScreen();
+      }
+    }, err => console.warn('Account watcher error:', err));
+
+  } catch (err) {
+    console.error('routeUser fatal:', err);
+    hideLoading();
+    showAuthScreen();
+    const errEl = document.getElementById('loginError');
+    if (errEl) errEl.textContent = 'Could not verify account: ' + err.message;
+    try { await auth.signOut(); } catch(e) {}
+  } finally {
+    routeInProgress = false;
+  }
+}
+
+/* ================================================================
+   SCREEN HELPERS
+   ================================================================ */
+function showAuthScreen() {
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('pendingScreen').style.display = 'none';
+  document.getElementById('mainPortal').style.display = 'none';
+  document.getElementById('floatingButtons').style.display = 'none';
+  const lb = document.getElementById('loginBtn');
+  if (lb) { lb.disabled = false; lb.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In'; }
+  const sb = document.getElementById('signupBtn');
+  if (sb) { sb.disabled = false; sb.innerHTML = '<i class="fas fa-user-plus"></i> Create Account'; }
+  hideLoading();
+}
+function showPendingScreen() {
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('pendingScreen').style.display = 'flex';
+  document.getElementById('mainPortal').style.display = 'none';
+  document.getElementById('floatingButtons').style.display = 'none';
+  hideLoading();
+}
+
+async function checkApproval() {
+  if (!currentUser) return;
+  try {
+    const snap = await db.collection('clientAccounts').doc(currentUser.uid).get();
+    if (snap.exists && snap.data().approved && snap.data().clientId) {
+      currentClientId = snap.data().clientId;
+      showLoading('Access approved!', 'Loading...');
+      setLoadingStep(1, 'Loading your dashboard...');
+      await enterPortal();
+    } else {
+      showToast('Still pending approval. Please wait.', 'warning');
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+/* ================================================================
+   ENTER PORTAL
+   ================================================================ */
+async function enterPortal() {
+  if (listenersAttached && currentClientData && currentClientData.id === currentClientId) {
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('pendingScreen').style.display = 'none';
+    document.getElementById('mainPortal').style.display = 'flex';
+    document.getElementById('floatingButtons').style.display = 'flex';
+    hideLoading();
+    return;
+  }
+  setLoadingStep(1, 'Loading your client record...');
+  showLoading('Loading your client record...', 'Just a moment');
+  try {
+    if (!currentClientId) throw new Error('No client record linked. Contact the firm.');
+    const snap = await db.collection('clients').doc(currentClientId).get();
+    if (!snap.exists) throw new Error('Client record not found. Contact the firm.');
+    currentClientData = { id: snap.id, ...snap.data() };
+    clientNameForMatching = safeStr(currentClientData.name).trim().toLowerCase();
+  } catch(e) {
+    console.error('load client failed:', e);
+    hideLoading();
+    showToast('Could not load your data: ' + e.message, 'error', 10000);
+    if (e.code === 'permission-denied') setTimeout(() => portalLogout(true), 2500);
+    return;
+  }
+  document.getElementById('userAvatar').textContent =
+    (safeStr(currentClientData.name) || currentUserEmail || 'C').charAt(0).toUpperCase();
+  document.getElementById('userNameDisplay').textContent =
+    safeStr(currentClientData.name) || (currentUserEmail || '').split('@')[0];
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('pendingScreen').style.display = 'none';
+  document.getElementById('mainPortal').style.display = 'flex';
+  document.getElementById('floatingButtons').style.display = 'flex';
+
+  computeMyFee();
+  renderOverview(); renderPayments(); renderCases(); renderDocuments();
+  renderAppointments(); renderRequests(); renderMessages();
+  renderNotifications(); renderProfile(); renderReportPreview();
+
+  setLoadingStep(2, 'Finishing up...');
+  attachClientListeners();
+  loadFirmLogo();
+  hideLoading();
+
+  if (!sessionStorage.getItem('kk_welcome_shown')) {
+    showToast('Welcome to your client portal!', 'info');
+    sessionStorage.setItem('kk_welcome_shown', '1');
+  }
+}
+
+/* ================================================================
+   DETACH LISTENERS
+   ================================================================ */
+function detachAllListeners() {
+  [casesUnsub, invoicesUnsub, docsUnsub, tasksUnsub, clientUnsub,
+   messagesUnsub, notifUnsub, receiptsUnsub, settingsUnsub].forEach(u => {
+    if (u) { try { u(); } catch(e) {} }
+  });
+  casesUnsub = invoicesUnsub = docsUnsub = tasksUnsub = clientUnsub =
+  messagesUnsub = notifUnsub = receiptsUnsub = settingsUnsub = null;
+}
+function detachAllListenersIncludingAccount() {
+  detachAllListeners();
+  if (accountUnsub) { try { accountUnsub(); } catch(e) {} accountUnsub = null; }
+}
+
+/* ================================================================
+   FIRM LOGO
+   ================================================================ */
+async function loadFirmLogo() {
+  try {
+    const doc = await db.collection('settings').doc('company').get();
+    if (doc.exists && doc.data().logoBase64) firmLogoBase64 = doc.data().logoBase64;
+  } catch(e) { /* silent */ }
+  if (settingsUnsub) { try { settingsUnsub(); } catch(e) {} }
+  settingsUnsub = db.collection('settings').doc('company').onSnapshot(s => {
+    if (s.exists && s.data().logoBase64) firmLogoBase64 = s.data().logoBase64;
+  }, () => {});
+}
+
+/* ================================================================
+   ATTACH LISTENERS
+   ================================================================ */
+function attachClientListeners() {
+  if (!currentClientId) { showToast('No client record linked.', 'error'); return; }
+  listenersAttached = true;
+
+  if (clientUnsub) { try { clientUnsub(); } catch(e) {} }
+  clientUnsub = db.collection('clients').doc(currentClientId).onSnapshot(snap => {
+    if (!snap.exists) return;
+    currentClientData = { id: snap.id, ...snap.data() };
+    clientNameForMatching = safeStr(currentClientData.name).trim().toLowerCase();
+    document.getElementById('userNameDisplay').textContent =
+      safeStr(currentClientData.name) || currentUserEmail;
+    computeMyFee();
+    renderOverview(); renderPayments(); renderCases();
+    renderRequests(); renderProfile(); renderReportPreview();
+  }, err => console.warn('Client listener error:', err));
+
+  if (casesUnsub) { try { casesUnsub(); } catch(e) {} }
+  casesUnsub = db.collection('cases').limit(200).onSnapshot(snap => {
+    const name = clientNameForMatching;
+    myCases = [];
+    if (name) {
+      snap.forEach(doc => {
+        const d = { id: doc.id, ...doc.data() };
+        const cc = safeStr(d.client).trim().toLowerCase();
+        if (cc && cc === name) myCases.push(d);
+      });
+    }
+    renderCases(); renderOverview(); renderReportPreview();
+    populateCaseDropdowns();
+  }, err => console.warn('Cases listener error:', err));
+
+  if (invoicesUnsub) { try { invoicesUnsub(); } catch(e) {} }
+  invoicesUnsub = db.collection('invoices')
+    .where('clientId', '==', currentClientId)
+    .limit(200)
+    .onSnapshot(snap => {
+      myInvoices = [];
+      snap.forEach(doc => myInvoices.push({ id: doc.id, ...doc.data() }));
+      renderPayments(); renderOverview(); renderReportPreview();
+    }, err => console.warn('Invoices listener error:', err));
+
+  if (receiptsUnsub) { try { receiptsUnsub(); } catch(e) {} }
+  receiptsUnsub = db.collection('receipts')
+    .where('clientId', '==', currentClientId)
+    .limit(100)
+    .onSnapshot(snap => {
+      myReceipts = [];
+      snap.forEach(doc => myReceipts.push({ id: doc.id, ...doc.data() }));
+    }, err => console.warn('Receipts listener error:', err));
+
+  if (docsUnsub) { try { docsUnsub(); } catch(e) {} }
+  const handleDocsSnap = snap => {
+    const name = clientNameForMatching;
+    const caseNames = myCases.map(c => safeStr(c.name).toLowerCase()).filter(Boolean);
+    myDocuments = [];
+    snap.forEach(doc => {
+      const d = { id: doc.id, ...doc.data() };
+      const matter = safeStr(d.matter).toLowerCase();
+      const matchName = name && matter.includes(name);
+      const matchCase = caseNames.length && caseNames.some(cn => matter === cn);
+      const matchClientId = d.clientId === currentClientId;
+      const matchUploadedBy = d.uploadedBy === currentUserEmail;
+      if (matchName || matchCase || matchClientId || matchUploadedBy) myDocuments.push(d);
+    });
+    renderDocuments(); renderReportPreview();
+  };
+  docsUnsub = db.collection('documents')
+    .where('clientId', '==', currentClientId)
+    .limit(200)
+    .onSnapshot(handleDocsSnap, err => {
+      console.warn('Docs by clientId failed, trying uploadedBy:', err);
+      db.collection('documents').where('uploadedBy','==',currentUserEmail).limit(200)
+        .onSnapshot(handleDocsSnap, err2 => console.warn('Docs fallback failed:', err2));
+    });
+
+  if (tasksUnsub) { try { tasksUnsub(); } catch(e) {} }
+  tasksUnsub = db.collection('tasks').limit(300).onSnapshot(snap => {
+    const caseIds = myCases.map(c => c.id);
+    const caseNames = myCases.map(c => safeStr(c.name).toLowerCase());
+    const name = clientNameForMatching;
+    myTasks = [];
+    snap.forEach(doc => {
+      const d = { id: doc.id, ...doc.data() };
+      const matchClientId = d.clientId === currentClientId;
+      const matchCase = d.caseId && caseIds.includes(d.caseId);
+      const matchCaseName = d.caseName && caseNames.includes(safeStr(d.caseName).toLowerCase());
+      const matchClientName = d.clientName && safeStr(d.clientName).toLowerCase() === name;
+      if (matchClientId || matchCase || matchCaseName || matchClientName) myTasks.push(d);
+    });
+    myTasks.sort((a,b) => safeStr(a.date).localeCompare(safeStr(b.date)));
+    renderAppointments(); renderOverview(); renderReportPreview();
+  }, err => console.warn('Tasks listener error:', err));
+
+  if (messagesUnsub) { try { messagesUnsub(); } catch(e) {} }
+  messagesUnsub = db.collection('clientMessages')
+    .where('clientId', '==', currentClientId)
+    .limit(200)
+    .onSnapshot(snap => {
+      myMessages = [];
+      snap.forEach(doc => myMessages.push({ id: doc.id, ...doc.data() }));
+      myMessages.sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+      renderMessages();
+    }, err => console.warn('Messages listener error:', err));
+
+  if (notifUnsub) { try { notifUnsub(); } catch(e) {} }
+  notifUnsub = db.collection('clientNotifications')
+    .where('clientId', '==', currentClientId)
+    .limit(100)
+    .onSnapshot(snap => {
+      myNotifications = [];
+      snap.forEach(doc => myNotifications.push({ id: doc.id, ...doc.data() }));
+      myNotifications.sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+      renderNotifications();
+      updateNotifBadge();
+    }, err => { /* silent */ });
+}
+
+/* ================================================================
+   FEE CALC
+   ================================================================ */
+function computeMyFee() {
+  if (!currentClientData || !currentClientData.feeAgreement) {
+    myFee = { total:0, paid:0, balance:0, pct:0, installments:[], payments:[], deposit:0, nextDue:null };
+    return;
+  }
+  try {
+    const fa = currentClientData.feeAgreement;
+    const total = parseInt(fa.totalFees) || 0;
+    const deposit = (fa.depositPaid !== false) ? (parseInt(fa.deposit) || 0) : 0;
+    const installments = Array.isArray(fa.installments) ? fa.installments : [];
+    const payments = Array.isArray(fa.payments) ? fa.payments : [];
+    const paymentsSum = payments.reduce((s,p) => s + (parseInt(p.amount)||0), 0);
+    const instPaidLegacy = installments.filter(i => i.paid).reduce((s,i) => s + (parseInt(i.amount)||0), 0);
+    const paid = payments.length > 0 ? (deposit + paymentsSum) : (deposit + instPaidLegacy);
+    const balance = Math.max(0, total - paid);
+    const pendingList = installments.filter(i => !i.paid && i.date).sort((a,b) => a.date.localeCompare(b.date));
+    const nextDue = pendingList.length ? pendingList[0] : null;
+    const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+    myFee = { total, paid, balance, pct, installments, payments, deposit, nextDue };
+  } catch(e) {
+    console.warn('computeMyFee error:', e);
+    myFee = { total:0, paid:0, balance:0, pct:0, installments:[], payments:[], deposit:0, nextDue:null };
+  }
+}
+
+/* ================================================================
+   TAB SWITCHING
+   ================================================================ */
+function switchTab(tab) {
+  document.querySelectorAll('.tabs-bar button').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.mobile-bottom-nav button').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel-' + tab);
+  if (panel) panel.classList.add('active');
+  scrollToTop();
+  if (tab === 'overview') renderOverview();
+  if (tab === 'payments') renderPayments();
+  if (tab === 'cases') renderCases();
+  if (tab === 'documents') { renderDocuments(); populateCaseDropdowns(); }
+  if (tab === 'appointments') renderAppointments();
+  if (tab === 'requests') renderRequests();
+  if (tab === 'messages') renderMessages();
+  if (tab === 'notifications') { renderNotifications(); markNotificationsRead(); }
+  if (tab === 'profile') renderProfile();
+  if (tab === 'report') renderReportPreview();
+}
+
+/* ================================================================
+   RENDER: OVERVIEW
+   ================================================================ */
+function renderOverview() {
+  if (!currentClientData) return;
+  try {
+    const activeCases = myCases.filter(c => c.status === 'Active').length;
+    document.getElementById('ovActiveCases').textContent = activeCases;
+    document.getElementById('ovTotalCases').textContent = myCases.length;
+    document.getElementById('ovTotalFees').textContent = formatCurrency(myFee.total);
+    document.getElementById('ovPaid').textContent = formatCurrency(myFee.paid);
+    document.getElementById('ovPaidPct').textContent = myFee.pct + '% of total';
+    document.getElementById('ovBalance').textContent = formatCurrency(myFee.balance);
+
+    const today = getToday();
+    const upcoming = myTasks.filter(t => t.status === 'Scheduled' && t.date >= today)
+      .sort((a,b) => safeStr(a.date).localeCompare(safeStr(b.date)))
+      .slice(0, 6);
+    const upEl = document.getElementById('overviewUpcoming');
+    if (!upcoming.length) {
+      upEl.innerHTML = '<p style="color:#64748b;font-size:.85rem;">No upcoming appointments.</p>';
+    } else {
+      upEl.innerHTML = upcoming.map(t => {
+        const pc = (t.priority||'Medium').toLowerCase();
+        const bg = pc==='high'?'#fee2e2':pc==='low'?'#d1fae5':'#fef3c7';
+        const fg = pc==='high'?'#991b1b':pc==='low'?'#065f46':'#92400e';
+        return `<div style="padding:.45rem 0;border-bottom:1px solid #f1f5f9;font-size:.85rem;display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
+          <span><span class="badge" style="background:${bg};color:${fg};">${escapeHtml(t.priority||'Medium')}</span>
+          <strong style="margin-left:.4rem;">${escapeHtml(t.title||'Appointment')}</strong>
+          ${t.caseName ? `<span style="margin-left:.4rem;color:#94a3b8;">· ${escapeHtml(t.caseName)}</span>` : ''}</span>
+          <span style="color:#64748b;font-size:.78rem;">${escapeHtml(t.date||'')} ${escapeHtml(t.time||'')}${t.location ? ' · ' + escapeHtml(t.location) : ''}</span>
+        </div>`;
+      }).join('');
+    }
+
+    const activities = [];
+    myCases.forEach(c => {
+      (c.activities || []).forEach(a => {
+        activities.push({ case: c.caseNo || '—', text: typeof a === 'string' ? a : JSON.stringify(a) });
+      });
+    });
+    activities.sort((a,b) => {
+      const da = a.text.match(/\d{4}-\d{2}-\d{2}/);
+      const db2 = b.text.match(/\d{4}-\d{2}-\d{2}/);
+      if (da && db2) return db2[0].localeCompare(da[0]);
+      return 0;
+    });
+    const recent = activities.slice(0, 8);
+    const actEl = document.getElementById('overviewActivity');
+    if (!recent.length) {
+      actEl.innerHTML = '<p style="color:#64748b;font-size:.85rem;">No recent activity.</p>';
+    } else {
+      actEl.innerHTML = recent.map(a => `
+        <div style="padding:.4rem 0;border-bottom:1px solid #f1f5f9;font-size:.85rem;">
+          <span class="badge blue">${escapeHtml(a.case)}</span>
+          <span style="margin-left:.4rem;">${escapeHtml(a.text)}</span>
+        </div>`).join('');
+    }
+
+    renderOverviewCharts();
+  } catch(e) { console.warn('renderOverview error:', e); }
+}
+
+function destroyChart(k) { if (charts[k]) { try { charts[k].destroy(); } catch(e) {} delete charts[k]; } }
+
+function renderOverviewCharts() {
+  try {
+    const c1 = document.getElementById('chartPaymentProgress');
+    if (c1 && typeof Chart !== 'undefined') {
+      destroyChart('progress');
+      charts.progress = new Chart(c1.getContext('2d'), {
+        type: 'doughnut',
+        data: { labels:['Paid','Outstanding'], datasets:[{ data:[myFee.paid, myFee.balance],
+          backgroundColor:['#22c55e','#ef4444'], borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ position:'bottom' },
+          tooltip:{ callbacks:{ label: c => c.label + ': ' + formatCurrency(c.raw) } } } }
+      });
+    }
+    const c2 = document.getElementById('chartFeeBreakdown');
+    if (c2 && typeof Chart !== 'undefined') {
+      destroyChart('breakdown');
+      charts.breakdown = new Chart(c2.getContext('2d'), {
+        type: 'bar',
+        data: { labels:['Agreed','Paid','Balance'], datasets:[{ data:[myFee.total, myFee.paid, myFee.balance],
+          backgroundColor:['#3b82f6','#22c55e','#ef4444'], borderRadius:8 }] },
+        options: { responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ display:false } },
+          scales:{ y:{ beginAtZero:true, ticks:{ callback: v => 'KES ' + Number(v).toLocaleString() } } } }
+      });
+    }
+    const c3 = document.getElementById('chartCasesByArea');
+    if (c3 && typeof Chart !== 'undefined') {
+      destroyChart('areas');
+      const counts = {};
+      myCases.forEach(c => { counts[c.area||'Other'] = (counts[c.area||'Other']||0)+1; });
+      const labels = Object.keys(counts);
+      const data = Object.values(counts);
+      const palette = ['#3b82f6','#8b5cf6','#22c55e','#f59e0b','#ef4444','#ec4899','#14b8a6','#f97316','#a855f7','#06b6d4','#84cc16'];
+      charts.areas = new Chart(c3.getContext('2d'), {
+        type: 'pie',
+        data: { labels: labels.length?labels:['No cases'],
+          datasets:[{ data: data.length?data:[1],
+            backgroundColor: labels.length?palette.slice(0,labels.length):['#e2e8f0'], borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+      });
+    }
+  } catch(e) { console.warn('charts error:', e); }
+}
+
+/* ================================================================
+   RENDER: CASES
+   ================================================================ */
+function renderCases() {
+  const tbody = document.getElementById('casesBody');
+  const badge = document.getElementById('caseCountBadge');
+  if (!tbody) return;
+  if (badge) badge.textContent = myCases.length;
+  if (!myCases.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:1rem;">No cases linked yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = myCases.map(c => {
+    const sc = c.status==='Active' ? 'green' : c.status==='Closed' ? 'gray' : 'yellow';
+    const filedBadge = c.filed === true
+      ? '<span class="badge green">Filed</span>'
+      : '<span class="badge yellow">Not Filed</span>';
+    return `<tr class="clickable" onclick="openCaseDetail('${escapeHtml(c.id)}')">
+      <td><strong>${escapeHtml(c.caseNo||'—')}</strong></td>
+      <td>${escapeHtml(c.name||'—')}</td>
+      <td><span class="badge blue">${escapeHtml(c.area||'—')}</span></td>
+      <td>${escapeHtml(c.courtType||'—')}</td>
+      <td>${filedBadge}</td>
+      <td><span class="badge ${sc}">${escapeHtml(c.status||'—')}</span></td>
+      <td>${escapeHtml(c.filingDate||'—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openCaseDetail(caseId) {
+  const c = myCases.find(x => x.id === caseId);
+  if (!c) { showToast('Case not found.', 'error'); return; }
+  selectedCaseId = caseId;
+  const filedBadge = c.filed === true ? '<span class="badge green">Filed</span>' : '<span class="badge yellow">Not Filed</span>';
+  const decisionBadge = c.decision === 'In our favour' ? '<span class="badge green">In our favour</span>'
+    : c.decision === 'Against us' ? '<span class="badge red">Against us</span>'
+    : '<span class="badge gray">Pending</span>';
+  const parties = Array.isArray(c.parties) ? c.parties : [];
+  const activities = Array.isArray(c.activities) ? c.activities : [];
+  const docs = Array.isArray(c.documents) ? c.documents : [];
+
+  let html = `
+    <div style="background:#f8fafc;padding:1rem;border-radius:0.75rem;border:1px solid #e2e8f0;margin-bottom:1rem;">
+      <div style="font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:.35rem;">${escapeHtml(c.name||'')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;font-size:.78rem;color:#64748b;">
+        <span><i class="fas fa-hashtag" style="color:#3b82f6;"></i> ${escapeHtml(c.caseNo||'—')}</span>
+        <span><i class="fas fa-fingerprint" style="color:#3b82f6;"></i> ${escapeHtml(c.trackingNo||'—')}</span>
+        <span><i class="fas fa-gavel" style="color:#3b82f6;"></i> ${escapeHtml(c.area||'—')}</span>
+        <span><i class="fas fa-building" style="color:#3b82f6;"></i> ${escapeHtml(c.courtType||'—')}</span>
+        <span><i class="fas fa-calendar-alt" style="color:#3b82f6;"></i> ${escapeHtml(c.filingDate||'—')}</span>
+        <span><i class="fas fa-clock" style="color:#3b82f6;"></i> ${escapeHtml(c.age||getAge(c.filingDate))}</span>
+      </div>
+      <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+        <span class="badge ${c.status==='Active'?'green':c.status==='Closed'?'gray':'yellow'}">${escapeHtml(c.status||'—')}</span>
+        ${filedBadge}
+        ${decisionBadge}
+      </div>
+    </div>`;
+
+  if (c.summary) {
+    html += `<div style="margin-bottom:1rem;"><div style="font-size:.7rem;text-transform:uppercase;color:#64748b;font-weight:700;margin-bottom:.3rem;">Case Summary</div><div style="font-size:.85rem;color:#334155;line-height:1.6;">${escapeHtml(c.summary)}</div></div>`;
+  }
+
+  if (c.citation || c.partner) {
+    html += `<div style="background:#f0f7ff;padding:.75rem;border-radius:.5rem;border:1px solid #dbeafe;margin-bottom:1rem;font-size:.82rem;">`;
+    if (c.citation) html += `<div><strong>Citation:</strong> ${escapeHtml(c.citation)}</div>`;
+    if (c.partner) html += `<div><strong>Partner:</strong> ${escapeHtml(c.partner)}</div>`;
+    html += `</div>`;
+  }
+
+  if (parties.length) {
+    html += `<div style="margin-bottom:1rem;"><div style="font-size:.7rem;text-transform:uppercase;color:#64748b;font-weight:700;margin-bottom:.5rem;">Parties</div>`;
+    html += parties.map(p => `<div style="padding:.5rem;background:#f8fafc;border-radius:.5rem;border:1px solid #e2e8f0;margin-bottom:.4rem;">
+      <div style="font-size:.7rem;text-transform:uppercase;color:#64748b;">${escapeHtml(p.category||'')}</div>
+      <div style="font-weight:600;font-size:.85rem;">${escapeHtml(p.name||'')}</div>
+      <div style="font-size:.78rem;color:#64748b;">${escapeHtml(p.firm||'')}</div>
+    </div>`).join('');
+    html += `</div>`;
+  }
+
+  if (activities.length) {
+    html += `<div style="margin-bottom:1rem;"><div style="font-size:.7rem;text-transform:uppercase;color:#64748b;font-weight:700;margin-bottom:.5rem;">Recent Activity</div>`;
+    const sorted = activities.slice().sort((a,b) => {
+      const da = String(a).match(/\d{4}-\d{2}-\d{2}/);
+      const db2 = String(b).match(/\d{4}-\d{2}-\d{2}/);
+      if (da && db2) return db2[0].localeCompare(da[0]);
+      return 0;
+    }).slice(0, 10);
+    html += sorted.map(a => `<div style="padding:.35rem 0;border-bottom:1px solid #f1f5f9;font-size:.82rem;"><i class="fas fa-circle" style="color:#3b82f6;font-size:.35rem;margin-right:.4rem;"></i>${escapeHtml(a)}</div>`).join('');
+    html += `</div>`;
+  }
+
+  if (docs.length) {
+    html += `<div style="margin-bottom:1rem;"><div style="font-size:.7rem;text-transform:uppercase;color:#64748b;font-weight:700;margin-bottom:.5rem;">Case Documents</div>`;
+    html += docs.map(d => `<div style="padding:.4rem 0;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;gap:.4rem;flex-wrap:wrap;">
+      <span style="font-size:.82rem;"><i class="fas fa-file-pdf" style="color:#ef4444;margin-right:.3rem;"></i>${escapeHtml(d.name||'')}</span>
+      <button class="btn btn-sm btn-primary" onclick="downloadCaseDoc('${escapeHtml(d.fileId||'')}','${escapeHtml(d.name||'')}')"><i class="fas fa-download"></i></button>
+    </div>`).join('');
+    html += `</div>`;
+  }
+
+  document.getElementById('caseDetailContent').innerHTML = html;
+  document.getElementById('caseDetailModal').classList.add('show');
+  document.body.classList.add('no-scroll');
+}
+
+function closeCaseDetail() {
+  document.getElementById('caseDetailModal').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  selectedCaseId = null;
+}
+
+function downloadCaseDoc(fileId, fileName) {
+  const doc = myDocuments.find(d => (d.fileId || d.id) === fileId);
+  if (!doc) { showToast('Document not available for download.', 'warning'); return; }
+  const dataUrl = doc.base64 || doc.downloadUrl;
+  if (!dataUrl) { showToast('File not available.', 'warning'); return; }
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = fileName || 'document';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* ================================================================
+   RENDER: PAYMENTS
+   ================================================================ */
+function renderPayments() {
+  try {
+    const el = id => document.getElementById(id);
+    if (el('pmTotal')) el('pmTotal').textContent = formatCurrency(myFee.total);
+    if (el('pmPaid')) el('pmPaid').textContent = formatCurrency(myFee.paid);
+    if (el('pmBalance')) el('pmBalance').textContent = formatCurrency(myFee.balance);
+    if (myFee.nextDue) {
+      if (el('pmNextDue')) el('pmNextDue').textContent = myFee.nextDue.date;
+      if (el('pmNextDueAmt')) el('pmNextDueAmt').textContent = formatCurrency(myFee.nextDue.amount);
+    } else {
+      if (el('pmNextDue')) el('pmNextDue').textContent = '—';
+      if (el('pmNextDueAmt')) el('pmNextDueAmt').textContent = 'No upcoming dues';
+    }
+
+    const instBody = el('installmentsBody');
+    const today = getToday();
+    if (instBody) {
+      if (!myFee.installments.length) {
+        instBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#64748b;padding:1rem;">No installments scheduled.</td></tr>';
+      } else {
+        instBody.innerHTML = myFee.installments.map((inst, idx) => {
+          const overdue = !inst.paid && inst.date && inst.date < today;
+          const due = !inst.paid && inst.date === today;
+          let badge = '<span class="badge green">Paid</span>';
+          if (!inst.paid) badge = overdue ? '<span class="badge red">Overdue</span>' : due ? '<span class="badge yellow">Due Today</span>' : '<span class="badge gray">Scheduled</span>';
+          return `<tr><td>${idx+1}</td><td>${escapeHtml(inst.date||'—')}</td><td>${formatCurrency(inst.amount)}</td><td>${badge}</td></tr>`;
+        }).join('');
+      }
+    }
+
+    const payBody = el('paymentsBody');
+    if (payBody) {
+      if (!myFee.payments.length) {
+        payBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:1rem;">No payments recorded.</td></tr>';
+      } else {
+        payBody.innerHTML = myFee.payments.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(p => {
+          const pid = escapeHtml(p.id||'');
+          return `<tr class="clickable" onclick="openReceiptDetail('${pid}')">
+            <td>${escapeHtml(p.date||'—')}</td>
+            <td><span class="badge green">${formatCurrency(p.amount)}</span></td>
+            <td>${escapeHtml(p.method||'—')}</td>
+            <td>${escapeHtml(p.reference||'—')}</td>
+            <td><span class="badge gray">Recorded</span></td>
+          </tr>`;
+        }).join('');
+      }
+    }
+
+    const invBody = el('invoicesBody');
+    if (invBody) {
+      if (!myInvoices.length) {
+        invBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:1rem;">No invoices recorded.</td></tr>';
+      } else {
+        invBody.innerHTML = myInvoices.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(inv => {
+          const status = inv.status || 'Unpaid';
+          const sc = status === 'Paid' ? 'green' : status === 'Overdue' ? 'red' : 'yellow';
+          return `<tr class="clickable" onclick="openInvoiceDetail('${escapeHtml(inv.id)}')">
+            <td>${escapeHtml(inv.date||'—')}</td>
+            <td>${escapeHtml(inv.description||'—')}</td>
+            <td>${escapeHtml(inv.caseName||'—')}</td>
+            <td>${formatCurrency(inv.amount)}</td>
+            <td><span class="badge ${sc}">${escapeHtml(status)}</span></td>
+          </tr>`;
+        }).join('');
+      }
+    }
+  } catch(e) { console.warn('renderPayments error:', e); }
+}
+
+function logoImgTag() {
+  if (firmLogoBase64) return `<img src="${firmLogoBase64}" class="inv-logo" alt="Logo">`;
+  return '<div style="height:64px;width:64px;border-radius:50%;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">KK</div>';
+}
+
+function openInvoiceDetail(invoiceId) {
+  const inv = myInvoices.find(i => i.id === invoiceId);
+  if (!inv) { showToast('Invoice not found.', 'error'); return; }
+  selectedInvoiceId = invoiceId;
+  const clientName = safeStr(currentClientData && currentClientData.name) || 'Client';
+  const html = `
+    <div class="invoice-sheet">
+      <div class="inv-head">
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          ${logoImgTag()}
+          <div><h2 style="margin:0;">INVOICE</h2><div style="font-size:.78rem;color:#475569;">Kuria Karatu &amp; Company Advocates</div></div>
+        </div>
+        <div class="inv-company">
+          <strong>Kuria Karatu &amp; Company Advocates</strong><br>
+          Ntugi House, 1st flr rm 10, Meru Town<br>
+          Tel: 0725799752 / 0726780451
+        </div>
+      </div>
+      <div class="inv-meta">
+        <div><strong>Invoice #:</strong> ${escapeHtml(inv.invoiceNumber||'#')}</div>
+        <div><strong>Client:</strong> ${escapeHtml(clientName)}</div>
+        <div><strong>Case:</strong> ${escapeHtml(inv.caseName||'N/A')}</div>
+        <div><strong>Date:</strong> ${escapeHtml(inv.date||'—')}</div>
+        <div><strong>Terms:</strong> ${escapeHtml(String(inv.terms||30))} days</div>
+        <div><strong>Status:</strong> ${escapeHtml(inv.status||'Unpaid')}</div>
+      </div>
+      <table>
+        <thead><tr><th>Description</th><th style="text-align:right;">Amount (KES)</th></tr></thead>
+        <tbody><tr><td>${escapeHtml(inv.description||'Legal services')}</td><td style="text-align:right;">${Number(inv.amount||0).toLocaleString()}</td></tr></tbody>
+      </table>
+      <div class="inv-total">Total: KES ${Number(inv.amount||0).toLocaleString()}</div>
+      <div class="inv-foot">Thank you for your business. Payment is due within ${escapeHtml(String(inv.terms||30))} days.</div>
+    </div>`;
+  document.getElementById('invoiceContent').innerHTML = html;
+  document.getElementById('invoiceModal').classList.add('show');
+  document.body.classList.add('no-scroll');
+}
+function closeInvoice() {
+  document.getElementById('invoiceModal').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  selectedInvoiceId = null;
+}
+function printInvoice() {
+  if (!selectedInvoiceId) return;
+  const inv = myInvoices.find(i => i.id === selectedInvoiceId);
+  if (!inv) return;
+  const content = document.getElementById('invoiceContent').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${escapeHtml(inv.invoiceNumber||'')}</title><style>
+    body{font-family:'Segoe UI',Roboto,sans-serif;padding:2rem;color:#1e293b;max-width:900px;margin:auto;}
+    .inv-head{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0f172a;padding-bottom:.5rem;margin-bottom:1rem;flex-wrap:wrap;gap:1rem;}
+    .inv-head h2{font-size:1.35rem;margin:0;}
+    .inv-logo{height:64px;width:auto;max-width:140px;object-fit:contain;}
+    .inv-company{text-align:right;font-size:.8rem;color:#475569;}
+    .inv-meta{display:flex;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;font-size:.85rem;}
+    table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem;}
+    th{background:#f1f5f9;padding:.55rem;text-align:left;font-size:.72rem;text-transform:uppercase;color:#475569;}
+    td{padding:.55rem;border-bottom:1px solid #e9edf2;}
+    .inv-total{font-weight:700;font-size:1.05rem;border-top:2px solid #0f172a;padding-top:.55rem;text-align:right;}
+    .inv-foot{margin-top:1.5rem;text-align:center;color:#64748b;font-size:.72rem;border-top:1px solid #e9edf2;padding-top:.75rem;}
+  </style></head><body>${content}<script>setTimeout(()=>window.print(),400);<\/script></body></html>`);
+  win.document.close();
+}
+
+function openReceiptDetail(paymentId) {
+  const p = myFee.payments.find(x => x.id === paymentId);
+  if (!p) { showToast('Payment not found.', 'error'); return; }
+  selectedReceiptId = paymentId;
+  const clientName = safeStr(currentClientData && currentClientData.name) || 'Client';
+  const matchedReceipt = myReceipts.find(r => r.invoiceId && p.reference && r.invoiceId === p.reference);
+  const receiptNumber = matchedReceipt ? matchedReceipt.receiptNumber : 'RCP-' + (p.id || '').slice(-8).toUpperCase();
+  const html = `
+    <div class="invoice-sheet">
+      <div class="inv-head">
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          ${logoImgTag()}
+          <div><h2 style="margin:0;">PAYMENT RECEIPT</h2><div style="font-size:.78rem;color:#475569;">Kuria Karatu &amp; Company Advocates</div></div>
+        </div>
+        <div class="inv-company">
+          <strong>Kuria Karatu &amp; Company Advocates</strong><br>
+          Ntugi House, 1st flr rm 10, Meru Town<br>
+          Tel: 0725799752 / 0726780451
+        </div>
+      </div>
+      <div style="text-align:center;margin:.5rem 0;">
+        <span class="digital-stamp"><i class="fas fa-stamp"></i> Verified ${escapeHtml(p.date||'')}</span>
+      </div>
+      <div class="inv-meta">
+        <div><strong>Receipt #:</strong> ${escapeHtml(receiptNumber)}</div>
+        <div><strong>Client:</strong> ${escapeHtml(clientName)}</div>
+        <div><strong>Date:</strong> ${escapeHtml(p.date||'—')}</div>
+        <div><strong>Method:</strong> ${escapeHtml(p.method||'—')}</div>
+        <div><strong>Reference:</strong> ${escapeHtml(p.reference||'—')}</div>
+      </div>
+      <table>
+        <thead><tr><th>Description</th><th style="text-align:right;">Amount (KES)</th></tr></thead>
+        <tbody><tr><td>${escapeHtml(p.notes || 'Fee payment')}</td><td style="text-align:right;">${Number(p.amount||0).toLocaleString()}</td></tr></tbody>
+      </table>
+      <div class="inv-total">Total Paid: KES ${Number(p.amount||0).toLocaleString()}</div>
+      <div class="inv-foot">This is a computer-generated receipt. Kindly retain for your records.</div>
+    </div>`;
+  document.getElementById('receiptContent').innerHTML = html;
+  document.getElementById('receiptModal').classList.add('show');
+  document.body.classList.add('no-scroll');
+}
+function closeReceipt() {
+  document.getElementById('receiptModal').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  selectedReceiptId = null;
+}
+function printReceipt() {
+  if (!selectedReceiptId) return;
+  const content = document.getElementById('receiptContent').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt</title><style>
+    body{font-family:'Segoe UI',Roboto,sans-serif;padding:2rem;color:#1e293b;max-width:900px;margin:auto;}
+    .inv-head{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0f172a;padding-bottom:.5rem;margin-bottom:1rem;flex-wrap:wrap;gap:1rem;}
+    .inv-head h2{font-size:1.35rem;margin:0;}
+    .inv-logo{height:64px;width:auto;max-width:140px;object-fit:contain;}
+    .inv-company{text-align:right;font-size:.8rem;color:#475569;}
+    .inv-meta{display:flex;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;font-size:.85rem;}
+    table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.85rem;}
+    th{background:#f1f5f9;padding:.55rem;text-align:left;font-size:.72rem;text-transform:uppercase;color:#475569;}
+    td{padding:.55rem;border-bottom:1px solid #e9edf2;}
+    .inv-total{font-weight:700;font-size:1.05rem;border-top:2px solid #0f172a;padding-top:.55rem;text-align:right;}
+    .inv-foot{margin-top:1.5rem;text-align:center;color:#64748b;font-size:.72rem;border-top:1px solid #e9edf2;padding-top:.75rem;}
+    .digital-stamp{display:inline-block;border:2px solid #3b82f6;border-radius:50%;padding:.4rem .7rem;font-size:.6rem;font-weight:700;color:#3b82f6;background:#f0f7ff;}
+  </style></head><body>${content}<script>setTimeout(()=>window.print(),400);<\/script></body></html>`);
+  win.document.close();
+}
+
+/* ================================================================
+   RENDER: DOCUMENTS
+   ================================================================ */
+function renderDocuments() {
+  const tbody = document.getElementById('documentsBody');
+  const badge = document.getElementById('docCountBadge');
+  if (!tbody) return;
+  if (badge) badge.textContent = myDocuments.length;
+  if (!myDocuments.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:1rem;">No documents yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = myDocuments.map(d => {
+    const fid = safeStr(d.fileId || d.id).replace(/'/g, "\\'");
+    const fname = safeStr(d.name).replace(/'/g, "\\'");
+    return `<tr>
+      <td><i class="fas fa-file-pdf" style="color:#ef4444;margin-right:.4rem;"></i> ${escapeHtml(d.name||'—')}</td>
+      <td><span class="badge">${escapeHtml(d.category||'—')}</span></td>
+      <td>${escapeHtml(d.matter||'—')}</td>
+      <td>${escapeHtml(d.uploaded||'—')}</td>
+      <td>${escapeHtml(d.size||'—')}</td>
+      <td style="text-align:center;">
+        <button class="btn btn-sm btn-primary" onclick="downloadClientDoc('${fid}','${fname}')"><i class="fas fa-download"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function downloadClientDoc(fileId, fileName) {
+  const doc = myDocuments.find(d => (d.fileId || d.id) === fileId);
+  if (!doc) { showToast('Document not found.', 'error'); return; }
+  const dataUrl = doc.base64 || doc.downloadUrl;
+  if (!dataUrl) { showToast('File not available for download.', 'warning'); return; }
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = fileName || 'document';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/* ================================================================
+   RENDER: APPOINTMENTS
+   ================================================================ */
+function renderAppointments() {
+  const tbody = document.getElementById('appointmentsBody');
+  const pastBody = document.getElementById('pastAppointmentsBody');
+  const today = getToday();
+  if (tbody) {
+    const upcoming = myTasks.filter(t => t.status === 'Scheduled' && t.date >= today)
+      .sort((a,b) => safeStr(a.date).localeCompare(safeStr(b.date)));
+    if (!upcoming.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:1rem;">No upcoming appointments.</td></tr>';
+    } else {
+      tbody.innerHTML = upcoming.map(t => {
+        const pc = (t.priority||'Medium').toLowerCase();
+        const pb = pc === 'high' ? 'red' : pc === 'low' ? 'green' : 'yellow';
+        const sc = t.status === 'Scheduled' ? 'yellow' : t.status === 'Completed' ? 'green' : 'gray';
+        return `<tr class="clickable" onclick="openAppointmentDetail('${escapeHtml(t.id)}')">
+          <td><strong>${escapeHtml(t.title||'—')}</strong>${t.cancelRequested ? ' <span class="badge red">Cancellation Requested</span>' : ''}</td>
+          <td>${escapeHtml(t.caseName||'General')}</td>
+          <td>${escapeHtml(t.date||'—')}</td>
+          <td>${escapeHtml(t.time||'—')}</td>
+          <td><i class="fas fa-map-pin" style="color:#94a3b8;font-size:.7rem;"></i> ${escapeHtml(t.location||'—')}</td>
+          <td><span class="badge ${pb}">${escapeHtml(t.priority||'Medium')}</span></td>
+          <td><span class="badge ${sc}">${escapeHtml(t.status||'—')}</span></td>
+        </tr>`;
+      }).join('');
+    }
+  }
+  if (pastBody) {
+    const past = myTasks.filter(t => t.status !== 'Scheduled' || t.date < today)
+      .sort((a,b) => safeStr(b.date).localeCompare(safeStr(a.date)))
+      .slice(0, 20);
+    if (!past.length) {
+      pastBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:1rem;">No past appointments.</td></tr>';
+    } else {
+      pastBody.innerHTML = past.map(t => {
+        const sc = t.status === 'Completed' ? 'green' : t.status === 'Cancelled' ? 'gray' : 'yellow';
+        return `<tr>
+          <td><strong>${escapeHtml(t.title||'—')}</strong></td>
+          <td>${escapeHtml(t.caseName||'General')}</td>
+          <td>${escapeHtml(t.date||'—')}</td>
+          <td>${escapeHtml(t.time||'—')}</td>
+          <td>${escapeHtml(t.location||'—')}</td>
+          <td><span class="badge ${sc}">${escapeHtml(t.status||'—')}</span></td>
+        </tr>`;
+      }).join('');
+    }
+  }
+}
+
+function openAppointmentDetail(taskId) {
+  const t = myTasks.find(x => x.id === taskId);
+  if (!t) { showToast('Appointment not found.', 'error'); return; }
+  selectedAppointmentId = taskId;
+  document.getElementById('appointmentContent').innerHTML = `
+    <div style="background:#f8fafc;padding:.75rem;border-radius:.5rem;border:1px solid #e2e8f0;margin-bottom:.75rem;">
+      <div style="font-weight:700;font-size:1rem;color:#0f172a;">${escapeHtml(t.title||'—')}</div>
+      <div style="font-size:.78rem;color:#64748b;margin-top:.35rem;">${escapeHtml(t.caseName||'General')} · Priority: ${escapeHtml(t.priority||'Medium')}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;font-size:.85rem;">
+      <div><strong>Date:</strong> ${escapeHtml(t.date||'—')}</div>
+      <div><strong>Time:</strong> ${escapeHtml(t.time||'—')}</div>
+      <div style="grid-column:1/-1;"><strong>Location:</strong> ${escapeHtml(t.location||'—')}</div>
+      ${t.reminderDate ? `<div><strong>Reminder:</strong> ${escapeHtml(t.reminderDate)} ${escapeHtml(t.reminderTime||'')}</div>` : ''}
+      <div><strong>Status:</strong> ${escapeHtml(t.status||'—')}</div>
+    </div>
+    ${t.description ? `<div style="margin-top:.75rem;padding:.6rem;background:#f0f7ff;border-radius:.5rem;border:1px solid #dbeafe;font-size:.82rem;"><strong>Notes:</strong> ${escapeHtml(t.description)}</div>` : ''}
+    ${t.cancelRequested ? '<div style="margin-top:.75rem;padding:.5rem;background:#fef3c7;border-radius:.5rem;border:1px solid #fde68a;font-size:.82rem;color:#92400e;"><strong>Cancellation requested.</strong> Your advocate will confirm shortly.</div>' : ''}
+  `;
+  const cancelBtn = document.getElementById('requestCancelBtn');
+  if (t.cancelRequested) cancelBtn.style.display = 'none';
+  else cancelBtn.style.display = 'inline-flex';
+  document.getElementById('appointmentModal').classList.add('show');
+  document.body.classList.add('no-scroll');
+}
+function closeAppointment() {
+  document.getElementById('appointmentModal').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  selectedAppointmentId = null;
+}
+async function requestCancellation() {
+  if (!selectedAppointmentId) return;
+  if (!confirm('Request cancellation of this appointment? Your advocate will be notified.')) return;
+  try {
+    await db.collection('tasks').doc(selectedAppointmentId).update({
+      cancelRequested: true,
+      cancelRequestedAt: getDateTime(),
+      cancelRequestedBy: currentUserEmail
+    });
+    await db.collection('clientNotifications').add({
+      uid: currentUser.uid,
+      clientId: currentClientId,
+      type: 'cancelRequest',
+      title: 'Cancellation Requested',
+      message: 'Your advocate has been notified and will confirm shortly.',
+      createdAt: getDateTime(),
+      read: false
+    });
+    showToast('Cancellation requested. Your advocate will be notified.', 'info');
+    closeAppointment();
+  } catch(e) {
+    console.error('Cancel request error:', e);
+    showToast('Could not submit cancellation: ' + e.message, 'error');
+  }
+}
+
+/* ================================================================
+   RENDER: REQUESTS
+   ================================================================ */
+function renderRequests() {
+  const list = document.getElementById('docRequestsList');
+  if (!list) return;
+  const requests = Array.isArray(currentClientData && currentClientData.docRequests)
+    ? currentClientData.docRequests.slice().sort((a,b) => (b.requestedAt||'').localeCompare(a.requestedAt||''))
+    : [];
+  if (!requests.length) {
+    list.innerHTML = '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem;">No document requests at the moment.</p>';
+    return;
+  }
+  list.innerHTML = requests.map(r => {
+    const statusClass = r.status === 'received' ? 'green' : r.status === 'cancelled' ? 'gray' : 'yellow';
+    const actions = r.status === 'pending'
+      ? `<button class="btn btn-sm btn-gold" onclick="openUploadRequestModal('${escapeHtml(r.id)}')"><i class="fas fa-upload"></i> Upload</button>`
+      : r.status === 'received' && r.fileId
+        ? `<button class="btn btn-sm btn-primary" onclick="downloadClientDoc('${escapeHtml(r.fileId)}','${escapeHtml(r.fileName||r.title||'document')}')"><i class="fas fa-download"></i></button>`
+        : '';
+    return `<div style="padding:.75rem;border:1px solid var(--slate-200);border-radius:var(--radius-md);margin-bottom:.6rem;background:#fff;">
+      <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;align-items:flex-start;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-weight:600;color:var(--navy-800);">${escapeHtml(r.title||'Untitled request')}</div>
+          ${r.description ? `<div style="font-size:.82rem;color:var(--slate-600);margin-top:.25rem;">${escapeHtml(r.description)}</div>` : ''}
+          <div style="font-size:.72rem;color:var(--slate-400);margin-top:.35rem;">
+            Requested: ${escapeHtml(r.requestedAt||'—')}
+            ${r.dueDate ? ` · Due: ${escapeHtml(r.dueDate)}` : ''}
+            ${r.receivedAt ? ` · Received: ${escapeHtml(r.receivedAt)}` : ''}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;">
+          <span class="badge ${statusClass}">${escapeHtml(r.status||'pending')}</span>
+          ${actions}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openUploadRequestModal(reqId) {
+  if (!currentClientData || !Array.isArray(currentClientData.docRequests)) return;
+  const req = currentClientData.docRequests.find(r => r.id === reqId);
+  if (!req) { showToast('Request not found.', 'error'); return; }
+  pendingRequestContext = req;
+  document.getElementById('uploadRequestSub').textContent = `Upload: ${req.title}`;
+  document.getElementById('uploadRequestInfo').innerHTML = `
+    <strong>${escapeHtml(req.title)}</strong>
+    ${req.description ? `<div style="margin-top:.35rem;">${escapeHtml(req.description)}</div>` : ''}
+    ${req.dueDate ? `<div style="margin-top:.35rem;color:#64748b;font-size:.78rem;">Due: ${escapeHtml(req.dueDate)}</div>` : ''}
+  `;
+  document.getElementById('uploadRequestFile').value = '';
+  document.getElementById('uploadRequestNotes').value = '';
+  document.getElementById('uploadRequestError').textContent = '';
+  document.getElementById('uploadRequestModal').classList.add('show');
+  document.body.classList.add('no-scroll');
+}
+function closeUploadRequestModal() {
+  document.getElementById('uploadRequestModal').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  pendingRequestContext = null;
+}
+
+async function submitRequestedDoc() {
+  if (!pendingRequestContext) { showToast('No request in context.', 'error'); return; }
+  const file = document.getElementById('uploadRequestFile').files[0];
+  const notes = document.getElementById('uploadRequestNotes').value.trim();
+  const errEl = document.getElementById('uploadRequestError');
+  const btn = document.getElementById('uploadRequestBtn');
+  errEl.textContent = '';
+  if (!file) { errEl.textContent = 'Please select a file.'; return; }
+  if (!isExtAllowed(file.name)) { errEl.textContent = 'File type not allowed.'; return; }
+  if (!isMimeAllowed(file)) { errEl.textContent = 'File content type not allowed.'; return; }
+  if (file.size > 10 * 1024 * 1024) { errEl.textContent = 'File too large (max 10MB).'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+  try {
+    const base64 = await readFileAsBase64(file);
+    const fileId = 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const uploadedAt = getDateTime();
+    const reqTitle = pendingRequestContext.title || 'Requested Document';
+
+    await db.collection('documents').doc(fileId).set({
+      fileId,
+      name: file.name,
+      category: 'Client Upload',
+      matter: safeStr(currentClientData.name) || '',
+      caseId: null,
+      caseName: '',
+      caseNo: '',
+      clientId: currentClientId,
+      clientName: safeStr(currentClientData.name) || '',
+      uploaded: uploadedAt,
+      size: formatFileSize(file.size),
+      sizeBytes: file.size,
+      base64: base64,
+      downloadUrl: base64,
+      uploadedBy: currentUserEmail,
+      uploadedByRole: 'client',
+      mimeType: file.type,
+      requestId: pendingRequestContext.id,
+      requestTitle: reqTitle,
+      createdAt: uploadedAt
+    });
+
+    const updatedRequests = (currentClientData.docRequests || []).map(r => {
+      if (r.id !== pendingRequestContext.id) return r;
+      return { ...r, status: 'received', fileId, fileName: file.name, receivedAt: uploadedAt, notes };
+    });
+    await db.collection('clients').doc(currentClientId).update({ docRequests: updatedRequests });
+
+    const clientDocs = Array.isArray(currentClientData.documents) ? currentClientData.documents : [];
+    clientDocs.push({ name: file.name, fileId, uploaded: uploadedAt, size: formatFileSize(file.size), description: `Uploaded for request: ${reqTitle}` });
+    await db.collection('clients').doc(currentClientId).update({ documents: clientDocs });
+
+    showToast('Document uploaded successfully!', 'info');
+    closeUploadRequestModal();
+  } catch(e) {
+    console.error('Requested doc upload error:', e);
+    errEl.textContent = 'Upload failed: ' + (e.message || 'Unknown error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+  }
+}
+
+/* ================================================================
+   RENDER: MESSAGES
+   ================================================================ */
+function renderMessages() {
+  const list = document.getElementById('messagesList');
+  if (!list) return;
+  if (!myMessages.length) {
+    list.innerHTML = '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem;">No messages yet.</p>';
+    return;
+  }
+  list.innerHTML = myMessages.map(m => {
+    const isClient = m.sender === 'client';
+    return `<div style="padding:.75rem;border-bottom:1px solid #f1f5f9;${isClient?'':'background:#f8fafc;'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem;">
+        <span class="badge ${isClient?'blue':'gold'}">${isClient?'You':'Firm'}</span>
+        <span style="font-size:.7rem;color:#94a3b8;">${escapeHtml(m.createdAt||'')}</span>
+      </div>
+      <div style="font-size:.82rem;font-weight:600;color:#1e293b;">${escapeHtml(m.subject||'No subject')}</div>
+      <div style="font-size:.82rem;color:#475569;margin-top:.25rem;white-space:pre-wrap;">${escapeHtml(m.body||'')}</div>
+      ${m.caseName ? `<div style="font-size:.7rem;color:#94a3b8;margin-top:.25rem;"><i class="fas fa-folder-open"></i> ${escapeHtml(m.caseName)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function sendClientMessage() {
+  const caseId = document.getElementById('messageCaseSelect').value;
+  const subject = document.getElementById('messageSubject').value.trim();
+  const body = document.getElementById('messageBody').value.trim();
+  const statusEl = document.getElementById('messageStatus');
+  const btn = document.getElementById('sendMessageBtn');
+  statusEl.textContent = ''; statusEl.style.color = '';
+  if (!body) { statusEl.style.color = '#ef4444'; statusEl.textContent = 'Please type a message.'; return; }
+  const selectedCase = myCases.find(c => c.id === caseId);
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+  try {
+    await db.collection('clientMessages').add({
+      clientId: currentClientId,
+      clientName: safeStr(currentClientData && currentClientData.name) || '',
+      clientEmail: currentUserEmail,
+      caseId: caseId || null,
+      caseName: selectedCase ? (selectedCase.name || selectedCase.caseNo) : '',
+      subject: subject || 'No subject',
+      body,
+      sender: 'client',
+      senderRole: 'client',
+      createdAt: getDateTime(),
+      read: false
+    });
+    statusEl.style.color = '#22c55e';
+    statusEl.textContent = 'Message sent!';
+    document.getElementById('messageSubject').value = '';
+    document.getElementById('messageBody').value = '';
+    showToast('Message sent to firm.', 'info');
+  } catch(e) {
+    statusEl.style.color = '#ef4444';
+    statusEl.textContent = 'Could not send: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+  }
+}
+
+/* ================================================================
+   RENDER: NOTIFICATIONS
+   ================================================================ */
+function renderNotifications() {
+  const list = document.getElementById('notificationsList');
+  if (!list) return;
+  if (!myNotifications.length) {
+    list.innerHTML = '<p style="color:#64748b;font-size:.85rem;text-align:center;padding:1rem;">No notifications yet.</p>';
+    return;
+  }
+  list.innerHTML = myNotifications.map(n => {
+    const unread = !n.read;
+    return `<div style="padding:.75rem;border-bottom:1px solid #f1f5f9;${unread?'background:#f0f7ff;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem;">
+        <span class="badge ${unread?'gold':'gray'}">${escapeHtml(n.type||'notice')}</span>
+        <span style="font-size:.7rem;color:#94a3b8;">${escapeHtml(n.createdAt||'')}</span>
+      </div>
+      <div style="font-weight:600;font-size:.85rem;color:#1e293b;">${escapeHtml(n.title||'')}</div>
+      <div style="font-size:.82rem;color:#475569;margin-top:.2rem;">${escapeHtml(n.message||'')}</div>
+    </div>`;
+  }).join('');
+}
+function updateNotifBadge() {
+  const count = myNotifications.filter(n => !n.read).length;
+  const badge = document.getElementById('notifCount');
+  if (!badge) return;
+  if (count > 0) { badge.textContent = count; badge.style.display = 'flex'; }
+  else badge.style.display = 'none';
+}
+async function markNotificationsRead() {
+  const unread = myNotifications.filter(n => !n.read);
+  if (!unread.length) return;
+  try {
+    const batch = db.batch();
+    unread.forEach(n => batch.update(db.collection('clientNotifications').doc(n.id), { read: true }));
+    await batch.commit();
+  } catch(e) { console.warn('mark read failed:', e); }
+}
+
+/* ================================================================
+   RENDER: PROFILE
+   ================================================================ */
+function renderProfile() {
+  if (!currentClientData) return;
+  document.getElementById('profileName').value = safeStr(currentClientData.name) || '';
+  document.getElementById('profileEmail').value = safeStr(currentClientData.email) || currentUserEmail;
+  document.getElementById('profilePhone').value = safeStr(currentClientData.phone) || '';
+  document.getElementById('profileAddress').value = safeStr(currentClientData.address) || '';
+  document.getElementById('profilePreferredContact').value = safeStr(currentClientData.preferredContact) || 'WhatsApp';
+}
+
+async function saveProfile() {
+  const statusEl = document.getElementById('profileStatus');
+  statusEl.textContent = ''; statusEl.style.color = '';
+  const phone = document.getElementById('profilePhone').value.trim();
+  const address = document.getElementById('profileAddress').value.trim();
+  const preferred = document.getElementById('profilePreferredContact').value;
+  try {
+    await db.collection('clients').doc(currentClientId).update({
+      phone,
+      address,
+      preferredContact: preferred,
+      profileUpdatedAt: getDateTime()
+    });
+    statusEl.style.color = '#22c55e';
+    statusEl.textContent = 'Profile updated.';
+    showToast('Profile updated.', 'info');
+  } catch(e) {
+    console.error('saveProfile error:', e);
+    statusEl.style.color = '#ef4444';
+    statusEl.textContent = 'Could not save: ' + e.message;
+  }
+}
+
+async function changePassword() {
+  const current = document.getElementById('pwdCurrent').value;
+  const newPwd = document.getElementById('pwdNew').value;
+  const confirm = document.getElementById('pwdConfirm').value;
+  const statusEl = document.getElementById('pwdStatus');
+  statusEl.textContent = ''; statusEl.style.color = '';
+  if (!current || !newPwd || !confirm) { statusEl.style.color = '#ef4444'; statusEl.textContent = 'Fill all password fields.'; return; }
+  if (newPwd.length < 6) { statusEl.style.color = '#ef4444'; statusEl.textContent = 'New password must be at least 6 characters.'; return; }
+  if (newPwd !== confirm) { statusEl.style.color = '#ef4444'; statusEl.textContent = 'Passwords do not match.'; return; }
+  try {
+    const cred = firebase.auth.EmailAuthProvider.credential(currentUserEmail, current);
+    await currentUser.reauthenticateWithCredential(cred);
+    await currentUser.updatePassword(newPwd);
+    statusEl.style.color = '#22c55e';
+    statusEl.textContent = 'Password changed successfully.';
+    document.getElementById('pwdCurrent').value = '';
+    document.getElementById('pwdNew').value = '';
+    document.getElementById('pwdConfirm').value = '';
+    showToast('Password updated.', 'info');
+  } catch(e) {
+    console.error('changePassword error:', e);
+    let msg = e.message || 'Could not change password.';
+    if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Current password is incorrect.';
+    else if (e.code === 'auth/requires-recent-login') msg = 'Please log out and back in, then try again.';
+    statusEl.style.color = '#ef4444';
+    statusEl.textContent = msg;
+  }
+}
+
+/* ================================================================
+   RENDER: REPORT PREVIEW
+   ================================================================ */
+function renderReportPreview() {
+  const el = document.getElementById('reportPreviewContent');
+  if (!el) return;
+  const name = (currentClientData && currentClientData.name) || 'Client';
+  el.innerHTML = `
+    <div style="font-size:.85rem;color:#475569;line-height:1.6;">
+      <p><strong>Client:</strong> ${escapeHtml(name)}</p>
+      <p><strong>Cases:</strong> ${myCases.length}</p>
+      <p><strong>Agreed Fees:</strong> ${formatCurrency(myFee.total)}</p>
+      <p><strong>Total Paid:</strong> ${formatCurrency(myFee.paid)} (${myFee.pct}%)</p>
+      <p><strong>Balance:</strong> ${formatCurrency(myFee.balance)}</p>
+      <p><strong>Documents:</strong> ${myDocuments.length}</p>
+      <p><strong>Appointments:</strong> ${myTasks.length}</p>
+      <p><strong>Open Document Requests:</strong> ${(currentClientData && Array.isArray(currentClientData.docRequests) ? currentClientData.docRequests.filter(r => r.status === 'pending').length : 0)}</p>
+      <p style="margin-top:.75rem;font-size:.8rem;">Click "Download My Full Report" above to generate a complete printable file.</p>
+    </div>`;
+}
+
+/* ================================================================
+   CASE DROPDOWNS
+   ================================================================ */
+function populateCaseDropdowns() {
+  const sel = document.getElementById('uploadCaseSelect');
+  const msgSel = document.getElementById('messageCaseSelect');
+  const c1 = sel ? sel.value : '', c2 = msgSel ? msgSel.value : '';
+  if (sel) {
+    sel.innerHTML = '<option value="">— General / Not case-specific —</option>';
+    myCases.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = `${c.caseNo||'—'} — ${c.name||'Case'}`;
+      sel.appendChild(o);
+    });
+    sel.value = c1;
+  }
+  if (msgSel) {
+    msgSel.innerHTML = '<option value="">— General —</option>';
+    myCases.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = `${c.caseNo||'—'} — ${c.name||'Case'}`;
+      msgSel.appendChild(o);
+    });
+    msgSel.value = c2;
+  }
+}
+
+/* ================================================================
+   UPLOAD
+   ================================================================ */
+function initUpload() {
+  const area = document.getElementById('uploadArea');
+  const input = document.getElementById('fileInput');
+  if (!area || !input) return;
+  area.addEventListener('click', () => input.click());
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+  area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+  area.addEventListener('drop', e => {
+    e.preventDefault(); area.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+  });
+  input.addEventListener('change', () => { if (input.files.length) handleFileUpload(input.files[0]); });
+}
+
+async function handleFileUpload(file) {
+  const progress = document.getElementById('uploadProgress');
+  const bar = document.getElementById('uploadBar');
+  const label = document.getElementById('uploadLabel');
+  const errEl = document.getElementById('uploadError');
+  errEl.textContent = '';
+
+  if (!isExtAllowed(file.name)) { errEl.textContent = 'File extension not allowed. Use PDF, DOC, DOCX, JPG, or PNG.'; return; }
+  if (!isMimeAllowed(file)) { errEl.textContent = 'File content type not allowed.'; return; }
+  if (file.size > 10 * 1024 * 1024) { errEl.textContent = 'File too large. Max 10MB.'; return; }
+
+  const caseId = document.getElementById('uploadCaseSelect').value;
+  const category = document.getElementById('uploadCategory').value;
+  const selectedCase = myCases.find(c => c.id === caseId);
+
+  progress.classList.add('show');
+  bar.style.width = '0%';
+  label.textContent = 'Reading file...';
+
+  try {
+    const base64 = await readFileAsBase64(file);
+    bar.style.width = '40%';
+    label.textContent = 'Saving document...';
+
+    const fileId = 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const uploadedAt = getDateTime();
+    let matter = '';
+    if (selectedCase) matter = selectedCase.name || selectedCase.caseNo || '';
+    else if (currentClientData) matter = currentClientData.name || '';
+
+    await db.collection('documents').doc(fileId).set({
+      fileId,
+      name: file.name,
+      category,
+      matter,
+      caseId: caseId || null,
+      caseName: selectedCase ? (selectedCase.name || selectedCase.caseNo) : '',
+      caseNo: selectedCase ? (selectedCase.caseNo || '') : '',
+      clientId: currentClientId,
+      clientName: safeStr(currentClientData && currentClientData.name) || '',
+      uploaded: uploadedAt,
+      size: formatFileSize(file.size),
+      sizeBytes: file.size,
+      base64,
+      downloadUrl: base64,
+      uploadedBy: currentUserEmail,
+      uploadedByRole: 'client',
+      mimeType: file.type,
+      createdAt: uploadedAt
+    });
+
+    const clientDocs = Array.isArray(currentClientData.documents) ? currentClientData.documents : [];
+    clientDocs.push({ name: file.name, fileId, uploaded: uploadedAt, size: formatFileSize(file.size), description: `Category: ${category}` });
+    await db.collection('clients').doc(currentClientId).update({ documents: clientDocs });
+
+    if (caseId && selectedCase) {
+      try {
+        const caseDoc = await db.collection('cases').doc(caseId).get();
+        if (caseDoc.exists) {
+          const existing = Array.isArray(caseDoc.data().documents) ? caseDoc.data().documents : [];
+          existing.push({ name: file.name, fileId, uploaded: uploadedAt, uploadedBy: currentUserEmail, uploadedByRole: 'client', category });
+          await db.collection('cases').doc(caseId).update({ documents: existing });
+        }
+      } catch(caseErr) { console.warn('Could not attach to case:', caseErr); }
+    }
+
+    bar.style.width = '100%';
+    label.textContent = 'Upload complete!';
+    showToast('Document uploaded successfully!', 'info');
+    setTimeout(() => {
+      progress.classList.remove('show');
+      bar.style.width = '0%';
+      document.getElementById('fileInput').value = '';
+    }, 1500);
+  } catch(e) {
+    console.error('Upload error:', e);
+    progress.classList.remove('show');
+    errEl.textContent = 'Upload failed: ' + (e.message || 'Unknown error');
+    label.textContent = 'Upload failed';
+  }
+}
+
+/* ================================================================
+   FULL REPORT
+   ================================================================ */
+function downloadFullReport() {
+  showToast('Generating report...', 'info');
+  const chartImages = {};
+  Object.keys(charts).forEach(k => {
+    try { if (charts[k] && charts[k].toBase64Image) chartImages[k] = charts[k].toBase64Image(); } catch(e) {}
+  });
+  const name = (currentClientData && currentClientData.name) || 'Client';
+  const email = (currentClientData && currentClientData.email) || '';
+  const phone = (currentClientData && currentClientData.phone) || '';
+  const generatedAt = new Date().toLocaleString();
+  const esc = escapeHtml;
+
+  const casesRows = myCases.map(c => `<tr>
+    <td>${esc(c.caseNo||'—')}</td><td>${esc(c.name||'—')}</td><td>${esc(c.area||'—')}</td>
+    <td>${esc(c.courtType||'—')}</td><td>${c.filed?'Yes':'No'}</td><td>${esc(c.status||'—')}</td><td>${esc(c.filingDate||'—')}</td></tr>`).join('')
+    || '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No cases</td></tr>';
+
+  const instRows = (myFee.installments || []).map((inst, idx) => {
+    const badge = inst.paid ? 'Paid' : (inst.date < getToday() ? 'Overdue' : 'Scheduled');
+    return `<tr><td>${idx + 1}</td><td>${esc(inst.date||'—')}</td><td>${formatCurrency(inst.amount)}</td><td>${badge}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">No installments</td></tr>';
+
+  const payRows = (myFee.payments || []).map(p => `<tr>
+    <td>${esc(p.date||'—')}</td><td>${formatCurrency(p.amount)}</td>
+    <td>${esc(p.method||'—')}</td><td>${esc(p.reference||'—')}</td>
+    <td>${esc(p.notes||'—')}</td></tr>`).join('')
+    || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No payments</td></tr>';
+
+  const invRows = myInvoices.map(inv => `<tr>
+    <td>${esc(inv.date||'—')}</td><td>${esc(inv.description||'—')}</td>
+    <td>${esc(inv.caseName||'—')}</td><td>${formatCurrency(inv.amount)}</td>
+    <td>${esc(inv.status||'Unpaid')}</td></tr>`).join('')
+    || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No invoices</td></tr>';
+
+  const docsRows = myDocuments.map(d => `<tr>
+    <td>${esc(d.name||'—')}</td><td>${esc(d.category||'—')}</td>
+    <td>${esc(d.matter||'—')}</td><td>${esc(d.uploaded||'—')}</td></tr>`).join('')
+    || '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">No documents</td></tr>';
+
+  const taskRows = myTasks.map(t => `<tr>
+    <td>${esc(t.title||'—')}</td><td>${esc(t.caseName||'General')}</td>
+    <td>${esc(t.date||'—')}</td><td>${esc(t.time||'—')}</td>
+    <td>${esc(t.status||'—')}</td></tr>`).join('')
+    || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No appointments</td></tr>';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Client Report — ${esc(name)}</title>
+<style>
+body{font-family:'Segoe UI',Roboto,sans-serif;padding:2rem;color:#1e293b;max-width:1000px;margin:auto;}
+h1{color:#0f172a;border-bottom:3px solid #3b82f6;padding-bottom:.5rem;font-size:1.8rem;}
+h2{color:#0f172a;margin-top:2rem;font-size:1.2rem;border-bottom:1px solid #e2e8f0;padding-bottom:.4rem;}
+h3{color:#334155;font-size:1rem;margin-top:1.25rem;}
+.header-info{background:#f8fafc;padding:1rem;border-radius:.5rem;border:1px solid #e2e8f0;margin:1rem 0;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin:1.5rem 0;}
+.summary-card{background:#f8fafc;padding:1rem;border-radius:.75rem;border:1px solid #e2e8f0;}
+.summary-card .label{font-size:.7rem;text-transform:uppercase;color:#64748b;font-weight:600;}
+.summary-card .value{font-size:1.4rem;font-weight:700;margin-top:.2rem;}
+table{width:100%;border-collapse:collapse;margin:.75rem 0;font-size:.85rem;}
+th{background:#f1f5f9;padding:.6rem .5rem;text-align:left;font-size:.75rem;text-transform:uppercase;color:#475569;}
+td{padding:.55rem .5rem;border-bottom:1px solid #f1f5f9;}
+.chart-img{max-width:100%;margin:.75rem 0;border-radius:.5rem;border:1px solid #e2e8f0;}
+.footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;text-align:center;color:#64748b;font-size:.75rem;}
+</style></head><body>
+<h1>⚖ Kuria Karatu &amp; Company Advocates</h1>
+<p style="color:#64748b;margin-top:0;">Client Statement — ${esc(generatedAt)}</p>
+<div class="header-info">
+  <div><strong>Client:</strong> ${esc(name)}</div>
+  ${email?`<div><strong>Email:</strong> ${esc(email)}</div>`:''}
+  ${phone?`<div><strong>Phone:</strong> ${esc(phone)}</div>`:''}
+</div>
+<div class="summary-grid">
+  <div class="summary-card"><div class="label">Agreed Total</div><div class="value">${formatCurrency(myFee.total)}</div></div>
+  <div class="summary-card"><div class="label">Total Paid</div><div class="value" style="color:#22c55e;">${formatCurrency(myFee.paid)}</div></div>
+  <div class="summary-card"><div class="label">Outstanding Balance</div><div class="value" style="color:#ef4444;">${formatCurrency(myFee.balance)}</div></div>
+  <div class="summary-card"><div class="label">Progress</div><div class="value">${myFee.pct}%</div></div>
+</div>
+${chartImages.progress?`<h3>Payment Progress</h3><img class="chart-img" src="${chartImages.progress}">`:''}
+${chartImages.breakdown?`<h3>Fee Breakdown</h3><img class="chart-img" src="${chartImages.breakdown}">`:''}
+${chartImages.areas?`<h3>Cases by Practice Area</h3><img class="chart-img" src="${chartImages.areas}">`:''}
+<h2>Cases</h2>
+<table><thead><tr><th>Case No.</th><th>Name</th><th>Practice</th><th>Court</th><th>Filed</th><th>Status</th><th>Filing Date</th></tr></thead>
+<tbody>${casesRows}</tbody></table>
+<h2>Scheduled Installments</h2>
+<table><thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th></tr></thead>
+<tbody>${instRows}</tbody></table>
+<h2>Payment History</h2>
+<table><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th></tr></thead>
+<tbody>${payRows}</tbody></table>
+<h2>Charges &amp; Invoices</h2>
+<table><thead><tr><th>Date</th><th>Description</th><th>Case</th><th>Amount</th><th>Status</th></tr></thead>
+<tbody>${invRows}</tbody></table>
+<h2>Documents</h2>
+<table><thead><tr><th>File</th><th>Category</th><th>Matter</th><th>Uploaded</th></tr></thead>
+<tbody>${docsRows}</tbody></table>
+<h2>Appointments</h2>
+<table><thead><tr><th>Title</th><th>Case</th><th>Date</th><th>Time</th><th>Status</th></tr></thead>
+<tbody>${taskRows}</tbody></table>
+<div class="footer">
+  <p>Computer-generated statement. Contact: 0725799752 / 0726780451</p>
+  <p>Kuria Karatu &amp; Company Advocates — Ntugi House, 1st flr rm 10, Meru Town</p>
+</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `KK_Client_Report_${name.replace(/[^a-zA-Z0-9]/g,'_')}_${getToday()}.html`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  showToast('Report downloaded.', 'info');
+}
+
+/* ================================================================
+   PRINT SUMMARY
+   ================================================================ */
+function printClientSummary() {
+  const name = (currentClientData && currentClientData.name) || 'Client';
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Allow pop-ups to print.', 'warning'); return; }
+  const esc = escapeHtml;
+  win.document.write(`<html><head><title>Summary — ${esc(name)}</title>
+  <style>
+  body{font-family:'Segoe UI',sans-serif;padding:2rem;color:#1e293b;max-width:900px;margin:auto;}
+  h1{border-bottom:3px solid #3b82f6;padding-bottom:.5rem;}
+  h2{margin-top:1.5rem;border-bottom:1px solid #e2e8f0;padding-bottom:.3rem;font-size:1.1rem;}
+  table{width:100%;border-collapse:collapse;margin:.5rem 0;font-size:.85rem;}
+  th{background:#f1f5f9;text-align:left;padding:.5rem;font-size:.75rem;text-transform:uppercase;}
+  td{padding:.5rem;border-bottom:1px solid #f1f5f9;}
+  .box{background:#f8fafc;padding:1rem;border-radius:.5rem;border:1px solid #e2e8f0;margin:1rem 0;}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1rem 0;}
+  .card{background:#f8fafc;padding:1rem;border-radius:.5rem;border:1px solid #e2e8f0;}
+  .card .l{font-size:.7rem;text-transform:uppercase;color:#64748b;font-weight:600;}
+  .card .v{font-size:1.4rem;font-weight:700;margin-top:.2rem;}
+  </style></head><body>
+  <h1>⚖ Kuria Karatu &amp; Company Advocates</h1>
+  <p style="color:#64748b;margin-top:0;">Client Statement — ${esc(new Date().toLocaleString())}</p>
+  <div class="box">
+    <strong>Client:</strong> ${esc(name)}<br>
+    <strong>Email:</strong> ${esc((currentClientData && currentClientData.email) || '—')}<br>
+    <strong>Phone:</strong> ${esc((currentClientData && currentClientData.phone) || '—')}
+  </div>
+  <div class="grid">
+    <div class="card"><div class="l">Agreed</div><div class="v">${formatCurrency(myFee.total)}</div></div>
+    <div class="card"><div class="l">Paid</div><div class="v" style="color:#22c55e;">${formatCurrency(myFee.paid)}</div></div>
+    <div class="card"><div class="l">Balance</div><div class="v" style="color:#ef4444;">${formatCurrency(myFee.balance)}</div></div>
+    <div class="card"><div class="l">Progress</div><div class="v">${myFee.pct}%</div></div>
+  </div>
+  <h2>Cases</h2>
+  <table><thead><tr><th>Case No.</th><th>Name</th><th>Practice</th><th>Court</th><th>Filed</th><th>Status</th></tr></thead><tbody>
+  ${myCases.length ? myCases.map(c=>`<tr><td><strong>${esc(c.caseNo||'—')}</strong></td><td>${esc(c.name||'—')}</td><td>${esc(c.area||'—')}</td><td>${esc(c.courtType||'—')}</td><td>${c.filed?'Yes':'No'}</td><td>${esc(c.status||'—')}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No cases</td></tr>'}
+  </tbody></table>
+  <h2>Payments</h2>
+  <table><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th></tr></thead><tbody>
+  ${(myFee.payments||[]).length ? myFee.payments.map(p=>`<tr><td>${esc(p.date||'—')}</td><td>${formatCurrency(p.amount)}</td><td>${esc(p.method||'—')}</td><td>${esc(p.reference||'—')}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">None</td></tr>'}
+  </tbody></table>
+  <div style="margin-top:2rem;text-align:center;color:#64748b;font-size:.75rem;border-top:1px solid #e2e8f0;padding-top:1rem;">
+    Ntugi House, 1st flr rm 10, Meru Town — Tel: 0725799752 / 0726780451
+  </div>
+  <script>setTimeout(()=>window.print(),400);<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+/* ================================================================
+   LOGOUT
+   ================================================================ */
+async function portalLogout(skipConfirm) {
+  if (!skipConfirm && !confirm('Log out of your client portal?')) return;
+  detachAllListenersIncludingAccount();
+  listenersAttached = false;
+  currentClientData = null; currentClientId = null; clientNameForMatching = '';
+  myCases = []; myInvoices = []; myDocuments = []; myTasks = []; myMessages = []; myNotifications = []; myReceipts = [];
+  myFee = { total:0, paid:0, balance:0, pct:0, installments:[], payments:[], deposit:0, nextDue:null };
+  try { await auth.signOut(); } catch(e) { console.warn('Sign out error:', e); }
+  showAuthScreen();
+  if (!skipConfirm) showToast('Logged out.', 'info');
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+document.addEventListener('DOMContentLoaded', () => { initUpload(); });
+const cm = document.getElementById('uploadRequestModal');
+if (cm) cm.addEventListener('click', function(e) { if (e.target === this) closeUploadRequestModal(); });
+const cdm = document.getElementById('caseDetailModal');
+if (cdm) cdm.addEventListener('click', function(e) { if (e.target === this) closeCaseDetail(); });
+const im = document.getElementById('invoiceModal');
+if (im) im.addEventListener('click', function(e) { if (e.target === this) closeInvoice(); });
+const rm = document.getElementById('receiptModal');
+if (rm) rm.addEventListener('click', function(e) { if (e.target === this) closeReceipt(); });
+const am = document.getElementById('appointmentModal');
+if (am) am.addEventListener('click', function(e) { if (e.target === this) closeAppointment(); });
+
+/* ================================================================
+   EXPOSE GLOBALS
+   ================================================================ */
+window.switchAuthTab = switchAuthTab;
+window.checkApproval = checkApproval;
+window.portalLogout = portalLogout;
+window.switchTab = switchTab;
+window.scrollToTop = scrollToTop;
+window.downloadClientDoc = downloadClientDoc;
+window.downloadFullReport = downloadFullReport;
+window.printClientSummary = printClientSummary;
+window.sendClientMessage = sendClientMessage;
+window.openUploadRequestModal = openUploadRequestModal;
+window.closeUploadRequestModal = closeUploadRequestModal;
+window.submitRequestedDoc = submitRequestedDoc;
+window.openCaseDetail = openCaseDetail;
+window.closeCaseDetail = closeCaseDetail;
+window.downloadCaseDoc = downloadCaseDoc;
+window.openInvoiceDetail = openInvoiceDetail;
+window.closeInvoice = closeInvoice;
+window.printInvoice = printInvoice;
+window.openReceiptDetail = openReceiptDetail;
+window.closeReceipt = closeReceipt;
+window.printReceipt = printReceipt;
+window.openAppointmentDetail = openAppointmentDetail;
+window.closeAppointment = closeAppointment;
+window.requestCancellation = requestCancellation;
+window.saveProfile = saveProfile;
+window.changePassword = changePassword;
+
+console.log('Client Portal loaded');
+</script>
+</body>
+</html>
