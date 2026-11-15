@@ -452,206 +452,17 @@ function logoImgTag(extraStyle) {
 
 auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => console.warn('Persistence error:', err));
 
-let isSeeding = false;
-
-const DEFAULT_USERS = [
-    { email: 'admin@kuriakaratu.com', password: 'admin123', role: 'admin' },
-   
-    { email: 'clerk@kuriakaratu.com', password: 'clerk123', role: 'clerk' }
-];
-
-let authStateReady = false;
-auth.onAuthStateChanged(user => {
-    if (isSeeding) return;
-    if (!authStateReady) return;  // wait until seeding is done
-    const overlay = document.getElementById('loginOverlay');
-    const app = document.getElementById('mainApp');
-    if (user) {
-        auth.signOut().catch(err => console.warn('SignOut error:', err));
-    } else {
-        if (overlay) overlay.classList.remove('hidden');
-        if (app) app.style.display = 'none';
-    }
-});
-// Start seeding immediately after handler is attached
-seedDefaultUsers().catch(err => console.error('seedDefaultUsers failed:', err));
-
-// Watchdog: never leave the user stuck on "loading users"
-setTimeout(() => {
-    const loadingEl = document.getElementById('loginLoading');
-    if (loadingEl && loadingEl.style.display !== 'none') {
-        loadingEl.style.display = 'none';
-    }
-    const sel = document.getElementById('loginEmailSelect');
-    if (sel && (!sel.options.length || sel.options.length <= 1)) {
-        usersData = DEFAULT_USERS.map(u => ({ id: u.email, email: u.email, role: u.role }));
-        populateLoginDropdown();
-    }
-}, 8000);
-async function seedDefaultUsers() {
-    isSeeding = true;
-    const loadingEl = document.getElementById('loginLoading');
-    if (loadingEl) loadingEl.style.display = 'block';
-
-    try {
-        // 1. Try to read existing users (may be blocked by rules — that's OK)
-        const existing = new Set();
-        try {
-            const snap = await db.collection('users').get();
-            snap.forEach(d => { const e = d.data().email; if (e) existing.add(e); });
-        } catch (e) {
-            console.warn('Cannot read users collection (rules?):', e.code || e.message);
-        }
-
-        // 2. Create only the ones that are missing
-        for (const u of DEFAULT_USERS) {
-            if (existing.has(u.email)) continue;
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(u.email, u.password);
-                await db.collection('users').doc(cred.user.uid).set({
-                    email: u.email, role: u.role,
-                    createdAt: getDateTime(), lastLogin: null
-                });
-                await auth.signOut();
-            } catch (err) {
-                console.warn('Seed skipped for', u.email, err.code || err.message);
-            }
-        }
-    } catch (err) {
-        console.error('Error seeding users:', err);
-    } finally {
-        try { if (auth.currentUser) await auth.signOut(); } catch (e) {}
-        isSeeding = false;
-
-        if (loadingEl) loadingEl.style.display = 'none';
-
-        await loadUsersForLogin();
-        const overlay = document.getElementById('loginOverlay');
-        const app = document.getElementById('mainApp');
-        if (overlay) overlay.classList.remove('hidden');
-        if (app) app.style.display = 'none';
-    }
-}
-
-/* ============================================================
-   GLOBAL LOGO PROPAGATION
-   Applies the saved company logo to every location that
-   shows a brand mark: login, sidebar, PWA banner, favicon,
-   apple-touch-icon, and any element with [data-brand-logo].
-   ============================================================ */
-function applyCompanyLogoEverywhere() {
-    const src = companyLogoBase64 || LOGO_FALLBACK;
-
-    /* ---- 1. Login screen ---- */
-    const loginImg  = document.getElementById('loginLogoImg');
-    const loginIcon = document.getElementById('loginLogoIcon');
-    if (loginImg) {
-        if (companyLogoBase64) {
-            loginImg.src = companyLogoBase64;
-            loginImg.style.display = 'inline-block';
-            if (loginIcon) loginIcon.style.display = 'none';
-        } else {
-            loginImg.style.display = 'none';
-            if (loginIcon) loginIcon.style.display = 'inline-block';
-        }
-    }
-
-    /* ---- 2. Sidebar brand ---- */
-    const sideImg  = document.getElementById('sidebarLogoImg');
-    const sideIcon = document.getElementById('sidebarLogoIcon');
-    if (sideImg) {
-        if (companyLogoBase64) {
-            sideImg.src = companyLogoBase64;
-            sideImg.style.display = 'inline-block';
-            if (sideIcon) sideIcon.style.display = 'none';
-        } else {
-            sideImg.style.display = 'none';
-            if (sideIcon) sideIcon.style.display = 'inline-block';
-        }
-    }
-
-    /* ---- 3. PWA install banner ---- */
-    const pwaImg  = document.getElementById('pwaLogoImg');
-    const pwaIcon = document.getElementById('pwaLogoIcon');
-    if (pwaImg) {
-        if (companyLogoBase64) {
-            pwaImg.src = companyLogoBase64;
-            pwaImg.style.display = 'inline-block';
-            if (pwaIcon) pwaIcon.style.display = 'none';
-        } else {
-            pwaImg.style.display = 'none';
-            if (pwaIcon) pwaIcon.style.display = 'inline-block';
-        }
-    }
-
-    /* ---- 4. Favicon + Apple touch icon ---- */
-    if (companyLogoBase64) {
-        const fav32  = document.getElementById('favicon32');
-        const fav16  = document.getElementById('favicon16');
-        const apple  = document.getElementById('appleTouchIcon');
-        if (fav32)  fav32.href  = companyLogoBase64;
-        if (fav16)  fav16.href  = companyLogoBase64;
-        if (apple)  apple.href  = companyLogoBase64;
-
-        // Also set a dynamic favicon in case the HTML ones are missing
-        let dynFav = document.getElementById('dynamicFavicon');
-        if (!dynFav) {
-            dynFav = document.createElement('link');
-            dynFav.id = 'dynamicFavicon';
-            dynFav.rel = 'icon';
-            document.head.appendChild(dynFav);
-        }
-        dynFav.href = companyLogoBase64;
-    }
-
-    /* ---- 5. Any element marked with data-brand-logo ---- */
-    document.querySelectorAll('[data-brand-logo]').forEach(img => {
-        img.src = src;
-    });
-
-    /* ---- 6. Update the browser tab title icon cache ---- */
-    // (Chrome caches the tab icon; re-inserting forces a refresh)
-    if (companyLogoBase64) {
-        document.querySelectorAll('link[rel="icon"]').forEach(l => {
-            const href = l.href;
-            l.href = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-            setTimeout(() => { l.href = companyLogoBase64; }, 20);
-        });
-    }
-}
-window.applyCompanyLogoEverywhere = applyCompanyLogoEverywhere;
-
+// Staff accounts are provisioned by an administrator through Firebase Authentication
+// and a matching users/{uid} profile. Never create privileged accounts in browser code.
 async function loadUsersForLogin() {
-    usersData = [];
-    try {
-        const snap = await db.collection('users').get();
-        snap.forEach(doc => {
-            const d = doc.data();
-            d.id = doc.id;
-            if (d.email && d.email !== 'user@kuriakaratu.com') usersData.push(d);
-        });
-    } catch (e) {
-        console.warn('Failed to load users from Firestore:', e.code || e.message);
-    }
-
-    // Fallback: if Firestore gave us nothing, still let the admin in.
-    if (!usersData.length) {
-        usersData = DEFAULT_USERS.map(u => ({ id: u.email, email: u.email, role: u.role }));
-        console.warn('Using DEFAULT_USERS fallback for the login dropdown.');
-    }
-
-    populateLoginDropdown();
+    const options = document.getElementById('loginEmailOptions');
+    if (options) options.innerHTML = '';
 }
 
 function populateLoginDropdown() {
-    const list = document.getElementById('loginEmailOptions');
-    if (!list) return;
-    const sorted = [...usersData]
-        .filter(u => (u.email || '').toLowerCase() !== 'developer@kuriakaratu.com')
-        .sort((a, b) => a.email.localeCompare(b.email));
-    list.innerHTML = sorted.map(u =>
-        `<option value="${u.email}"></option>`
-    ).join('');
+    // Do not disclose staff account emails before authentication.
+    const options = document.getElementById('loginEmailOptions');
+    if (options) options.innerHTML = '';
 }
 
 let casesData = [];
@@ -2060,22 +1871,17 @@ document.getElementById('loginForm').addEventListener('submit', async function (
         const userCred = await auth.signInWithEmailAndPassword(email, password);
         const user = userCred.user;
 
-        // ----- Load or create the user profile in Firestore -----
-        const doc = await db.collection('users').doc(user.uid).get();
-        if (!doc.exists) {
-            await db.collection('users').doc(user.uid).set({
-                email: email,
-                role: 'clerk',
-                createdAt: getDateTime(),
-                lastLogin: getDateTime()
-            });
-            currentUserRole = 'clerk';
-        } else {
-            currentUserRole = doc.data().role || 'clerk';
-            await db.collection('users').doc(user.uid).update({
-                lastLogin: getDateTime()
-            });
+        // ----- Require a pre-provisioned staff profile; never self-assign a role -----
+        const profileSnap = await db.collection('users').doc(user.uid).get();
+        if (!profileSnap.exists) {
+            throw new Error('This staff account has not been provisioned. Contact the firm administrator.');
         }
+        const profile = profileSnap.data() || {};
+        if (!['admin', 'developer', 'clerk'].includes(profile.role)) {
+            throw new Error('This account does not have an authorised staff role.');
+        }
+        currentUserRole = profile.role;
+        await db.collection('users').doc(user.uid).update({ lastLogin: getDateTime() });
 
         currentUser = user;
         currentUserEmail = email;
@@ -2132,6 +1938,8 @@ document.getElementById('loginForm').addEventListener('submit', async function (
         }, 1400);
 
     } catch (error) {
+        // Clear any session that failed staff-profile or role verification.
+        try { if (auth.currentUser) await auth.signOut(); } catch (_) {}
         // ----- Reset the button and box on failure -----
         if (submitBtn) {
             submitBtn.classList.remove('is-loading');
