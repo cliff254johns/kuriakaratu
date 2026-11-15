@@ -196,7 +196,7 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
 .login-box .form-group{text-align:left;}
 .login-box .btn{width:100%;justify-content:center;padding:0.6rem;font-size:0.78rem;margin-top:0.5rem;}
 .login-box .login-error{color:#ef4444;font-size:0.7rem;margin-top:0.5rem;min-height:1rem;text-align:center;}
-.login-box .default-creds{margin-top:0.5rem;font-size:0.6rem;color:#64748b;background:#f1f5f9;padding:0.4rem 0.6rem;border-radius:0.5rem;text-align:left;}
+.login-box 
 .login-box .default-creds code{background:#e2e8f0;padding:0.1rem 0.3rem;border-radius:3px;}
 
 /* TOASTS */
@@ -258,13 +258,8 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
     <div class="login-sub">Kuria Karatu &amp; Company Advocates</div>
     <form id="loginForm">
       <div class="form-group">
-        <label><i class="fas fa-user"></i> Select User</label>
-        <select id="loginEmailSelect" required>
-          <option value="">— Select a user —</option>
-          <option value="admin@kuriakaratu.com">admin@kuriakaratu.com</option>
-          <option value="developer@kuriakaratu.com">developer@kuriakaratu.com</option>
-          <option value="clerk@kuriakaratu.com">clerk@kuriakaratu.com</option>
-        </select>
+        <label><i class="fas fa-user"></i> Work Email</label>
+        <input type="email" id="loginEmailSelect" placeholder="you@kuriakaratu.com" autocomplete="username" required>
       </div>
       <div class="form-group">
         <label><i class="fas fa-lock"></i> Password</label>
@@ -272,12 +267,6 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
       </div>
       <div class="login-error" id="loginError"></div>
       <button type="submit" class="btn" id="loginSubmitBtn"><i class="fas fa-sign-in-alt"></i> Sign In</button>
-      <div class="default-creds">
-        <strong>Default Users:</strong><br>
-        <code>admin@kuriakaratu.com</code> / <code>admin123</code><br>
-        <code>developer@kuriakaratu.com</code> / <code>dev123</code><br>
-        <code>clerk@kuriakaratu.com</code> / <code>clerk123</code>
-      </div>
     </form>
   </div>
 </div>
@@ -765,65 +754,43 @@ var unsubs = {};
 var chartsInitialized = false;
 var chartInstances = {};
 
-/* ---------- Hardcoded users ---------- */
-var HARDCODED = [
-  { email:'admin@kuriakaratu.com', password:'admin123', role:'admin' },
-  { email:'developer@kuriakaratu.com', password:'dev123', role:'developer' },
-  { email:'clerk@kuriakaratu.com', password:'clerk123', role:'clerk' }
-];
-
 /* ============================================================
-   LOGIN
+   AUTHENTICATED STAFF LOGIN — no embedded credentials or offline bypass
    ============================================================ */
 function showApp(email, role){
   currentUserEmail = email;
-  currentUserRole = role || 'clerk';
+  currentUserRole = role;
   $('loginOverlay').classList.add('hidden');
   $('appHeader').style.display = 'flex';
   $('appContent').style.display = 'block';
   $('appNav').style.display = 'flex';
   $('userAvatar').textContent = email.charAt(0).toUpperCase();
-  $('userNameDisplay').textContent = email.split('@')[0] + ' (' + currentUserRole + ')';
+  $('userNameDisplay').textContent = email.split('@')[0] + ' (' + role + ')';
   initApp();
 }
 
-function handleLogin(email, password){
-  return new Promise(function(resolve){
-    if (!email || !password) { resolve({ ok:false, msg:'Select user and enter password.' }); return; }
-    if (fbOK && auth) {
-      var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('TIMEOUT')); }, 10000); });
-      Promise.race([ auth.signInWithEmailAndPassword(email, password), timeout ])
-        .then(function(cred){
-          var user = cred.user;
-          var role = 'clerk';
-          var hc = HARDCODED.find(function(u){ return u.email === email; });
-          if (hc) role = hc.role;
-          db.collection('users').doc(user.uid).get().then(function(doc){
-            if (doc.exists && doc.data().role) role = doc.data().role;
-          }).catch(function(){}).finally(function(){
-            resolve({ ok:true, email: email, role: role });
-          });
-        })
-        .catch(function(err){
-          var isTimeout = err.message === 'TIMEOUT';
-          var isNet = err.code === 'auth/network-request-failed';
-          var isInvalid = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/invalid-email'].indexOf(err.code) !== -1;
-          var hc = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
-          if (hc && (isTimeout || isNet || isInvalid)) {
-            resolve({ ok:true, email: email, role: hc.role, offline:true });
-            return;
-          }
-          if (isTimeout) resolve({ ok:false, msg:'Connection timed out.' });
-          else if (isNet) resolve({ ok:false, msg:'Network error.' });
-          else if (isInvalid) resolve({ ok:false, msg:'Invalid credentials.' });
-          else resolve({ ok:false, msg: err.message || 'Login failed.' });
-        });
-      return;
+async function handleLogin(email, password){
+  if (!email || !password) return { ok:false, msg:'Enter your work email and password.' };
+  if (!fbOK || !auth || !db) return { ok:false, msg:'Secure sign-in is unavailable. Check your connection and try again.' };
+  try {
+    const credential = await auth.signInWithEmailAndPassword(email, password);
+    const profileSnap = await db.collection('users').doc(credential.user.uid).get();
+    if (!profileSnap.exists) {
+      await auth.signOut();
+      return { ok:false, msg:'This staff account has not been provisioned. Contact the firm administrator.' };
     }
-    var hc2 = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
-    if (hc2) resolve({ ok:true, email: email, role: hc2.role, offline:true });
-    else resolve({ ok:false, msg:'Login unavailable.' });
-  });
+    const profile = profileSnap.data() || {};
+    if (!['admin','developer','clerk'].includes(profile.role)) {
+      await auth.signOut();
+      return { ok:false, msg:'This account does not have an authorised staff role.' };
+    }
+    return { ok:true, email:credential.user.email, role:profile.role };
+  } catch (err) {
+    const isInvalid = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/invalid-email'].includes(err.code);
+    if (err.code === 'auth/network-request-failed') return { ok:false, msg:'Network error. Check your internet connection.' };
+    if (isInvalid) return { ok:false, msg:'Invalid email or password.' };
+    return { ok:false, msg:err.message || 'Secure sign-in failed.' };
+  }
 }
 
 function setupLogin(){
@@ -2256,21 +2223,24 @@ document.addEventListener('DOMContentLoaded', function(){
   setupLogin();
   setupLogout();
   if (fbOK && auth) {
-    auth.onAuthStateChanged(function(user){
-      if (user && !currentUserEmail) {
-        var email = user.email;
-        var role = 'clerk';
-        var hc = HARDCODED.find(function(u){ return u.email === email; });
-        if (hc) role = hc.role;
-        db.collection('users').doc(user.uid).get().then(function(doc){
-          if (doc.exists && doc.data().role) role = doc.data().role;
-        }).catch(function(){}).finally(function(){
-          showApp(email, role);
-        });
+    auth.onAuthStateChanged(async function(user){
+      if (!user || currentUserEmail) return;
+      try {
+        const profileSnap = await db.collection('users').doc(user.uid).get();
+        const role = profileSnap.exists ? profileSnap.data().role : null;
+        if (!['admin','developer','clerk'].includes(role)) {
+          await auth.signOut();
+          $('loginError').textContent = 'This staff account has not been authorised.';
+          return;
+        }
+        showApp(user.email, role);
+      } catch (err) {
+        console.error('Finance session verification failed:', err);
+        try { await auth.signOut(); } catch (_) {}
+        $('loginError').textContent = 'Could not verify your staff access.';
       }
     });
-  }
-});
+  }});
 
 console.log('✅ KK Finance loaded. Firebase:', fbOK);
 </script>
