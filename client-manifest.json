@@ -1,0 +1,22 @@
+{
+  "name": "Kuria Karatu & Company Advocates — Client Portal",
+  "short_name": "KK Client",
+  "description": "Client portal for secure access to legal matter updates and documents.",
+  "start_url": "/client.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#0A3A66",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
