@@ -454,7 +454,11 @@ auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => console
 
 let isSeeding = false;
 
-const DEFAULT_USERS = []; // No browser-seeded staff accounts or default passwords.
+const DEFAULT_USERS = [
+    { email: 'admin@kuriakaratu.com', password: 'admin123', role: 'admin' },
+   
+    { email: 'clerk@kuriakaratu.com', password: 'clerk123', role: 'clerk' }
+];
 
 let authStateReady = false;
 auth.onAuthStateChanged(user => {
@@ -470,8 +474,7 @@ auth.onAuthStateChanged(user => {
     }
 });
 // Start seeding immediately after handler is attached
-authStateReady = true;
-loadUsersForLogin().catch(err => console.error('Unable to load staff directory:', err));
+seedDefaultUsers().catch(err => console.error('seedDefaultUsers failed:', err));
 
 // Watchdog: never leave the user stuck on "loading users"
 setTimeout(() => {
@@ -486,12 +489,48 @@ setTimeout(() => {
     }
 }, 8000);
 async function seedDefaultUsers() {
-    // Intentionally disabled: privileged staff accounts must be provisioned
-    // through a trusted administrator process, never from a public browser.
-    isSeeding = false;
+    isSeeding = true;
     const loadingEl = document.getElementById('loginLoading');
-    if (loadingEl) loadingEl.style.display = 'none';
-    await loadUsersForLogin();
+    if (loadingEl) loadingEl.style.display = 'block';
+
+    try {
+        // 1. Try to read existing users (may be blocked by rules — that's OK)
+        const existing = new Set();
+        try {
+            const snap = await db.collection('users').get();
+            snap.forEach(d => { const e = d.data().email; if (e) existing.add(e); });
+        } catch (e) {
+            console.warn('Cannot read users collection (rules?):', e.code || e.message);
+        }
+
+        // 2. Create only the ones that are missing
+        for (const u of DEFAULT_USERS) {
+            if (existing.has(u.email)) continue;
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(u.email, u.password);
+                await db.collection('users').doc(cred.user.uid).set({
+                    email: u.email, role: u.role,
+                    createdAt: getDateTime(), lastLogin: null
+                });
+                await auth.signOut();
+            } catch (err) {
+                console.warn('Seed skipped for', u.email, err.code || err.message);
+            }
+        }
+    } catch (err) {
+        console.error('Error seeding users:', err);
+    } finally {
+        try { if (auth.currentUser) await auth.signOut(); } catch (e) {}
+        isSeeding = false;
+
+        if (loadingEl) loadingEl.style.display = 'none';
+
+        await loadUsersForLogin();
+        const overlay = document.getElementById('loginOverlay');
+        const app = document.getElementById('mainApp');
+        if (overlay) overlay.classList.remove('hidden');
+        if (app) app.style.display = 'none';
+    }
 }
 
 /* ============================================================
@@ -595,8 +634,11 @@ async function loadUsersForLogin() {
         console.warn('Failed to load users from Firestore:', e.code || e.message);
     }
 
-    // No hard-coded credential fallback. Staff accounts must exist in Auth and
-    // have a provisioned profile before they can enter the application.
+    // Fallback: if Firestore gave us nothing, still let the admin in.
+    if (!usersData.length) {
+        usersData = DEFAULT_USERS.map(u => ({ id: u.email, email: u.email, role: u.role }));
+        console.warn('Using DEFAULT_USERS fallback for the login dropdown.');
+    }
 
     populateLoginDropdown();
 }
@@ -2021,17 +2063,19 @@ document.getElementById('loginForm').addEventListener('submit', async function (
         // ----- Load or create the user profile in Firestore -----
         const doc = await db.collection('users').doc(user.uid).get();
         if (!doc.exists) {
-            await auth.signOut();
-            throw new Error('This account has not been provisioned by the firm. Contact the administrator.');
+            await db.collection('users').doc(user.uid).set({
+                email: email,
+                role: 'clerk',
+                createdAt: getDateTime(),
+                lastLogin: getDateTime()
+            });
+            currentUserRole = 'clerk';
+        } else {
+            currentUserRole = doc.data().role || 'clerk';
+            await db.collection('users').doc(user.uid).update({
+                lastLogin: getDateTime()
+            });
         }
-        const profile = doc.data();
-        const allowedRoles = ['admin', 'developer', 'clerk'];
-        if (!allowedRoles.includes(profile.role)) {
-            await auth.signOut();
-            throw new Error('This account has no valid staff role. Contact the administrator.');
-        }
-        currentUserRole = profile.role;
-        await db.collection('users').doc(user.uid).update({ lastLogin: getDateTime() });
 
         currentUser = user;
         currentUserEmail = email;

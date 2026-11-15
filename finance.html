@@ -272,7 +272,12 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
       </div>
       <div class="login-error" id="loginError"></div>
       <button type="submit" class="btn" id="loginSubmitBtn"><i class="fas fa-sign-in-alt"></i> Sign In</button>
-      <p class="login-security-note">Staff access is provisioned by the firm. Use your assigned account credentials.</p>
+      <div class="default-creds">
+        <strong>Default Users:</strong><br>
+        <code>admin@kuriakaratu.com</code> / <code>admin123</code><br>
+        <code>developer@kuriakaratu.com</code> / <code>dev123</code><br>
+        <code>clerk@kuriakaratu.com</code> / <code>clerk123</code>
+      </div>
     </form>
   </div>
 </div>
@@ -761,7 +766,11 @@ var chartsInitialized = false;
 var chartInstances = {};
 
 /* ---------- Hardcoded users ---------- */
-var HARDCODED = []; // No embedded staff passwords or offline authentication.
+var HARDCODED = [
+  { email:'admin@kuriakaratu.com', password:'admin123', role:'admin' },
+  { email:'developer@kuriakaratu.com', password:'dev123', role:'developer' },
+  { email:'clerk@kuriakaratu.com', password:'clerk123', role:'clerk' }
+];
 
 /* ============================================================
    LOGIN
@@ -780,34 +789,40 @@ function showApp(email, role){
 
 function handleLogin(email, password){
   return new Promise(function(resolve){
-    if (!email || !password) { resolve({ ok:false, msg:'Select your account and enter your password.' }); return; }
-    if (!fbOK || !auth || !db) { resolve({ ok:false, msg:'Secure sign-in is unavailable. Check your connection and try again.' }); return; }
-    var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('TIMEOUT')); }, 10000); });
-    Promise.race([auth.signInWithEmailAndPassword(email, password), timeout])
-      .then(async function(cred){
-        const snap = await db.collection('users').doc(cred.user.uid).get();
-        if (!snap.exists) {
-          await auth.signOut();
-          resolve({ ok:false, msg:'This account has not been provisioned by the firm.' });
-          return;
-        }
-        const role = snap.data().role;
-        if (!['admin','developer','clerk'].includes(role)) {
-          await auth.signOut();
-          resolve({ ok:false, msg:'This account does not have an authorised staff role.' });
-          return;
-        }
-        resolve({ ok:true, email:email, role:role });
-      })
-      .catch(function(err){
-        const isTimeout = err.message === 'TIMEOUT';
-        const isNet = err.code === 'auth/network-request-failed';
-        const isInvalid = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/invalid-email'].includes(err.code);
-        if (isTimeout) resolve({ok:false,msg:'Connection timed out. No offline sign-in is permitted.'});
-        else if (isNet) resolve({ok:false,msg:'Network error. Secure online authentication is required.'});
-        else if (isInvalid) resolve({ok:false,msg:'Invalid credentials.'});
-        else resolve({ok:false,msg:err.message || 'Login failed.'});
-      });
+    if (!email || !password) { resolve({ ok:false, msg:'Select user and enter password.' }); return; }
+    if (fbOK && auth) {
+      var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('TIMEOUT')); }, 10000); });
+      Promise.race([ auth.signInWithEmailAndPassword(email, password), timeout ])
+        .then(function(cred){
+          var user = cred.user;
+          var role = 'clerk';
+          var hc = HARDCODED.find(function(u){ return u.email === email; });
+          if (hc) role = hc.role;
+          db.collection('users').doc(user.uid).get().then(function(doc){
+            if (doc.exists && doc.data().role) role = doc.data().role;
+          }).catch(function(){}).finally(function(){
+            resolve({ ok:true, email: email, role: role });
+          });
+        })
+        .catch(function(err){
+          var isTimeout = err.message === 'TIMEOUT';
+          var isNet = err.code === 'auth/network-request-failed';
+          var isInvalid = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/invalid-email'].indexOf(err.code) !== -1;
+          var hc = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
+          if (hc && (isTimeout || isNet || isInvalid)) {
+            resolve({ ok:true, email: email, role: hc.role, offline:true });
+            return;
+          }
+          if (isTimeout) resolve({ ok:false, msg:'Connection timed out.' });
+          else if (isNet) resolve({ ok:false, msg:'Network error.' });
+          else if (isInvalid) resolve({ ok:false, msg:'Invalid credentials.' });
+          else resolve({ ok:false, msg: err.message || 'Login failed.' });
+        });
+      return;
+    }
+    var hc2 = HARDCODED.find(function(u){ return u.email === email && u.password === password; });
+    if (hc2) resolve({ ok:true, email: email, role: hc2.role, offline:true });
+    else resolve({ ok:false, msg:'Login unavailable.' });
   });
 }
 

@@ -1030,6 +1030,8 @@ document.getElementById('signupForm').addEventListener('submit', async function(
 
   let uid = null;
   try {
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    uid = cred.user.uid;
     // New portal registrations are always pending. Never auto-link accounts by
     // email, phone or a user-supplied case reference from the public browser.
     const nowIso = getDateTime();
@@ -1045,16 +1047,11 @@ document.getElementById('signupForm').addEventListener('submit', async function(
     };
     await db.collection('portalRequests').doc(uid).set(requestData);
 
-    setLoadingStep(2, matchedClient ? 'Loading your dashboard...' : 'Awaiting approval...');
-    infoEl.textContent = matchedClient
-      ? `Welcome back! Your account was matched by ${matchReason} and is ready to use. Loading your dashboard...`
-      : 'Account created. Awaiting approval — you will be let in automatically once an admin approves you.';
+    setLoadingStep(2, 'Awaiting firm approval...');
+    infoEl.textContent = 'Your account request has been submitted and is awaiting firm approval. Portal access is not active until an authorised staff member links your account to the correct client record.';
     infoEl.style.display = 'block';
-
-    if (!matchedClient) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
   } catch (err) {
     console.error('Signup error:', err.code, err.message);
     hideLoading();
