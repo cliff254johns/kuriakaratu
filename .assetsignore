@@ -5,3 +5,4 @@ node_modules/
 .assetsignore
 wrangler.jsonc
 *.md
+scripts/
