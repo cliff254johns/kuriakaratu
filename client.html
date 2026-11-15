@@ -1029,101 +1029,19 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   setLoadingStep(0, 'Creating your account...');
 
   let uid = null;
-  let matchedClient = null;
-  let matchReason = '';
-
   try {
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
-    uid = cred.user.uid;
-
-    setLoadingStep(1, 'Looking up your client record...');
-    showLoading('Looking up your client record...', 'Checking email and phone against our records');
-
-    // Match by email (exact lowercase)
-    try {
-      const snap = await db.collection('clients').where('email','==',email).limit(1).get();
-      if (!snap.empty) {
-        matchedClient = { id: snap.docs[0].id, ...snap.docs[0].data() };
-        matchReason = 'email';
-      }
-    } catch(err) { console.warn('Email match failed:', err); }
-
-    // Match by phone (normalized)
-    if (!matchedClient && phone) {
-      try {
-        const norm = normalizePhone(phone);
-        if (norm) {
-          const all = await db.collection('clients').limit(300).get();
-          all.forEach(doc => {
-            if (matchedClient) return;
-            if (normalizePhone(doc.data().phone) === norm) {
-              matchedClient = { id: doc.id, ...doc.data() };
-              matchReason = 'phone';
-            }
-          });
-        }
-      } catch(err) { console.warn('Phone match failed:', err); }
-    }
-
-    // Match by case reference (fallback only)
-    if (!matchedClient && caseRef) {
-      try {
-        let caseDoc = null;
-        const s1 = await db.collection('cases').where('caseNo','==',caseRef).limit(1).get();
-        if (!s1.empty) caseDoc = s1.docs[0].data();
-        if (!caseDoc) {
-          const s2 = await db.collection('cases').where('trackingNo','==',caseRef).limit(1).get();
-          if (!s2.empty) caseDoc = s2.docs[0].data();
-        }
-        if (caseDoc && caseDoc.client) {
-          const cl = await db.collection('clients').where('name','==',caseDoc.client).limit(1).get();
-          if (!cl.empty) {
-            matchedClient = { id: cl.docs[0].id, ...cl.docs[0].data() };
-            matchReason = 'case reference';
-          }
-        }
-      } catch(err) { console.warn('Case-ref match failed:', err); }
-    }
-
+    // New portal registrations are always pending. Never auto-link accounts by
+    // email, phone or a user-supplied case reference from the public browser.
     const nowIso = getDateTime();
-
-    // ---- 1. clientAccounts doc ----
     const accountData = {
-      uid,
-      email,
-      name,
-      phone,
-      caseRef,
-      createdAt: nowIso,
-      approved: false,
-      clientId: null,
-      role: 'client'
+      uid, email, name, phone, createdAt: nowIso,
+      approved: false, clientId: null, role: 'client', status: 'pending'
     };
-
-    if (matchedClient) {
-      accountData.approved = true;
-      accountData.clientId = matchedClient.id;
-      accountData.approvedAt = nowIso;
-      accountData.approvedBy = 'auto-match-' + matchReason;
-    }
-
     await db.collection('clientAccounts').doc(uid).set(accountData);
-
-    // ---- 2. portalRequests doc (visible on admin Portal Requests page) ----
-    // Written in BOTH cases so the admin sees the full history.
     const requestData = {
-      uid,
-      email,
-      name,
-      phone,
-      caseRef,
-      requestedAt: nowIso,
-      status: matchedClient ? 'approved' : 'pending',
-      approved: !!matchedClient,
-      clientId: matchedClient ? matchedClient.id : null,
-      reviewedAt: matchedClient ? nowIso : null,
-      reviewedBy: matchedClient ? ('auto-match-' + matchReason) : null,
-      source: 'client-signup'
+      uid, email, name, phone, requestedAt: nowIso,
+      status: 'pending', approved: false, clientId: null,
+      reviewedAt: null, reviewedBy: null, source: 'client-signup'
     };
     await db.collection('portalRequests').doc(uid).set(requestData);
 
