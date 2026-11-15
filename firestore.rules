@@ -1,0 +1,109 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userProfileExists() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userRole() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      ).data.role;
+    }
+
+    function isAdminOrDeveloper() {
+      return userProfileExists() &&
+        userRole() in ['admin', 'developer'];
+    }
+
+    function isFinanceStaff() {
+      return userProfileExists() &&
+        userRole() in ['admin', 'developer', 'finance'];
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() &&
+        (request.auth.uid == uid || isAdminOrDeveloper());
+      allow create, update, delete: if isAdminOrDeveloper();
+    }
+
+    match /clientAccounts/{uid} {
+      allow create: if signedIn() &&
+        request.auth.uid == uid &&
+        request.resource.data.uid == uid &&
+        request.resource.data.approved == false &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.role == 'client' &&
+        request.resource.data.clientId == null &&
+        request.resource.data.email == request.auth.token.email;
+      allow read: if signedIn() &&
+        (request.auth.uid == uid || isAdminOrDeveloper());
+      allow update, delete: if isAdminOrDeveloper();
+    }
+
+    match /portalRequests/{uid} {
+      allow create: if signedIn() &&
+        request.auth.uid == uid &&
+        request.resource.data.uid == uid &&
+        request.resource.data.approved == false &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.clientId == null &&
+        request.resource.data.email == request.auth.token.email;
+      allow read: if signedIn() &&
+        (request.auth.uid == uid || isAdminOrDeveloper());
+      allow update, delete: if isAdminOrDeveloper();
+    }
+
+    match /invoices/{id} {
+      allow read, write: if isFinanceStaff();
+    }
+    match /receipts/{id} {
+      allow read, write: if isFinanceStaff();
+    }
+    match /finance/{id} {
+      allow read, write: if isFinanceStaff();
+    }
+    match /accidentClients/{id} {
+      allow read, write: if isFinanceStaff();
+    }
+
+    match /clients/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /cases/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /documents/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /documents/{id}/versions/{versionId} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /tasks/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /activityLogs/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /clientMessages/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /clientNotifications/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+    match /settings/{id} {
+      allow read, write: if isAdminOrDeveloper();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
