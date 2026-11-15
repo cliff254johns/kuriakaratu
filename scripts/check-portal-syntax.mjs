@@ -15,10 +15,10 @@ for (const file of files) {
 
 for (const file of ['client.html', 'finance.html']) {
   const html = fs.readFileSync(file, 'utf8');
-  const tags = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)];
+  const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
   for (const [, attrs, body] of tags) {
-    if (/\\bsrc\\s*=/.test(attrs) || /application\\/ld\\+json|application\\/json/i.test(attrs)) continue;
+    if (/\bsrc\s*=/.test(attrs) || /application\/ld\+json|application\/json/i.test(attrs)) continue;
     if (!body.trim()) continue;
     try {
       new vm.Script(body, { filename: file + '#inline-' + (++checked) });
