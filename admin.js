@@ -470,7 +470,8 @@ auth.onAuthStateChanged(user => {
     }
 });
 // Start seeding immediately after handler is attached
-authStateReady = true;
+// Keep the legacy startup auth observer disabled: it signs out every
+// authenticated user, including users who have just completed sign-in.
 loadUsersForLogin().catch(err => console.error('Unable to load staff directory:', err));
 
 // Watchdog: never leave the user stuck on "loading users"

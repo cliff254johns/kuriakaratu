@@ -799,7 +799,8 @@ function handleLogin(email, password){
         }
         resolve({ ok:true, email:email, role:role });
       })
-      .catch(function(err){
+      .catch(async function(err){
+        try { if (auth.currentUser) await auth.signOut(); } catch (_) {}
         const isTimeout = err.message === 'TIMEOUT';
         const isNet = err.code === 'auth/network-request-failed';
         const isInvalid = ['auth/user-not-found','auth/wrong-password','auth/invalid-credential','auth/invalid-login-credentials','auth/invalid-email'].includes(err.code);
