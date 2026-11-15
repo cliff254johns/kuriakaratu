@@ -1,150 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <!-- Core Pages -->
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/about/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/about/kuria-karatu/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/values/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/team/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/cases/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/insights/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/faq/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/contact/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Key Practice Areas -->
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/practices/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/practices/land-and-property-law/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/practices/civil-litigation-and-dispute-resolution/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/practices/corporate-and-commercial/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Location Pages -->
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/locations/meru-office/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/locations/nairobi-office/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Legal, privacy and compliance pages -->
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/privacy.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/terms.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/cookies.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/data-protection.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/disclaimer.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/data-processing-agreement.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/complaints.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://www.kuriakaratuadvocates.com/accessibility.html</loc>
-    <lastmod>2026-11-15</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
+<url><loc>https://www.kuriakaratuadvocates.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/consultation.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/index.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/insights/index.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/locations/meru-legal-services.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/land-and-property-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/climate-carbon-environmental-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/legal-audit-and-compliance.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/data-protection-and-privacy-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/legislative-drafting.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/civil-litigation-and-dispute-resolution.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/corporate-and-commercial-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/banking-finance-insurance-personal-injury.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/fintech-and-digital-finance-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/public-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/employment-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/family-succession-and-personal-affairs.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/ai-intellectual-property-technology-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/cyber-security-and-cyber-crime-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/natural-resources-renewable-energy-mining-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/infrastructure-and-construction-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/digital-assets-and-cryptocurrency-regulation.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/public-procurement-and-government-contracts.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/healthcare-and-medical-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/immigration-cross-border-global-mobility.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/financing-and-investment-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/consumer-protection-and-digital-commerce.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/transport-and-logistics-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/sport-media-and-entertainment-law.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/mediation-arbitration-adr.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/practices/criminal-law-practice.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/insights/land-transaction-preparation.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/insights/preparing-for-succession-advice.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/insights/employment-records-checklist.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/insights/business-data-protection-checklist.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/insights/commercial-contract-review.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/insights/dispute-resolution-options.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/privacy.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/terms.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/cookies.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/data-protection.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/disclaimer.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/data-processing-agreement.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/complaints.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.kuriakaratuadvocates.com/accessibility.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>

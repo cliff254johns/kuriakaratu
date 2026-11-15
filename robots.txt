@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /admin.js
+Disallow: /admin.css
+Disallow: /admin-v2.js
+Disallow: /admin-v2.css
+Disallow: /client.html
+Disallow: /finance.html
+Disallow: /generator.html
+Disallow: /track.html
+Sitemap: https://www.kuriakaratuadvocates.com/sitemap.xml
