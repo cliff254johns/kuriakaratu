@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
-    <title>Kuria Karatu ¡¤ Tracker</title>
+    <title>Kuria Karatu Â· Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* ©¤©¤ reset & base ©¤©¤ */
+        /* â”€â”€ reset & base â”€â”€ */
         * {
             margin: 0;
             padding: 0;
@@ -128,7 +128,7 @@
             background: #b0b8c5;
         }
 
-        /* ©¤©¤ overview cards ©¤©¤ */
+        /* â”€â”€ overview cards â”€â”€ */
         .overview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -168,7 +168,7 @@
             color: #b13e3e;
         }
 
-        /* ©¤©¤ practice grid ©¤©¤ */
+        /* â”€â”€ practice grid â”€â”€ */
         .practice-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -275,7 +275,7 @@
             flex-wrap: wrap;
         }
 
-        /* ©¤©¤ alert banner ©¤©¤ */
+        /* â”€â”€ alert banner â”€â”€ */
         .alert-banner {
             background: #fef6e6;
             border-left: 6px solid #d97c2b;
@@ -304,7 +304,7 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
         }
 
-        /* ©¤©¤ toast container ©¤©¤ */
+        /* â”€â”€ toast container â”€â”€ */
         #toastContainer {
             position: fixed;
             bottom: 24px;
@@ -384,7 +384,7 @@
             }
         }
 
-        /* ©¤©¤ notification bell ©¤©¤ */
+        /* â”€â”€ notification bell â”€â”€ */
         .bell-wrap {
             position: relative;
             display: inline-flex;
@@ -464,7 +464,7 @@
             color: #7a8fa8;
         }
 
-        /* ©¤©¤ modal ©¤©¤ */
+        /* â”€â”€ modal â”€â”€ */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -528,7 +528,7 @@
             margin-top: 1.8rem;
         }
 
-        /* ©¤©¤ status indicator ©¤©¤ */
+        /* â”€â”€ status indicator â”€â”€ */
         .status-dot {
             display: inline-block;
             width: 10px;
@@ -553,7 +553,7 @@
             }
         }
 
-        /* ©¤©¤ responsive ©¤©¤ */
+        /* â”€â”€ responsive â”€â”€ */
         @media (max-width: 600px) {
             body {
                 padding: 1rem;
@@ -570,6 +570,8 @@
             }
         }
     </style>
+
+<link rel="stylesheet" href="/ecosystem-refresh.css?v=20261115" />
 </head>
 <body>
 
@@ -598,7 +600,7 @@
 
         <div class="sub">
             <i class="fas fa-flag-checkered" style="margin-right:0.4rem;"></i>
-            Real6¥2time ¡¤ auto alerts 2w before month6¥2end &amp; daily after ¡¤
+            Realâ€‘time Â· auto alerts 2w before monthâ€‘end &amp; daily after Â·
             <strong>KES</strong>
             <span style="margin-left:auto;font-size:0.75rem;color:#6a8aaa;" id="lastSync">synced</span>
         </div>
@@ -606,7 +608,7 @@
         <!-- alert banner -->
         <div id="alertBanner" class="alert-banner">
             <i class="fas fa-bell"></i>
-            <span id="alertText">Loading alerts¡­</span>
+            <span id="alertText">Loading alertsâ€¦</span>
         </div>
 
         <!-- overview -->
@@ -616,7 +618,7 @@
         <div class="practice-grid" id="practiceGrid"></div>
     </div>
 
-    <!-- ©¤©¤©¤ MODAL ©¤©¤©¤ -->
+    <!-- â”€â”€â”€ MODAL â”€â”€â”€ -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h2 id="modalTitle">Practice</h2>
@@ -650,10 +652,10 @@
         </div>
     </div>
 
-    <!-- ©¤©¤©¤ TOAST CONTAINER ©¤©¤©¤ -->
+    <!-- â”€â”€â”€ TOAST CONTAINER â”€â”€â”€ -->
     <div id="toastContainer"></div>
 
-    <!-- ©¤©¤©¤ FIREBASE MODULES ©¤©¤©¤ -->
+    <!-- â”€â”€â”€ FIREBASE MODULES â”€â”€â”€ -->
     <script type="importmap">
         {
             "imports": {
@@ -665,7 +667,7 @@
     </script>
 
     <script type="module">
-        // ©¤©¤©¤ IMPORTS ©¤©¤©¤
+        // â”€â”€â”€ IMPORTS â”€â”€â”€
         import { initializeApp } from 'firebase/app';
         import {
             getFirestore,
@@ -682,7 +684,7 @@
         } from 'firebase/firestore';
         import { getAnalytics, logEvent } from 'firebase/analytics';
 
-        // ©¤©¤©¤ CONFIG ©¤©¤©¤
+        // â”€â”€â”€ CONFIG â”€â”€â”€
         const firebaseConfig = {
             apiKey: "AIzaSyD9v8E-ylZJdjrCRhxvU--HdZxu_0gvKWQ",
             authDomain: "kuriatrack.firebaseapp.com",
@@ -697,17 +699,17 @@
         const db = getFirestore(app);
         const analytics = getAnalytics(app);
 
-        // ©¤©¤©¤ COLLECTIONS ©¤©¤©¤
+        // â”€â”€â”€ COLLECTIONS â”€â”€â”€
         const PRACTICES_COLL = 'practices';
         const EVENTS_COLL = 'events';
 
-        // ©¤©¤©¤ STATE ©¤©¤©¤
+        // â”€â”€â”€ STATE â”€â”€â”€
         let practices = [];
         let notifications = [];
         let notifIdCounter = 0;
         let isInitialLoad = true;
 
-        // ©¤©¤©¤ DOM REFS ©¤©¤©¤
+        // â”€â”€â”€ DOM REFS â”€â”€â”€
         const $ = (sel) => document.querySelector(sel);
         const $$ = (sel) => document.querySelectorAll(sel);
 
@@ -736,7 +738,7 @@
         const syncStatus = $('#syncStatus');
         const lastSync = $('#lastSync');
 
-        // ©¤©¤©¤ TOAST SYSTEM ©¤©¤©¤
+        // â”€â”€â”€ TOAST SYSTEM â”€â”€â”€
         function showToast(message, type = 'info', duration = 4000) {
             const icons = {
                 success: 'fa-check-circle',
@@ -767,7 +769,7 @@
             return toast;
         }
 
-        // ©¤©¤©¤ NOTIFICATION PANEL ©¤©¤©¤
+        // â”€â”€â”€ NOTIFICATION PANEL â”€â”€â”€
         function addNotification(message, type = 'info') {
             const entry = { id: ++notifIdCounter, message, type, time: new Date(), seen: false };
             notifications.unshift(entry);
@@ -780,7 +782,7 @@
 
         function renderNotificationPanel() {
             if (notifications.length === 0) {
-                notifPanel.innerHTML = '<div class="empty">7¿8 No notifications</div>';
+                notifPanel.innerHTML = '<div class="empty">âœ¨ No notifications</div>';
                 return;
             }
             notifPanel.innerHTML = notifications.map(n => `
@@ -810,7 +812,7 @@
         });
         document.addEventListener('click', () => notifPanel.classList.remove('open'));
 
-        // ©¤©¤©¤ FIRESTORE HELPERS ©¤©¤©¤
+        // â”€â”€â”€ FIRESTORE HELPERS â”€â”€â”€
         function practiceToDoc(p) {
             return {
                 name: p.name,
@@ -841,7 +843,7 @@
             };
         }
 
-        // ©¤©¤©¤ LOG EVENT ©¤©¤©¤
+        // â”€â”€â”€ LOG EVENT â”€â”€â”€
         async function logUserEvent(action, payload = {}) {
             try {
                 await addDoc(collection(db, EVENTS_COLL), {
@@ -855,7 +857,7 @@
             logEvent(analytics, action, payload);
         }
 
-        // ©¤©¤©¤ CRUD ©¤©¤©¤
+        // â”€â”€â”€ CRUD â”€â”€â”€
         async function addPractice(practice) {
             try {
                 const docRef = await addDoc(collection(db, PRACTICES_COLL), {
@@ -863,10 +865,10 @@
                     createdAt: serverTimestamp()
                 });
                 await logUserEvent('practice_added', { id: docRef.id, name: practice.name });
-                addNotification(`”9Ü7 Practice "${practice.name}" created`, 'success');
+                addNotification(`ðŸ“ Practice "${practice.name}" created`, 'success');
                 return docRef.id;
             } catch (e) {
-                showToast('7Ã4 Failed to add: ' + e.message, 'error');
+                showToast('âŒ Failed to add: ' + e.message, 'error');
                 throw e;
             }
         }
@@ -875,9 +877,9 @@
             try {
                 await updateDoc(doc(db, PRACTICES_COLL, id), practiceToDoc(practice));
                 await logUserEvent('practice_updated', { id, name: practice.name });
-                addNotification(`7½3„1‚5 Practice "${practice.name}" updated`, 'info');
+                addNotification(`âœï¸ Practice "${practice.name}" updated`, 'info');
             } catch (e) {
-                showToast('7Ã4 Failed to update: ' + e.message, 'error');
+                showToast('âŒ Failed to update: ' + e.message, 'error');
                 throw e;
             }
         }
@@ -887,14 +889,14 @@
                 const p = practices.find(p => p.id === id);
                 await deleteDoc(doc(db, PRACTICES_COLL, id));
                 await logUserEvent('practice_deleted', { id, name: p?.name });
-                if (p) addNotification(`”9÷9„1‚5 Practice "${p.name}" deleted`, 'warning');
+                if (p) addNotification(`ðŸ—‘ï¸ Practice "${p.name}" deleted`, 'warning');
             } catch (e) {
-                showToast('7Ã4 Failed to delete: ' + e.message, 'error');
+                showToast('âŒ Failed to delete: ' + e.message, 'error');
                 throw e;
             }
         }
 
-        // ©¤©¤©¤ SEED SAMPLE PRACTICES ©¤©¤©¤
+        // â”€â”€â”€ SEED SAMPLE PRACTICES â”€â”€â”€
         const SAMPLE_PRACTICES = [
             { name: 'Criminal Defense', targets: { revenue: 480000, casesWon: 40, casesFiled: 55, activeCases: 28 }, current: { revenue: 412000, casesWon: 33, casesFiled: 48, activeCases: 24 } },
             { name: 'Civil Litigation', targets: { revenue: 620000, casesWon: 50, casesFiled: 68, activeCases: 35 }, current: { revenue: 598000, casesWon: 47, casesFiled: 62, activeCases: 32 } },
@@ -921,14 +923,14 @@
                     });
                 }
                 await batch.commit();
-                addNotification('”9´7 Seeded 10 sample practices', 'success');
+                addNotification('ðŸŒ± Seeded 10 sample practices', 'success');
                 await logUserEvent('seeded_sample_practices', { count: SAMPLE_PRACTICES.length });
             } else {
-                addNotification('”9Ý6 Loaded existing practices from Firebase', 'info');
+                addNotification('ðŸ“Š Loaded existing practices from Firebase', 'info');
             }
         }
 
-        // ©¤©¤©¤ REFACTORED REAL6¥2TIME LISTENER ©¤©¤©¤
+        // â”€â”€â”€ REFACTORED REALâ€‘TIME LISTENER â”€â”€â”€
         function listenPractices() {
             const q = query(collection(db, PRACTICES_COLL));
 
@@ -943,17 +945,17 @@
                     isInitialLoad = false;
                     if (updatedPractices.length === 0) {
                         await seedPracticesIfEmpty();
-                        // Return ¨C next snapshot will contain seeded data and set practices
+                        // Return â€“ next snapshot will contain seeded data and set practices
                         return;
                     }
-                    addNotification('”9å3 Connected to Firebase ¡¤ real6¥2time sync active', 'success');
+                    addNotification('ðŸ”— Connected to Firebase Â· realâ€‘time sync active', 'success');
                 } else {
                     // 3) Notify about changes (using docChanges for granularity)
                     snapshot.docChanges().forEach(change => {
                         const p = docToPractice(change.doc.id, change.doc.data());
-                        if (change.type === 'added') addNotification(`”9à3 "${p.name}" added remotely`, 'info');
-                        if (change.type === 'modified') addNotification(`”9ã4 "${p.name}" updated remotely`, 'info');
-                        if (change.type === 'removed') addNotification(`”9÷9„1‚5 "${p.name}" removed remotely`, 'warning');
+                        if (change.type === 'added') addNotification(`ðŸ“¥ "${p.name}" added remotely`, 'info');
+                        if (change.type === 'modified') addNotification(`ðŸ”„ "${p.name}" updated remotely`, 'info');
+                        if (change.type === 'removed') addNotification(`ðŸ—‘ï¸ "${p.name}" removed remotely`, 'warning');
                     });
                 }
 
@@ -964,7 +966,7 @@
             }, (error) => {
                 statusDot.className = 'status-dot offline';
                 syncStatus.textContent = 'Offline';
-                showToast('7²2„1‚5 Firebase connection lost ¡ª changes will be cached', 'error');
+                showToast('âš ï¸ Firebase connection lost â€” changes will be cached', 'error');
                 console.error('Firestore error:', error);
             });
         }
@@ -975,7 +977,7 @@
             lastSync.textContent = new Date().toLocaleTimeString();
         }
 
-        // ©¤©¤©¤ HELPERS ©¤©¤©¤
+        // â”€â”€â”€ HELPERS â”€â”€â”€
         function pct(achieved, target) {
             if (!target || target === 0) return 0;
             let r = (achieved / target) * 100;
@@ -1016,7 +1018,7 @@
             return { totals, targets, ach };
         }
 
-        // ©¤©¤©¤ ALERTS ©¤©¤©¤
+        // â”€â”€â”€ ALERTS â”€â”€â”€
         function generateAlerts() {
             const now = new Date();
             const year = now.getFullYear(),
@@ -1058,7 +1060,7 @@
         function renderAlerts() {
             const alerts = generateAlerts();
             if (alerts.length === 0) {
-                alertText.innerHTML = '<i class="fas fa-check-circle" style="color:#0f6e3a;"></i> All targets on track ¡¤ no pending alerts';
+                alertText.innerHTML = '<i class="fas fa-check-circle" style="color:#0f6e3a;"></i> All targets on track Â· no pending alerts';
                 alertBanner.style.borderLeftColor = '#0f6e3a';
                 return;
             }
@@ -1069,7 +1071,7 @@
             alertBanner.style.borderLeftColor = '#b45a1c';
         }
 
-        // ©¤©¤©¤ RENDER ©¤©¤©¤
+        // â”€â”€â”€ RENDER â”€â”€â”€
         function render() {
             // overview
             const firm = computeFirm();
@@ -1085,7 +1087,7 @@
                     <div class="value">${d.value}</div>
                     <div class="trend ${d.pct >= 90 ? 'up' : d.pct < 60 ? 'down' : ''}">
                         ${d.pct.toFixed(0)}% of target
-                        ${d.pct >= 100 ? ' ”9Á3' : ''}
+                        ${d.pct >= 100 ? ' ðŸŽ¯' : ''}
                     </div>
                 </div>
             `).join('');
@@ -1095,7 +1097,7 @@
                 practiceGrid.innerHTML = `
                     <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:#6a8aaa;background:white;border-radius:32px;border:1px dashed #d0dcec;">
                         <i class="fas fa-plus-circle" style="font-size:2.4rem;display:block;margin-bottom:0.8rem;color:#b8cae0;"></i>
-                        No practices yet ¡ª click <strong>New</strong> to add one.
+                        No practices yet â€” click <strong>New</strong> to add one.
                     </div>
                 `;
                 return;
@@ -1159,7 +1161,7 @@
             });
         }
 
-        // ©¤©¤©¤ MODAL ©¤©¤©¤
+        // â”€â”€â”€ MODAL â”€â”€â”€
         function openModal(id = null) {
             modalOverlay.classList.add('active');
             if (id) {
@@ -1231,22 +1233,22 @@
         document.getElementById('addPracticeBtn').addEventListener('click', () => openModal(null));
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 
-        // ©¤©¤©¤ KEYBOARD SHORTCUT ©¤©¤©¤
+        // â”€â”€â”€ KEYBOARD SHORTCUT â”€â”€â”€
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
         });
 
-        // ©¤©¤©¤ INIT ©¤©¤©¤
+        // â”€â”€â”€ INIT â”€â”€â”€
         listenPractices();
 
         // startup notification
         setTimeout(() => {
-            addNotification('•0‹4 Dashboard ready ¡ª all data real6¥2time', 'success');
+            addNotification('ðŸš€ Dashboard ready â€” all data realâ€‘time', 'success');
         }, 800);
 
         logEvent(analytics, 'page_view', { page: 'tracker' });
 
-        console.log('”9è5 Kuria Karatu Tracker ¡¤ Firebase real6¥2time enabled (bugs fixed)');
+        console.log('ðŸ”· Kuria Karatu Tracker Â· Firebase realâ€‘time enabled (bugs fixed)');
     </script>
 </body>
 </html>
