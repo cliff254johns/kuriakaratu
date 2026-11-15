@@ -1,0 +1,19 @@
+name: Validate legal portal changes
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - security/**
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Parse application JavaScript and run static security checks
+        run: node scripts/check-portal-syntax.mjs
