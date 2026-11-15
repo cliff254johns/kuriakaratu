@@ -24,7 +24,7 @@ for (const file of ['client.html', 'finance.html']) {
       new vm.Script(body, { filename: file + '#inline-' + (++checked) });
     } catch (error) {
       failures++;
-      console.error('FAIL inline JavaScript:', file, error.message);
+      console.error('FAIL inline JavaScript:', file, error.stack || error.message);
     }
   }
   console.log('PASS inline script parsing:', file, '(' + checked + ' scripts)');
