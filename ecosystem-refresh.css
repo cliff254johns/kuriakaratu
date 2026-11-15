@@ -1,0 +1,55 @@
+/* Kuria Karatu — shared 2026 portal refresh
+   Presentation-only layer. Does not alter authentication, permissions, queries or records. */
+:root{
+  color-scheme:light;
+  --kk-ink:#14243a;
+  --kk-navy:#102a43;
+  --kk-blue:#1d5d91;
+  --kk-gold:#c39a45;
+  --kk-paper:#f6f8fb;
+  --kk-line:#dce4ed;
+  --kk-muted:#63748a;
+  --kk-radius:16px;
+  --kk-shadow:0 12px 34px rgba(16,42,67,.08);
+}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{color:var(--kk-ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{transition:color .18s ease,opacity .18s ease}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid rgba(29,93,145,.35)!important;outline-offset:2px
+}
+button,input,select,textarea{font:inherit}
+button{touch-action:manipulation}
+img{height:auto}
+::selection{background:rgba(195,154,69,.25);color:var(--kk-ink)}
+/* Shared surfaces */
+.card,.stat-card,.panel,.modal-content,.auth-box,.login-box,.dashboard-card,.content-card,.section-card{
+  border-color:var(--kk-line);
+}
+.card,.stat-card,.panel,.dashboard-card,.content-card,.section-card{
+  box-shadow:var(--kk-shadow);
+}
+input:not([type=checkbox]):not([type=radio]):not([type=range]),
+select,textarea{
+  max-width:100%;min-height:42px;border-radius:10px
+}
+button,.btn,[role=button]{min-height:38px}
+table{border-collapse:separate;border-spacing:0}
+th{letter-spacing:.025em}
+td,th{vertical-align:middle}
+/* Tables remain usable on narrow screens without forcing the whole page wider. */
+.table-wrap,.table-responsive,.data-table-wrap,.table-container{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{max-width:100%}
+@media(max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{background-attachment:scroll}
+  .container,.main-content,.content,.page-content,.dashboard-content{max-width:100%;width:100%}
+  input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px}
+  .table-wrap,.table-responsive,.data-table-wrap,.table-container{margin-inline:0}
+  .card,.stat-card,.panel,.dashboard-card,.content-card,.section-card{border-radius:14px}
+  .toolbar,.header-actions{flex-wrap:wrap}
+  button,.btn{min-height:42px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
