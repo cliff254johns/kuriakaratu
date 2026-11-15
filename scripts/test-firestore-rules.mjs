@@ -23,14 +23,12 @@ try {
   const unauth = testEnv.unauthenticatedContext().firestore();
 
   await assertSucceeds(getDoc(doc(admin, 'cases/case-1')));
-  await assertSucceeds(getDoc(doc(finance, 'invoices/invoice-1')).catch(async () => {
-    // Read of a missing document is still subject to rules; a successful result is expected.
-    return getDoc(doc(finance, 'invoices/invoice-1'));
-  }));
+  await assertSucceeds(getDoc(doc(finance, 'invoices/invoice-1')));
   await assertFails(getDoc(doc(finance, 'cases/case-1')));
   await assertFails(getDoc(doc(client, 'cases/case-1')));
   await assertFails(getDoc(doc(stranger, 'users/admin-1')));
   await assertFails(getDoc(doc(unauth, 'cases/case-1')));
+  await assertFails(getDoc(doc(admin, 'unlistedCollection/private-doc')));
 
   await assertSucceeds(setDoc(doc(client, 'clientAccounts/client-1'), {
     uid: 'client-1', approved: false, status: 'pending', role: 'client',
@@ -51,7 +49,7 @@ try {
   console.log('PASS: finance-only invoice access and case denial');
   console.log('PASS: client and unauthenticated private-data denial');
   console.log('PASS: pending-only self-registration and anti-impersonation checks');
-  console.log('PASS: default-deny behavior');
+  console.log('PASS: unlisted collections denied by default');
 } finally {
   await testEnv.cleanup();
 }
