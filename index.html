@@ -3249,12 +3249,223 @@
       opacity: 1;
       transform: none;
     }
+  
+    /* ===== INTERNATIONAL PRESENTATION & ACCESSIBILITY REFINEMENT ===== */
+    :root {
+      --primary: #123d63;
+      --primary-light: #285f86;
+      --primary-pale: #edf3f8;
+      --primary-dark: #102b43;
+      --hero-gold: #d8b56a;
+      --shadow: 0 14px 38px rgba(16, 43, 67, .08);
+      --shadow-lg: 0 26px 70px rgba(10, 31, 51, .16);
+    }
+    html { scroll-padding-top: 96px; }
+    body { color: #24384a; line-height: 1.72; }
+    .skip-link {
+      position: fixed; left: 16px; top: 12px; z-index: 10000;
+      transform: translateY(-160%); background: #fff; color: #102b43;
+      padding: 12px 18px; border-radius: 4px; font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    }
+    .skip-link:focus { transform: translateY(0); }
+    a:focus-visible, button:focus-visible, input:focus-visible,
+    textarea:focus-visible, select:focus-visible {
+      outline: 3px solid #d8b56a !important; outline-offset: 4px;
+    }
+    #mainHeader {
+      background: rgba(9, 29, 47, .96);
+      border-bottom: 1px solid rgba(216,181,106,.28);
+      box-shadow: 0 8px 28px rgba(4,19,33,.16);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    #mainHeader .nav-container { min-height: 86px; }
+    #mainHeader .logo img { max-height: 56px; width: auto; object-fit: contain; }
+    #mainHeader .brand-name { letter-spacing: .01em; font-weight: 700; }
+    #mainHeader .nav-links a {
+      font-size: .82rem; letter-spacing: .075em; font-weight: 600;
+      transition: color .2s ease, background .2s ease;
+    }
+    #mainHeader .nav-links a:hover { color: var(--hero-gold); }
+    #mainHeader .nav-links .btn-nav {
+      border: 1px solid rgba(216,181,106,.75);
+      border-radius: 3px; padding: 11px 19px;
+    }
+    .hero {
+      min-height: min(850px, 100svh);
+      padding: 150px 0 108px;
+      border-bottom: 0;
+      background: #0a2034;
+    }
+    .hero::before { opacity: .72 !important; filter: saturate(.78); }
+    .hero::after {
+      background:
+        linear-gradient(90deg, rgba(5,20,34,.94) 0%, rgba(8,35,58,.86) 48%, rgba(8,35,58,.48) 100%),
+        linear-gradient(0deg, rgba(5,20,34,.42), transparent 45%);
+    }
+    .hero-carousel { max-width: 1320px; }
+    .hero-slide {
+      grid-template-columns: minmax(0, 1.12fr) minmax(300px, .78fr);
+      gap: clamp(36px, 6vw, 96px);
+    }
+    .hero-content { max-width: 720px; }
+    .hero-content .section-tag {
+      color: #e6c985 !important; border-color: rgba(230,201,133,.75) !important;
+      font-size: .72rem; letter-spacing: .2em; padding-bottom: 10px;
+    }
+    .hero-content .hero-tagline {
+      color: #e6c985; font-size: .76rem; letter-spacing: .19em;
+      font-weight: 700; margin: 14px 0 16px;
+    }
+    .hero-content h1 {
+      font-size: clamp(2.8rem, 5.3vw, 5.15rem);
+      line-height: 1.04; letter-spacing: -.045em;
+      max-width: 760px; margin-bottom: 1.35rem;
+      text-shadow: 0 8px 34px rgba(0,0,0,.3);
+    }
+    .hero-content h1 .highlight {
+      color: #e6c985; font-style: normal;
+    }
+    .hero-content p {
+      max-width: 620px; color: rgba(255,255,255,.86);
+      font-size: clamp(1rem, 1.25vw, 1.16rem);
+      line-height: 1.85; font-weight: 400;
+    }
+    .hero-content .hero-principles { gap: 10px 15px; margin: 18px 0 22px; }
+    .hero-content .hero-principles span {
+      color: rgba(255,255,255,.82); font-size: .68rem;
+      letter-spacing: .11em; border-color: #d8b56a;
+    }
+    .hero-cta { gap: 12px; margin-top: 26px; }
+    .hero-cta .btn-primary {
+      background: #d8b56a; border-color: #d8b56a; color: #102b43;
+      border-radius: 3px; padding: 15px 25px; letter-spacing: .07em;
+      box-shadow: 0 10px 28px rgba(0,0,0,.18);
+    }
+    .hero-cta .btn-primary:hover {
+      background: #f0d89f; border-color: #f0d89f; color: #102b43;
+      box-shadow: 0 12px 32px rgba(0,0,0,.24);
+    }
+    .hero-cta .btn-outline {
+      border: 1px solid rgba(255,255,255,.56); border-radius: 3px;
+      padding: 14px 24px; letter-spacing: .07em;
+    }
+    .hero-image { display: flex; justify-content: flex-end; align-items: center; }
+    .hero-image .card-badge {
+      width: min(100%, 410px); max-width: 410px; min-height: 300px;
+      padding: clamp(28px, 3.5vw, 48px);
+      border-radius: 4px; background: rgba(9,31,50,.67) !important;
+      border: 1px solid rgba(230,201,133,.42);
+      box-shadow: 0 28px 80px rgba(0,0,0,.28);
+      position: relative; overflow: hidden;
+    }
+    .hero-image .card-badge::before {
+      content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
+      background: #d8b56a;
+    }
+    .hero-image .card-badge i { color: #e6c985 !important; font-size: 2.2rem; }
+    .hero-image .card-badge h3 {
+      color: #fff !important; font-size: clamp(1.35rem, 2vw, 1.7rem);
+      line-height: 1.3; text-shadow: none;
+    }
+    .hero-image .card-badge p { color: rgba(255,255,255,.78); font-size: .98rem; text-shadow: none; }
+    .hero-stats {
+      gap: 0; margin-top: 36px; padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,.2);
+    }
+    .hero-stats div { min-width: 120px; padding-right: 25px; margin-right: 25px; }
+    .hero-stats div + div { border-left: 1px solid rgba(255,255,255,.2); padding-left: 25px; }
+    .hero-stats .number { color: #e6c985; font-size: clamp(1.55rem, 2.4vw, 2.2rem); }
+    .hero-stats .label { font-size: .66rem; letter-spacing: .11em; }
+    .hero-controls #heroPrev, .hero-controls #heroNext {
+      width: 46px; height: 46px; border-width: 1px;
+      background: rgba(8,30,49,.42);
+    }
+    .hero-controls #heroPrev { left: 18px; }
+    .hero-controls #heroNext { right: 18px; }
+    .hero-controls #heroPrev:hover, .hero-controls #heroNext:hover {
+      background: #d8b56a; color: #102b43; border-color: #d8b56a;
+    }
+    .hero-dots button { width: 26px; height: 4px; border-radius: 2px; }
+    .trust-bar {
+      background: #f5f7f9; border-bottom: 1px solid #e4eaf0;
+      padding: 21px 0;
+    }
+    .trust-bar .container { gap: 16px 30px; }
+    .trust-item {
+      color: #38536b; font-size: .78rem; font-weight: 700;
+      letter-spacing: .045em;
+    }
+    .trust-item i { color: #b38b43; margin-right: 8px; }
+    .section-padding { padding-top: clamp(72px, 8vw, 112px); padding-bottom: clamp(72px, 8vw, 112px); }
+    .section-padding h2 {
+      font-size: clamp(2rem, 3.6vw, 3.15rem);
+      line-height: 1.13; letter-spacing: -.035em;
+    }
+    .section-tag { letter-spacing: .16em; font-size: .72rem; }
+    .section-subtitle { max-width: 760px; margin-left: auto; margin-right: auto; }
+    .value-card, .practice-card, .sector-card, .team-card {
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .value-card:hover, .practice-card:hover, .sector-card:hover, .team-card:hover {
+      transform: translateY(-5px); box-shadow: 0 18px 42px rgba(16,43,67,.1);
+    }
+    .contact-form input, .contact-form textarea, .contact-form select {
+      border-radius: 3px;
+    }
+    footer { background: #091d2f; }
+    @media (max-width: 1024px) {
+      .hero { min-height: auto; padding: 130px 0 90px; }
+      .hero-slide { gap: 34px; }
+      .hero-content h1 { font-size: clamp(2.7rem, 6vw, 4rem); }
+      .hero-controls #heroPrev { left: 8px; }
+      .hero-controls #heroNext { right: 8px; }
+    }
+    @media (max-width: 768px) {
+      html { scroll-padding-top: 76px; }
+      #mainHeader .nav-container { min-height: 72px; }
+      #mainHeader .logo img { max-height: 46px; }
+      .hero { padding: 112px 0 86px; min-height: auto; }
+      .hero-slide { grid-template-columns: 1fr; gap: 30px; }
+      .hero-content { padding: 0 8px; }
+      .hero-content h1 { font-size: clamp(2.55rem, 10vw, 3.55rem); }
+      .hero-content p { font-size: 1rem; }
+      .hero-image { justify-content: flex-start; }
+      .hero-image .card-badge { min-height: 0; max-width: 100%; padding: 26px 25px; }
+      .hero-stats { gap: 16px 0; }
+      .hero-stats div { min-width: 0; padding-right: 13px; margin-right: 13px; }
+      .hero-stats div + div { padding-left: 13px; }
+      .hero-controls #heroPrev, .hero-controls #heroNext { display: none; }
+      .hero-cta { display: grid; grid-template-columns: 1fr; max-width: 360px; }
+      .hero-cta a { width: 100%; }
+      .trust-bar .container { display: grid; grid-template-columns: 1fr 1fr; }
+      .trust-item { font-size: .68rem; }
+    }
+    @media (max-width: 420px) {
+      .hero-content h1 { font-size: 2.35rem; }
+      .hero-stats .number { font-size: 1.5rem; }
+      .hero-stats div { padding-right: 9px; margin-right: 9px; }
+      .hero-stats div + div { padding-left: 9px; }
+      .trust-bar .container { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+      .animate-on-scroll { opacity: 1 !important; transform: none !important; }
+    }
+
   </style>
   <!-- Font Awesome (for icons) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 </head>
 
 <body>
+
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <!-- ===== DESKTOP HEADER ===== -->
   <header id="mainHeader">
@@ -3282,7 +3493,8 @@
   </header>
 
   <!-- ===== HERO CAROUSEL WITH BACKGROUND IMAGES ===== -->
-  <section class="hero" id="home" data-slide="0">
+  <main id="main-content">
+  <section class="hero" id="home" data-slide="0" aria-label="Kuria Karatu &amp; Company Advocates introduction">
     <div class="container hero-carousel">
       <!-- Slide 1 -->
       <div class="hero-slide active" data-index="0">
@@ -3300,10 +3512,10 @@
             <a href="#contact" class="btn-primary">Schedule a Consultation</a>
             <a href="#practices" class="btn-outline">Our Expertise</a>
           </div>
-          <div class="hero-stats">
+          <div class="hero-stats" aria-label="Firm overview">
             <div><span class="number">26</span><span class="label">Practice Areas</span></div>
-            <div><span class="number">Meru</span><span class="label">Office Location</span></div>
-            <div><span class="number">26</span><span class="label">Practice Areas</span></div>
+            <div><span class="number">Meru</span><span class="label">Kenya Office</span></div>
+            <div><span class="number">Regional</span><span class="label">Network &amp; Outlook</span></div>
           </div>
         </div>
         <div class="hero-image">
@@ -3381,6 +3593,8 @@
       </div>
     </div>
   </section>
+
+  </main>
 
   <!-- ===== TRUST BAR ===== -->
   <section class="trust-bar">
