@@ -350,10 +350,30 @@
     async function initFirebaseAuth() {
         if (!State.firebaseReady) return null;
         return new Promise(resolve => {
-            const unsub = State.fb.auth.onAuthStateChanged(user => {
-                State.fb.user = user || null;
+            const unsub = State.fb.auth.onAuthStateChanged(async user => {
                 unsub();
-                resolve(State.fb.user);
+                if (!user) {
+                    State.fb.user = null;
+                    resolve(null);
+                    return;
+                }
+                try {
+                    const profileSnap = await State.fb.db.collection('users').doc(user.uid).get();
+                    const role = profileSnap.exists ? profileSnap.data().role : null;
+                    if (!['admin', 'developer', 'clerk'].includes(role)) {
+                        State.fb.user = null;
+                        console.warn('[docgen] Staff role required; generator data access disabled.');
+                        resolve(null);
+                        return;
+                    }
+                    State.fb.user = user;
+                    State.fb.role = role;
+                    resolve(user);
+                } catch (error) {
+                    State.fb.user = null;
+                    console.warn('[docgen] Could not verify staff role:', error);
+                    resolve(null);
+                }
             });
         });
     }
