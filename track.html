@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
-    <title>Kuria Karatu ¡¤ Tracker</title>
+    <title>Kuria Karatu Â· Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* ©¤©¤ reset & base ©¤©¤ */
+        /* â”€â”€ reset & base â”€â”€ */
         * {
             margin: 0;
             padding: 0;
@@ -128,7 +128,7 @@
             background: #b0b8c5;
         }
 
-        /* ©¤©¤ overview cards ©¤©¤ */
+        /* â”€â”€ overview cards â”€â”€ */
         .overview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -168,7 +168,7 @@
             color: #b13e3e;
         }
 
-        /* ©¤©¤ practice grid ©¤©¤ */
+        /* â”€â”€ practice grid â”€â”€ */
         .practice-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -275,7 +275,7 @@
             flex-wrap: wrap;
         }
 
-        /* ©¤©¤ alert banner ©¤©¤ */
+        /* â”€â”€ alert banner â”€â”€ */
         .alert-banner {
             background: #fef6e6;
             border-left: 6px solid #d97c2b;
@@ -304,7 +304,7 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
         }
 
-        /* ©¤©¤ toast container ©¤©¤ */
+        /* â”€â”€ toast container â”€â”€ */
         #toastContainer {
             position: fixed;
             bottom: 24px;
@@ -384,7 +384,7 @@
             }
         }
 
-        /* ©¤©¤ notification bell ©¤©¤ */
+        /* â”€â”€ notification bell â”€â”€ */
         .bell-wrap {
             position: relative;
             display: inline-flex;
@@ -464,7 +464,7 @@
             color: #7a8fa8;
         }
 
-        /* ©¤©¤ modal ©¤©¤ */
+        /* â”€â”€ modal â”€â”€ */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -528,7 +528,7 @@
             margin-top: 1.8rem;
         }
 
-        /* ©¤©¤ status indicator ©¤©¤ */
+        /* â”€â”€ status indicator â”€â”€ */
         .status-dot {
             display: inline-block;
             width: 10px;
@@ -553,7 +553,7 @@
             }
         }
 
-        /* ©¤©¤ responsive ©¤©¤ */
+        /* â”€â”€ responsive â”€â”€ */
         @media (max-width: 600px) {
             body {
                 padding: 1rem;
@@ -569,11 +569,38 @@
                 right: -40px;
             }
         }
+        .staff-gate {
+            min-height: 100vh; display:flex; align-items:center; justify-content:center;
+            padding:1.25rem; background:linear-gradient(135deg,#eef4fb,#f8fafc);
+        }
+        .staff-gate form {
+            width:min(100%,420px); background:#fff; border:1px solid #dce5f0;
+            border-radius:22px; padding:2rem; box-shadow:0 18px 55px rgba(11,31,51,.10);
+        }
+        .staff-gate h2 { margin-bottom:.45rem; color:#0b1f33; }
+        .staff-gate p { color:#60758d; line-height:1.5; margin-bottom:1.2rem; }
+        .staff-gate label { display:block; font-size:.88rem; font-weight:600; margin:.8rem 0 .3rem; }
+        .staff-gate input { width:100%; padding:.8rem .9rem; border:1px solid #d5deec; border-radius:10px; font-size:1rem; }
+        .staff-gate button { margin-top:1rem; width:100%; justify-content:center; }
+        .staff-gate .gate-error { color:#b42318; min-height:1.2rem; margin-top:.6rem; font-size:.85rem; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="app">
+    <section class="staff-gate" id="staffGate" aria-label="Staff sign in">
+        <form id="staffLoginForm">
+            <h2>Staff sign-in</h2>
+            <p>This performance dashboard is restricted to authorised administrators and developers.</p>
+            <label for="staffEmail">Work email</label>
+            <input type="email" id="staffEmail" autocomplete="username" required>
+            <label for="staffPassword">Password</label>
+            <input type="password" id="staffPassword" autocomplete="current-password" required>
+            <div class="gate-error" id="staffGateError" role="alert"></div>
+            <button class="btn btn-primary" type="submit" id="staffLoginButton">Sign in securely</button>
+        </form>
+    </section>
+
+    <div class="container" id="app" style="display:none;">
         <!-- header -->
         <div class="flex-row">
             <h1><i class="fas fa-scale-balanced"></i> Kuria Karatu</h1>
@@ -591,6 +618,8 @@
                     </div>
                 </div>
 
+                <span id="trackerUserLabel" style="font-size:.8rem;color:#3d5a78;"></span>
+                <button class="btn btn-outline" id="trackerLogoutBtn" type="button"><i class="fas fa-sign-out-alt"></i> Sign out</button>
                 <button class="btn btn-primary" id="addPracticeBtn"><i class="fas fa-plus-circle"></i> New</button>
                 <button class="btn btn-download" onclick="window.location.href='https://www.kuriakaratuadvocates.com/tracker.apk'"><i class="fas fa-download"></i> APK</button>
             </div>
@@ -598,7 +627,7 @@
 
         <div class="sub">
             <i class="fas fa-flag-checkered" style="margin-right:0.4rem;"></i>
-            Real6¥2time ¡¤ auto alerts 2w before month6¥2end &amp; daily after ¡¤
+            Realâ€‘time Â· auto alerts 2w before monthâ€‘end &amp; daily after Â·
             <strong>KES</strong>
             <span style="margin-left:auto;font-size:0.75rem;color:#6a8aaa;" id="lastSync">synced</span>
         </div>
@@ -606,7 +635,7 @@
         <!-- alert banner -->
         <div id="alertBanner" class="alert-banner">
             <i class="fas fa-bell"></i>
-            <span id="alertText">Loading alerts¡­</span>
+            <span id="alertText">Loading alertsâ€¦</span>
         </div>
 
         <!-- overview -->
@@ -616,7 +645,7 @@
         <div class="practice-grid" id="practiceGrid"></div>
     </div>
 
-    <!-- ©¤©¤©¤ MODAL ©¤©¤©¤ -->
+    <!-- â”€â”€â”€ MODAL â”€â”€â”€ -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h2 id="modalTitle">Practice</h2>
@@ -650,25 +679,26 @@
         </div>
     </div>
 
-    <!-- ©¤©¤©¤ TOAST CONTAINER ©¤©¤©¤ -->
+    <!-- â”€â”€â”€ TOAST CONTAINER â”€â”€â”€ -->
     <div id="toastContainer"></div>
 
-    <!-- ©¤©¤©¤ FIREBASE MODULES ©¤©¤©¤ -->
+    <!-- â”€â”€â”€ FIREBASE MODULES â”€â”€â”€ -->
     <script type="importmap">
         {
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js",
-                "firebase/analytics": "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js"
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js"
             }
         }
     </script>
 
     <script type="module">
-        // ©¤©¤©¤ IMPORTS ©¤©¤©¤
+        // â”€â”€â”€ IMPORTS â”€â”€â”€
         import { initializeApp } from 'firebase/app';
         import {
             getFirestore,
+            getDoc,
             collection,
             doc,
             onSnapshot,
@@ -680,34 +710,34 @@
             writeBatch,
             getDocs
         } from 'firebase/firestore';
-        import { getAnalytics, logEvent } from 'firebase/analytics';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
-        // ©¤©¤©¤ CONFIG ©¤©¤©¤
+        // â”€â”€â”€ CONFIG â”€â”€â”€
         const firebaseConfig = {
-            apiKey: "AIzaSyD9v8E-ylZJdjrCRhxvU--HdZxu_0gvKWQ",
-            authDomain: "kuriatrack.firebaseapp.com",
-            projectId: "kuriatrack",
-            storageBucket: "kuriatrack.firebasestorage.app",
-            messagingSenderId: "1010901949997",
-            appId: "1:1010901949997:web:bf79e73f6d00dc503062a4",
-            measurementId: "G-SB7XB7RX05"
+            apiKey: "AIzaSyAv35HANTesz9EqroXt3QaHpYvZwk2fa3o",
+            authDomain: "kuriakaratu-b5c90.firebaseapp.com",
+            databaseURL: "https://kuriakaratu-b5c90-default-rtdb.firebaseio.com",
+            projectId: "kuriakaratu-b5c90",
+            storageBucket: "kuriakaratu-b5c90.firebasestorage.app",
+            messagingSenderId: "14852374326",
+            appId: "1:14852374326:web:b171bd36719d8700953d97"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
 
-        // ©¤©¤©¤ COLLECTIONS ©¤©¤©¤
+        // â”€â”€â”€ COLLECTIONS â”€â”€â”€
         const PRACTICES_COLL = 'practices';
         const EVENTS_COLL = 'events';
 
-        // ©¤©¤©¤ STATE ©¤©¤©¤
+        // â”€â”€â”€ STATE â”€â”€â”€
         let practices = [];
         let notifications = [];
         let notifIdCounter = 0;
         let isInitialLoad = true;
 
-        // ©¤©¤©¤ DOM REFS ©¤©¤©¤
+        // â”€â”€â”€ DOM REFS â”€â”€â”€
         const $ = (sel) => document.querySelector(sel);
         const $$ = (sel) => document.querySelectorAll(sel);
 
@@ -736,7 +766,7 @@
         const syncStatus = $('#syncStatus');
         const lastSync = $('#lastSync');
 
-        // ©¤©¤©¤ TOAST SYSTEM ©¤©¤©¤
+        // â”€â”€â”€ TOAST SYSTEM â”€â”€â”€
         function showToast(message, type = 'info', duration = 4000) {
             const icons = {
                 success: 'fa-check-circle',
@@ -767,7 +797,7 @@
             return toast;
         }
 
-        // ©¤©¤©¤ NOTIFICATION PANEL ©¤©¤©¤
+        // â”€â”€â”€ NOTIFICATION PANEL â”€â”€â”€
         function addNotification(message, type = 'info') {
             const entry = { id: ++notifIdCounter, message, type, time: new Date(), seen: false };
             notifications.unshift(entry);
@@ -775,12 +805,12 @@
             renderNotificationPanel();
             updateBadge();
             showToast(message, type, 3500);
-            logEvent(analytics, 'notification_shown', { message, type });
+
         }
 
         function renderNotificationPanel() {
             if (notifications.length === 0) {
-                notifPanel.innerHTML = '<div class="empty">7¿8 No notifications</div>';
+                notifPanel.innerHTML = '<div class="empty">âœ¨ No notifications</div>';
                 return;
             }
             notifPanel.innerHTML = notifications.map(n => `
@@ -810,7 +840,7 @@
         });
         document.addEventListener('click', () => notifPanel.classList.remove('open'));
 
-        // ©¤©¤©¤ FIRESTORE HELPERS ©¤©¤©¤
+        // â”€â”€â”€ FIRESTORE HELPERS â”€â”€â”€
         function practiceToDoc(p) {
             return {
                 name: p.name,
@@ -841,21 +871,22 @@
             };
         }
 
-        // ©¤©¤©¤ LOG EVENT ©¤©¤©¤
+        // â”€â”€â”€ LOG EVENT â”€â”€â”€
         async function logUserEvent(action, payload = {}) {
             try {
                 await addDoc(collection(db, EVENTS_COLL), {
                     action,
                     payload,
+                    actorUid: currentStaffUser ? currentStaffUser.uid : null,
                     timestamp: serverTimestamp(),
                     userAgent: navigator.userAgent,
                     screen: `${window.innerWidth}x${window.innerHeight}`
                 });
             } catch (e) { /* silent */ }
-            logEvent(analytics, action, payload);
+
         }
 
-        // ©¤©¤©¤ CRUD ©¤©¤©¤
+        // â”€â”€â”€ CRUD â”€â”€â”€
         async function addPractice(practice) {
             try {
                 const docRef = await addDoc(collection(db, PRACTICES_COLL), {
@@ -863,10 +894,10 @@
                     createdAt: serverTimestamp()
                 });
                 await logUserEvent('practice_added', { id: docRef.id, name: practice.name });
-                addNotification(`”9Ü7 Practice "${practice.name}" created`, 'success');
+                addNotification(`ðŸ“ Practice "${practice.name}" created`, 'success');
                 return docRef.id;
             } catch (e) {
-                showToast('7Ã4 Failed to add: ' + e.message, 'error');
+                showToast('âŒ Failed to add: ' + e.message, 'error');
                 throw e;
             }
         }
@@ -875,9 +906,9 @@
             try {
                 await updateDoc(doc(db, PRACTICES_COLL, id), practiceToDoc(practice));
                 await logUserEvent('practice_updated', { id, name: practice.name });
-                addNotification(`7½3„1‚5 Practice "${practice.name}" updated`, 'info');
+                addNotification(`âœï¸ Practice "${practice.name}" updated`, 'info');
             } catch (e) {
-                showToast('7Ã4 Failed to update: ' + e.message, 'error');
+                showToast('âŒ Failed to update: ' + e.message, 'error');
                 throw e;
             }
         }
@@ -887,76 +918,37 @@
                 const p = practices.find(p => p.id === id);
                 await deleteDoc(doc(db, PRACTICES_COLL, id));
                 await logUserEvent('practice_deleted', { id, name: p?.name });
-                if (p) addNotification(`”9÷9„1‚5 Practice "${p.name}" deleted`, 'warning');
+                if (p) addNotification(`ðŸ—‘ï¸ Practice "${p.name}" deleted`, 'warning');
             } catch (e) {
-                showToast('7Ã4 Failed to delete: ' + e.message, 'error');
+                showToast('âŒ Failed to delete: ' + e.message, 'error');
                 throw e;
             }
         }
 
-        // ©¤©¤©¤ SEED SAMPLE PRACTICES ©¤©¤©¤
-        const SAMPLE_PRACTICES = [
-            { name: 'Criminal Defense', targets: { revenue: 480000, casesWon: 40, casesFiled: 55, activeCases: 28 }, current: { revenue: 412000, casesWon: 33, casesFiled: 48, activeCases: 24 } },
-            { name: 'Civil Litigation', targets: { revenue: 620000, casesWon: 50, casesFiled: 68, activeCases: 35 }, current: { revenue: 598000, casesWon: 47, casesFiled: 62, activeCases: 32 } },
-            { name: 'Family Law', targets: { revenue: 350000, casesWon: 28, casesFiled: 38, activeCases: 20 }, current: { revenue: 302000, casesWon: 22, casesFiled: 33, activeCases: 17 } },
-            { name: 'Corporate Law', targets: { revenue: 950000, casesWon: 65, casesFiled: 82, activeCases: 45 }, current: { revenue: 910000, casesWon: 60, casesFiled: 76, activeCases: 42 } },
-            { name: 'Employment Law', targets: { revenue: 280000, casesWon: 22, casesFiled: 30, activeCases: 16 }, current: { revenue: 245000, casesWon: 18, casesFiled: 26, activeCases: 13 } },
-            { name: 'Real Estate', targets: { revenue: 530000, casesWon: 38, casesFiled: 50, activeCases: 27 }, current: { revenue: 485000, casesWon: 34, casesFiled: 45, activeCases: 24 } },
-            { name: 'Intellectual Property', targets: { revenue: 410000, casesWon: 30, casesFiled: 42, activeCases: 22 }, current: { revenue: 378000, casesWon: 27, casesFiled: 38, activeCases: 19 } },
-            { name: 'Personal Injury', targets: { revenue: 720000, casesWon: 55, casesFiled: 70, activeCases: 40 }, current: { revenue: 685000, casesWon: 50, casesFiled: 65, activeCases: 37 } },
-            { name: 'Immigration', targets: { revenue: 260000, casesWon: 20, casesFiled: 28, activeCases: 14 }, current: { revenue: 218000, casesWon: 16, casesFiled: 23, activeCases: 11 } },
-            { name: 'Tax Law', targets: { revenue: 390000, casesWon: 25, casesFiled: 35, activeCases: 18 }, current: { revenue: 352000, casesWon: 21, casesFiled: 31, activeCases: 16 } }
-        ];
+        // â”€â”€â”€ AUTHENTICATED REAL-TIME LISTENER â”€â”€â”€
+        let practicesUnsub = null;
+        let currentStaffUser = null;
+        let currentStaffRole = null;
+        let trackerStarted = false;
 
-        async function seedPracticesIfEmpty() {
-            const q = query(collection(db, PRACTICES_COLL));
-            const snapshot = await getDocs(q);
-            if (snapshot.empty) {
-                const batch = writeBatch(db);
-                for (const p of SAMPLE_PRACTICES) {
-                    const ref = doc(collection(db, PRACTICES_COLL));
-                    batch.set(ref, {
-                        ...practiceToDoc(p),
-                        createdAt: serverTimestamp()
-                    });
-                }
-                await batch.commit();
-                addNotification('”9´7 Seeded 10 sample practices', 'success');
-                await logUserEvent('seeded_sample_practices', { count: SAMPLE_PRACTICES.length });
-            } else {
-                addNotification('”9Ý6 Loaded existing practices from Firebase', 'info');
-            }
-        }
-
-        // ©¤©¤©¤ REFACTORED REAL6¥2TIME LISTENER ©¤©¤©¤
         function listenPractices() {
+            if (practicesUnsub) practicesUnsub();
             const q = query(collection(db, PRACTICES_COLL));
-
-            onSnapshot(q, async (snapshot) => {
-                // 1) Build state from all current docs (no incremental push bugs)
+            practicesUnsub = onSnapshot(q, (snapshot) => {
                 const updatedPractices = snapshot.docs.map(docSnap =>
                     docToPractice(docSnap.id, docSnap.data())
                 );
-
-                // 2) Handle initial load & seeding
                 if (isInitialLoad) {
                     isInitialLoad = false;
-                    if (updatedPractices.length === 0) {
-                        await seedPracticesIfEmpty();
-                        // Return ¨C next snapshot will contain seeded data and set practices
-                        return;
-                    }
-                    addNotification('”9å3 Connected to Firebase ¡¤ real6¥2time sync active', 'success');
+                    addNotification('ðŸ”— Connected to the shared Firebase project Â· real-time sync active', 'success');
                 } else {
-                    // 3) Notify about changes (using docChanges for granularity)
                     snapshot.docChanges().forEach(change => {
                         const p = docToPractice(change.doc.id, change.doc.data());
-                        if (change.type === 'added') addNotification(`”9à3 "${p.name}" added remotely`, 'info');
-                        if (change.type === 'modified') addNotification(`”9ã4 "${p.name}" updated remotely`, 'info');
-                        if (change.type === 'removed') addNotification(`”9÷9„1‚5 "${p.name}" removed remotely`, 'warning');
+                        if (change.type === 'added') addNotification(`ðŸ“¥ "${p.name}" added remotely`, 'info');
+                        if (change.type === 'modified') addNotification(`ðŸ”„ "${p.name}" updated remotely`, 'info');
+                        if (change.type === 'removed') addNotification(`ðŸ—‘ï¸ "${p.name}" removed remotely`, 'warning');
                     });
                 }
-
                 practices = updatedPractices;
                 render();
                 renderAlerts();
@@ -964,9 +956,31 @@
             }, (error) => {
                 statusDot.className = 'status-dot offline';
                 syncStatus.textContent = 'Offline';
-                showToast('7²2„1‚5 Firebase connection lost ¡ª changes will be cached', 'error');
+                showToast('âš ï¸ Firebase connection lost. Check your connection and access rules.', 'error');
                 console.error('Firestore error:', error);
             });
+        }
+
+        async function authorizeTrackerUser(user) {
+            const profileSnap = await getDoc(doc(db, 'users', user.uid));
+            const role = profileSnap.exists() ? profileSnap.data().role : null;
+            if (!['admin', 'developer'].includes(role)) {
+                await signOut(auth);
+                const error = $('#staffGateError');
+                if (error) error.textContent = 'Administrator or developer access is required for this dashboard.';
+                return;
+            }
+            currentStaffUser = user;
+            currentStaffRole = role;
+            $('#staffGate').style.display = 'none';
+            $('#app').style.display = 'block';
+            $('#trackerUserLabel').textContent = user.email || 'Staff';
+            if (!trackerStarted) {
+                trackerStarted = true;
+                listenPractices();
+                addNotification('Dashboard connected. Only records stored in Firebase are shown.', 'success');
+                console.log('Kuria Karatu Tracker connected to the shared Firebase project.');
+            }
         }
 
         function updateSyncStatus() {
@@ -975,7 +989,7 @@
             lastSync.textContent = new Date().toLocaleTimeString();
         }
 
-        // ©¤©¤©¤ HELPERS ©¤©¤©¤
+        // â”€â”€â”€ HELPERS â”€â”€â”€
         function pct(achieved, target) {
             if (!target || target === 0) return 0;
             let r = (achieved / target) * 100;
@@ -1016,7 +1030,7 @@
             return { totals, targets, ach };
         }
 
-        // ©¤©¤©¤ ALERTS ©¤©¤©¤
+        // â”€â”€â”€ ALERTS â”€â”€â”€
         function generateAlerts() {
             const now = new Date();
             const year = now.getFullYear(),
@@ -1058,7 +1072,7 @@
         function renderAlerts() {
             const alerts = generateAlerts();
             if (alerts.length === 0) {
-                alertText.innerHTML = '<i class="fas fa-check-circle" style="color:#0f6e3a;"></i> All targets on track ¡¤ no pending alerts';
+                alertText.innerHTML = '<i class="fas fa-check-circle" style="color:#0f6e3a;"></i> All targets on track Â· no pending alerts';
                 alertBanner.style.borderLeftColor = '#0f6e3a';
                 return;
             }
@@ -1069,7 +1083,7 @@
             alertBanner.style.borderLeftColor = '#b45a1c';
         }
 
-        // ©¤©¤©¤ RENDER ©¤©¤©¤
+        // â”€â”€â”€ RENDER â”€â”€â”€
         function render() {
             // overview
             const firm = computeFirm();
@@ -1085,7 +1099,7 @@
                     <div class="value">${d.value}</div>
                     <div class="trend ${d.pct >= 90 ? 'up' : d.pct < 60 ? 'down' : ''}">
                         ${d.pct.toFixed(0)}% of target
-                        ${d.pct >= 100 ? ' ”9Á3' : ''}
+                        ${d.pct >= 100 ? ' ðŸŽ¯' : ''}
                     </div>
                 </div>
             `).join('');
@@ -1095,7 +1109,7 @@
                 practiceGrid.innerHTML = `
                     <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:#6a8aaa;background:white;border-radius:32px;border:1px dashed #d0dcec;">
                         <i class="fas fa-plus-circle" style="font-size:2.4rem;display:block;margin-bottom:0.8rem;color:#b8cae0;"></i>
-                        No practices yet ¡ª click <strong>New</strong> to add one.
+                        No practices yet â€” click <strong>New</strong> to add one.
                     </div>
                 `;
                 return;
@@ -1159,7 +1173,7 @@
             });
         }
 
-        // ©¤©¤©¤ MODAL ©¤©¤©¤
+        // â”€â”€â”€ MODAL â”€â”€â”€
         function openModal(id = null) {
             modalOverlay.classList.add('active');
             if (id) {
@@ -1231,22 +1245,56 @@
         document.getElementById('addPracticeBtn').addEventListener('click', () => openModal(null));
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 
-        // ©¤©¤©¤ KEYBOARD SHORTCUT ©¤©¤©¤
+        // â”€â”€â”€ KEYBOARD SHORTCUT â”€â”€â”€
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
         });
 
-        // ©¤©¤©¤ INIT ©¤©¤©¤
-        listenPractices();
+        // â”€â”€â”€ SECURE STAFF SESSION â”€â”€â”€
+        const staffLoginForm = $('#staffLoginForm');
+        staffLoginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const button = $('#staffLoginButton');
+            const error = $('#staffGateError');
+            button.disabled = true;
+            button.textContent = 'Signing inâ€¦';
+            error.textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, $('#staffEmail').value.trim(), $('#staffPassword').value);
+            } catch (loginError) {
+                error.textContent = loginError.code === 'auth/invalid-credential'
+                    ? 'The email or password is incorrect.'
+                    : (loginError.message || 'Sign-in failed. Please try again.');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Sign in securely';
+            }
+        });
 
-        // startup notification
-        setTimeout(() => {
-            addNotification('•0‹4 Dashboard ready ¡ª all data real6¥2time', 'success');
-        }, 800);
+        $('#trackerLogoutBtn').addEventListener('click', () => signOut(auth));
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                if (practicesUnsub) practicesUnsub();
+                practicesUnsub = null;
+                trackerStarted = false;
+                isInitialLoad = true;
+                currentStaffUser = null;
+                currentStaffRole = null;
+                practices = [];
+                $('#app').style.display = 'none';
+                $('#staffGate').style.display = 'flex';
+                statusDot.className = 'status-dot offline';
+                syncStatus.textContent = 'Sign in required';
+                return;
+            }
+            authorizeTrackerUser(user).catch(async error => {
+                console.error('Tracker access verification failed:', error);
+                $('#staffGateError').textContent = 'Could not verify your staff access.';
+                try { await signOut(auth); } catch (_) {}
+            });
+        });
 
-        logEvent(analytics, 'page_view', { page: 'tracker' });
-
-        console.log('”9è5 Kuria Karatu Tracker ¡¤ Firebase real6¥2time enabled (bugs fixed)');
+        console.log('Kuria Karatu Tracker awaiting authorised Firebase staff sign-in.');
     </script>
 </body>
 </html>
