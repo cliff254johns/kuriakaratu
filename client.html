@@ -834,6 +834,7 @@ let charts = {};
 let listenersAttached = false;
 let clientNameForMatching = '';
 let routeInProgress = false;
+let signupInProgress = false;
 let pendingRequestContext = null;
 let selectedCaseId = null;
 let selectedInvoiceId = null;
@@ -976,6 +977,12 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       case 'auth/operation-not-allowed': msg = 'Email/password sign-in is disabled. Contact the firm.'; break;
     }
     errEl.textContent = msg;
+  } finally {
+    signupInProgress = false;
+    if (credential && credential.user) {
+      // The auth-state listener intentionally waits until the pending request is stored.
+      await routeUser(credential.user);
+    }
   }
 });
 
@@ -1028,66 +1035,14 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   showLoading('Creating your account...', 'Setting up your secure profile');
   setLoadingStep(0, 'Creating your account...');
 
-  let uid = null;
-  let matchedClient = null;
-  let matchReason = '';
-
+  signupInProgress = true;
+  let credential = null;
   try {
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
-    uid = cred.user.uid;
-
-    setLoadingStep(1, 'Looking up your client record...');
-    showLoading('Looking up your client record...', 'Checking email and phone against our records');
-
-    // Match by email (exact lowercase)
-    try {
-      const snap = await db.collection('clients').where('email','==',email).limit(1).get();
-      if (!snap.empty) {
-        matchedClient = { id: snap.docs[0].id, ...snap.docs[0].data() };
-        matchReason = 'email';
-      }
-    } catch(err) { console.warn('Email match failed:', err); }
-
-    // Match by phone (normalized)
-    if (!matchedClient && phone) {
-      try {
-        const norm = normalizePhone(phone);
-        if (norm) {
-          const all = await db.collection('clients').limit(300).get();
-          all.forEach(doc => {
-            if (matchedClient) return;
-            if (normalizePhone(doc.data().phone) === norm) {
-              matchedClient = { id: doc.id, ...doc.data() };
-              matchReason = 'phone';
-            }
-          });
-        }
-      } catch(err) { console.warn('Phone match failed:', err); }
-    }
-
-    // Match by case reference (fallback only)
-    if (!matchedClient && caseRef) {
-      try {
-        let caseDoc = null;
-        const s1 = await db.collection('cases').where('caseNo','==',caseRef).limit(1).get();
-        if (!s1.empty) caseDoc = s1.docs[0].data();
-        if (!caseDoc) {
-          const s2 = await db.collection('cases').where('trackingNo','==',caseRef).limit(1).get();
-          if (!s2.empty) caseDoc = s2.docs[0].data();
-        }
-        if (caseDoc && caseDoc.client) {
-          const cl = await db.collection('clients').where('name','==',caseDoc.client).limit(1).get();
-          if (!cl.empty) {
-            matchedClient = { id: cl.docs[0].id, ...cl.docs[0].data() };
-            matchReason = 'case reference';
-          }
-        }
-      } catch(err) { console.warn('Case-ref match failed:', err); }
-    }
+    credential = await auth.createUserWithEmailAndPassword(email, password);
+    const uid = credential.user.uid;
+    await credential.user.sendEmailVerification();
 
     const nowIso = getDateTime();
-
-    // ---- 1. clientAccounts doc ----
     const accountData = {
       uid,
       email,
@@ -1099,18 +1054,8 @@ document.getElementById('signupForm').addEventListener('submit', async function(
       clientId: null,
       role: 'client'
     };
-
-    if (matchedClient) {
-      accountData.approved = true;
-      accountData.clientId = matchedClient.id;
-      accountData.approvedAt = nowIso;
-      accountData.approvedBy = 'auto-match-' + matchReason;
-    }
-
     await db.collection('clientAccounts').doc(uid).set(accountData);
 
-    // ---- 2. portalRequests doc (visible on admin Portal Requests page) ----
-    // Written in BOTH cases so the admin sees the full history.
     const requestData = {
       uid,
       email,
@@ -1118,26 +1063,21 @@ document.getElementById('signupForm').addEventListener('submit', async function(
       phone,
       caseRef,
       requestedAt: nowIso,
-      status: matchedClient ? 'approved' : 'pending',
-      approved: !!matchedClient,
-      clientId: matchedClient ? matchedClient.id : null,
-      reviewedAt: matchedClient ? nowIso : null,
-      reviewedBy: matchedClient ? ('auto-match-' + matchReason) : null,
+      status: 'pending',
+      approved: false,
+      clientId: null,
+      reviewedAt: null,
+      reviewedBy: null,
       source: 'client-signup'
     };
     await db.collection('portalRequests').doc(uid).set(requestData);
 
-    setLoadingStep(2, matchedClient ? 'Loading your dashboard...' : 'Awaiting approval...');
-    infoEl.textContent = matchedClient
-      ? `Welcome back! Your account was matched by ${matchReason} and is ready to use. Loading your dashboard...`
-      : 'Account created. Awaiting approval — you will be let in automatically once an admin approves you.';
+    infoEl.textContent = 'Your account has been created. Please verify your email using the link we sent, then wait for the firm to review your portal-access request.';
     infoEl.style.display = 'block';
-
-    if (!matchedClient) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-    }
-  } catch (err) {
+    setLoadingStep(2, 'Email verification and firm approval required...');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    } catch (err) {
     console.error('Signup error:', err.code, err.message);
     hideLoading();
     btn.disabled = false;
@@ -1157,6 +1097,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
    AUTH STATE
    ================================================================ */
 auth.onAuthStateChanged(async user => {
+  if (signupInProgress) return;
   if (user) {
     currentUser = user;
     currentUserEmail = user.email;
@@ -1175,9 +1116,16 @@ auth.onAuthStateChanged(async user => {
    ROUTE USER
    ================================================================ */
 async function routeUser(user) {
-  if (routeInProgress) return;
+  if (routeInProgress || signupInProgress) return;
   routeInProgress = true;
   try {
+    if (!user.emailVerified) {
+      await auth.signOut();
+      showAuthScreen();
+      const verificationError = document.getElementById('loginError');
+      if (verificationError) verificationError.textContent = 'Please verify your email address using the link sent to your inbox before signing in.';
+      return;
+    }
     setLoadingStep(0, 'Checking your account...');
     showLoading('Checking your account...', 'Verifying portal access');
 
@@ -1389,7 +1337,7 @@ function attachClientListeners() {
   }, err => console.warn('Client listener error:', err));
 
   if (casesUnsub) { try { casesUnsub(); } catch(e) {} }
-  casesUnsub = db.collection('cases').limit(200).onSnapshot(snap => {
+  casesUnsub = db.collection('cases').where('clientId', '==', currentClientId).limit(200).onSnapshot(snap => {
     const name = clientNameForMatching;
     myCases = [];
     if (name) {
@@ -1443,12 +1391,11 @@ function attachClientListeners() {
     .limit(200)
     .onSnapshot(handleDocsSnap, err => {
       console.warn('Docs by clientId failed, trying uploadedBy:', err);
-      db.collection('documents').where('uploadedBy','==',currentUserEmail).limit(200)
-        .onSnapshot(handleDocsSnap, err2 => console.warn('Docs fallback failed:', err2));
+      console.warn('Documents without a matching clientId are not exposed to the client portal.');
     });
 
   if (tasksUnsub) { try { tasksUnsub(); } catch(e) {} }
-  tasksUnsub = db.collection('tasks').limit(300).onSnapshot(snap => {
+  tasksUnsub = db.collection('tasks').where('clientId', '==', currentClientId).limit(300).onSnapshot(snap => {
     const caseIds = myCases.map(c => c.id);
     const caseNames = myCases.map(c => safeStr(c.name).toLowerCase());
     const name = clientNameForMatching;
