@@ -1,6 +1,7 @@
 name: Validate and deploy Firestore security rules
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'firestore.rules'
@@ -31,21 +32,20 @@ jobs:
         run: npx firebase emulators:exec --only firestore --project demo-kuriakaratu "node scripts/test-firestore-rules.mjs"
 
   deploy-firestore-rules:
-    if: github.event_name == 'push' && secrets.FIREBASE_SERVICE_ACCOUNT_KURIAKARATU != ''
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: firestore-emulator-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install Firebase CLI
-        run: npm install --global firebase-tools
-      - name: Authenticate Firebase CLI
+      - name: Deploy Firestore rules when Firebase credentials are configured
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KURIAKARATU }}
         run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::notice::Firestore emulator tests passed. Live deployment skipped because FIREBASE_SERVICE_ACCOUNT_KURIAKARATU is not configured."
+            exit 0
+          fi
+          npm install --global firebase-tools
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
-      - name: Deploy Firestore rules
-        run: firebase deploy --only firestore:rules --project kuriakaratu-b5c90 --non-interactive
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
+          firebase deploy --only firestore:rules --project kuriakaratu-b5c90 --non-interactive
