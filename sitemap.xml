@@ -97,18 +97,54 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Legal Utilities -->
+  <!-- Legal, privacy and compliance pages -->
   <url>
-    <loc>https://www.kuriakaratuadvocates.com/privacy-policy/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <loc>https://www.kuriakaratuadvocates.com/privacy.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.kuriakaratuadvocates.com/terms.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.kuriakaratuadvocates.com/cookies.html</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://www.kuriakaratuadvocates.com/terms-of-service/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <loc>https://www.kuriakaratuadvocates.com/data-protection.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.kuriakaratuadvocates.com/disclaimer.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.kuriakaratuadvocates.com/data-processing-agreement.html</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
+  <url>
+    <loc>https://www.kuriakaratuadvocates.com/complaints.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.kuriakaratuadvocates.com/accessibility.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
 </urlset>
