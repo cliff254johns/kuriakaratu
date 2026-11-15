@@ -373,7 +373,7 @@ tbody tr:hover{background:var(--slate-50);}
 
     <form id="signupForm" style="display:none;">
       <div class="auth-info" style="display:block;margin-bottom:1rem;">
-        <strong>Already our client?</strong> Use the same <strong>email</strong> or <strong>phone number</strong> on file and you'll get instant access. Otherwise, your account will be reviewed by our advocates.
+        <strong>Portal access is reviewed by the firm.</strong> Creating an account does not automatically link you to a client file. An authorised staff member must verify and approve your request.
       </div>
       <div class="form-group">
         <label>Full Name *</label>
@@ -390,10 +390,6 @@ tbody tr:hover{background:var(--slate-50);}
       <div class="form-group">
         <label>Password *</label>
         <input type="password" id="signupPassword" placeholder="Min 6 characters" required minlength="6">
-      </div>
-      <div class="form-group">
-        <label>Case Reference <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
-        <input type="text" id="signupCaseRef" placeholder="e.g. CIV/01/2026">
       </div>
       <div class="auth-error" id="signupError"></div>
       <div id="signupInfo" class="auth-info" style="display:none;"></div>
@@ -834,6 +830,7 @@ let charts = {};
 let listenersAttached = false;
 let clientNameForMatching = '';
 let routeInProgress = false;
+let registrationInProgress = false;
 let pendingRequestContext = null;
 let selectedCaseId = null;
 let selectedInvoiceId = null;
@@ -1014,7 +1011,6 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   const email = normalizeEmail(document.getElementById('signupEmail').value);
   const phone = document.getElementById('signupPhone').value.trim();
   const password = document.getElementById('signupPassword').value;
-  const caseRef = document.getElementById('signupCaseRef').value.trim();
   const errEl = document.getElementById('signupError');
   const infoEl = document.getElementById('signupInfo');
   const btn = document.getElementById('signupBtn');
@@ -1029,6 +1025,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
   setLoadingStep(0, 'Creating your account...');
 
   let uid = null;
+  registrationInProgress = true;
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     uid = cred.user.uid;
@@ -1052,7 +1049,11 @@ document.getElementById('signupForm').addEventListener('submit', async function(
     infoEl.style.display = 'block';
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    registrationInProgress = false;
+    await routeUser(cred.user);
   } catch (err) {
+    registrationInProgress = false;
+    try { if (auth.currentUser) await auth.signOut(); } catch (_) {}
     console.error('Signup error:', err.code, err.message);
     hideLoading();
     btn.disabled = false;
@@ -1072,6 +1073,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
    AUTH STATE
    ================================================================ */
 auth.onAuthStateChanged(async user => {
+  if (registrationInProgress) return;
   if (user) {
     currentUser = user;
     currentUserEmail = user.email;
