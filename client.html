@@ -2005,7 +2005,7 @@ async function requestCancellation() {
       caseId: '',
       caseName: '',
       subject: 'Appointment cancellation request',
-      body: 'I request cancellation of the appointment scheduled for ' + (selectedAppointment.date || '') + ' at ' + (selectedAppointment.time || '') + '. Please confirm with me.',
+      body: 'I request cancellation of the appointment scheduled for ' + ((myTasks.find(t => t.id === selectedAppointmentId) || {}).date || '') + ' at ' + ((myTasks.find(t => t.id === selectedAppointmentId) || {}).time || '') + '. Please confirm with me.',
       sender: 'client',
       senderRole: 'client',
       createdAt: getDateTime(),
