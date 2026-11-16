@@ -1307,16 +1307,9 @@ function attachClientListeners() {
   }, err => console.warn('Client listener error:', err));
 
   if (casesUnsub) { try { casesUnsub(); } catch(e) {} }
-  casesUnsub = db.collection('cases').limit(200).onSnapshot(snap => {
-    const name = clientNameForMatching;
+  casesUnsub = db.collection('cases').where('clientId', '==', currentClientId).limit(200).onSnapshot(snap => {
     myCases = [];
-    if (name) {
-      snap.forEach(doc => {
-        const d = { id: doc.id, ...doc.data() };
-        const cc = safeStr(d.client).trim().toLowerCase();
-        if (cc && cc === name) myCases.push(d);
-      });
-    }
+    snap.forEach(doc => myCases.push({ id: doc.id, ...doc.data() }));
     renderCases(); renderOverview(); renderReportPreview();
     populateCaseDropdowns();
   }, err => console.warn('Cases listener error:', err));
@@ -1341,44 +1334,19 @@ function attachClientListeners() {
     }, err => console.warn('Receipts listener error:', err));
 
   if (docsUnsub) { try { docsUnsub(); } catch(e) {} }
-  const handleDocsSnap = snap => {
-    const name = clientNameForMatching;
-    const caseNames = myCases.map(c => safeStr(c.name).toLowerCase()).filter(Boolean);
-    myDocuments = [];
-    snap.forEach(doc => {
-      const d = { id: doc.id, ...doc.data() };
-      const matter = safeStr(d.matter).toLowerCase();
-      const matchName = name && matter.includes(name);
-      const matchCase = caseNames.length && caseNames.some(cn => matter === cn);
-      const matchClientId = d.clientId === currentClientId;
-      const matchUploadedBy = d.uploadedBy === currentUserEmail;
-      if (matchName || matchCase || matchClientId || matchUploadedBy) myDocuments.push(d);
-    });
-    renderDocuments(); renderReportPreview();
-  };
   docsUnsub = db.collection('documents')
     .where('clientId', '==', currentClientId)
     .limit(200)
-    .onSnapshot(handleDocsSnap, err => {
-      console.warn('Docs by clientId failed, trying uploadedBy:', err);
-      db.collection('documents').where('uploadedBy','==',currentUserEmail).limit(200)
-        .onSnapshot(handleDocsSnap, err2 => console.warn('Docs fallback failed:', err2));
-    });
+    .onSnapshot(snap => {
+      myDocuments = [];
+      snap.forEach(doc => myDocuments.push({ id: doc.id, ...doc.data() }));
+      renderDocuments(); renderReportPreview();
+    }, err => console.warn('Client-scoped documents listener error:', err));
 
   if (tasksUnsub) { try { tasksUnsub(); } catch(e) {} }
-  tasksUnsub = db.collection('tasks').limit(300).onSnapshot(snap => {
-    const caseIds = myCases.map(c => c.id);
-    const caseNames = myCases.map(c => safeStr(c.name).toLowerCase());
-    const name = clientNameForMatching;
+  tasksUnsub = db.collection('tasks').where('clientId', '==', currentClientId).limit(300).onSnapshot(snap => {
     myTasks = [];
-    snap.forEach(doc => {
-      const d = { id: doc.id, ...doc.data() };
-      const matchClientId = d.clientId === currentClientId;
-      const matchCase = d.caseId && caseIds.includes(d.caseId);
-      const matchCaseName = d.caseName && caseNames.includes(safeStr(d.caseName).toLowerCase());
-      const matchClientName = d.clientName && safeStr(d.clientName).toLowerCase() === name;
-      if (matchClientId || matchCase || matchCaseName || matchClientName) myTasks.push(d);
-    });
+    snap.forEach(doc => myTasks.push({ id: doc.id, ...doc.data() }));
     myTasks.sort((a,b) => safeStr(a.date).localeCompare(safeStr(b.date)));
     renderAppointments(); renderOverview(); renderReportPreview();
   }, err => console.warn('Tasks listener error:', err));
@@ -2029,12 +1997,17 @@ async function requestCancellation() {
       cancelRequestedAt: getDateTime(),
       cancelRequestedBy: currentUserEmail
     });
-    await db.collection('clientNotifications').add({
-      uid: currentUser.uid,
+    await db.collection('clientMessages').add({
       clientId: currentClientId,
-      type: 'cancelRequest',
-      title: 'Cancellation Requested',
-      message: 'Your advocate has been notified and will confirm shortly.',
+      clientName: safeStr(currentClientData && currentClientData.name) || '',
+      clientEmail: currentUserEmail,
+      senderUid: currentUser.uid,
+      caseId: '',
+      caseName: '',
+      subject: 'Appointment cancellation request',
+      body: 'I request cancellation of the appointment scheduled for ' + (selectedAppointment.date || '') + ' at ' + (selectedAppointment.time || '') + '. Please confirm with me.',
+      sender: 'client',
+      senderRole: 'client',
       createdAt: getDateTime(),
       read: false
     });
@@ -2220,6 +2193,7 @@ async function sendClientMessage() {
       body,
       sender: 'client',
       senderRole: 'client',
+      senderUid: currentUser.uid,
       createdAt: getDateTime(),
       read: false
     });
@@ -2266,7 +2240,7 @@ function updateNotifBadge() {
   if (count > 0) { badge.textContent = count; badge.style.display = 'flex'; }
   else badge.style.display = 'none';
 }
-async function markNotificationsRead() {
+async async function markNotificationsRead() {
   const unread = myNotifications.filter(n => !n.read);
   if (!unread.length) return;
   try {
