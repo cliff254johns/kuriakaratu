@@ -917,7 +917,7 @@ function isMimeAllowed(file) {
   const allowed = ['application/pdf','application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'image/jpeg','image/png'];
-  return allowed.includes(file.type) || file.type === '';
+  return allowed.includes(file.type);
 }
 function readFileAsBase64(file) {
   return new Promise((resolve, reject) => {
@@ -2083,7 +2083,7 @@ function closeUploadRequestModal() {
   pendingRequestContext = null;
 }
 
-async function submitRequestedDoc() {
+async async function submitRequestedDoc() {
   if (!pendingRequestContext) { showToast('No request in context.', 'error'); return; }
   const file = document.getElementById('uploadRequestFile').files[0];
   const notes = document.getElementById('uploadRequestNotes').value.trim();
