@@ -45,6 +45,7 @@ try {
   const client = testEnv.authenticatedContext('client-1', { email: 'client@example.com' }).firestore();
   const otherClient = testEnv.authenticatedContext('client-2', { email: 'other@example.com' }).firestore();
   const stranger = testEnv.authenticatedContext('stranger-1', { email: 'stranger@example.com' }).firestore();
+  const newClient = testEnv.authenticatedContext('client-new', { email: 'new@example.com' }).firestore();
   const unauth = testEnv.unauthenticatedContext().firestore();
 
   await assertSucceeds(getDoc(doc(admin, 'cases/case-1')));
@@ -109,17 +110,17 @@ try {
   await assertFails(getDoc(doc(unauth, 'settings/company')));
   await assertFails(getDoc(doc(admin, 'unlistedCollection/private-doc')));
 
-  await assertSucceeds(setDoc(doc(client, 'clientAccounts/client-self'), {
-    uid: 'client-1', approved: false, status: 'pending', role: 'client',
-    clientId: null, email: 'client@example.com'
+  await assertSucceeds(setDoc(doc(newClient, 'clientAccounts/client-new'), {
+    uid: 'client-new', approved: false, status: 'pending', role: 'client',
+    clientId: null, email: 'new@example.com'
   }));
-  await assertFails(setDoc(doc(client, 'clientAccounts/client-self'), {
-    uid: 'client-1', approved: true, status: 'approved', role: 'client',
-    clientId: 'cl-1', email: 'client@example.com'
+  await assertFails(setDoc(doc(newClient, 'clientAccounts/client-new'), {
+    uid: 'client-new', approved: true, status: 'approved', role: 'client',
+    clientId: 'cl-1', email: 'new@example.com'
   }));
-  await assertFails(setDoc(doc(stranger, 'clientAccounts/client-self'), {
-    uid: 'client-1', approved: false, status: 'pending', role: 'client',
-    clientId: null, email: 'client@example.com'
+  await assertFails(setDoc(doc(stranger, 'clientAccounts/client-new'), {
+    uid: 'client-new', approved: false, status: 'pending', role: 'client',
+    clientId: null, email: 'new@example.com'
   }));
   await assertFails(setDoc(doc(finance, 'cases/unauthorised'), { title: 'No' }));
 
