@@ -2248,7 +2248,7 @@ function updateNotifBadge() {
   if (count > 0) { badge.textContent = count; badge.style.display = 'flex'; }
   else badge.style.display = 'none';
 }
-async async function markNotificationsRead() {
+async function markNotificationsRead() {
   const unread = myNotifications.filter(n => !n.read);
   if (!unread.length) return;
   try {
