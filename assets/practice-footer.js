@@ -1,6 +1,6 @@
 /* Shared, homepage-consistent footer for every practice page. */
 (function(){
- const root=/\/practices\//.test(location.pathname)?'../':'';
+ const root=/\/(practices|insights|locations)\//.test(location.pathname)?'../':'';
  const footer=document.createElement('footer');
  footer.className='kk-practice-footer';
  footer.innerHTML='<div class="kk-footer-container"><div class="kk-footer-grid">'+
