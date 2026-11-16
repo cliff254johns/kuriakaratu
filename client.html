@@ -1999,6 +1999,7 @@ async function requestCancellation() {
     });
     await db.collection('clientMessages').add({
       clientId: currentClientId,
+      ownerUid: currentUser.uid,
       clientName: safeStr(currentClientData && currentClientData.name) || '',
       clientEmail: currentUserEmail,
       senderUid: currentUser.uid,
@@ -2092,7 +2093,7 @@ async function submitRequestedDoc() {
   if (!file) { errEl.textContent = 'Please select a file.'; return; }
   if (!isExtAllowed(file.name)) { errEl.textContent = 'File type not allowed.'; return; }
   if (!isMimeAllowed(file)) { errEl.textContent = 'File content type not allowed.'; return; }
-  if (file.size > 10 * 1024 * 1024) { errEl.textContent = 'File too large (max 10MB).'; return; }
+  if (file.size > 650000) { errEl.textContent = 'File too large for secure portal storage. Max 650 KB per file.'; return; }
 
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
@@ -2126,15 +2127,20 @@ async function submitRequestedDoc() {
       createdAt: uploadedAt
     });
 
-    const updatedRequests = (currentClientData.docRequests || []).map(r => {
-      if (r.id !== pendingRequestContext.id) return r;
-      return { ...r, status: 'received', fileId, fileName: file.name, receivedAt: uploadedAt, notes };
+    await db.collection('clientMessages').add({
+      clientId: currentClientId,
+      clientName: safeStr(currentClientData && currentClientData.name) || '',
+      clientEmail: currentUserEmail,
+      senderUid: currentUser.uid,
+      caseId: '',
+      caseName: '',
+      subject: 'Document submitted: ' + reqTitle,
+      body: 'I have uploaded the requested document. File reference: ' + fileId + '. Please confirm receipt.',
+      sender: 'client',
+      senderRole: 'client',
+      createdAt: uploadedAt,
+      read: false
     });
-    await db.collection('clients').doc(currentClientId).update({ docRequests: updatedRequests });
-
-    const clientDocs = Array.isArray(currentClientData.documents) ? currentClientData.documents : [];
-    clientDocs.push({ name: file.name, fileId, uploaded: uploadedAt, size: formatFileSize(file.size), description: `Uploaded for request: ${reqTitle}` });
-    await db.collection('clients').doc(currentClientId).update({ documents: clientDocs });
 
     showToast('Document uploaded successfully!', 'info');
     closeUploadRequestModal();
@@ -2390,7 +2396,7 @@ async function handleFileUpload(file) {
 
   if (!isExtAllowed(file.name)) { errEl.textContent = 'File extension not allowed. Use PDF, DOC, DOCX, JPG, or PNG.'; return; }
   if (!isMimeAllowed(file)) { errEl.textContent = 'File content type not allowed.'; return; }
-  if (file.size > 10 * 1024 * 1024) { errEl.textContent = 'File too large. Max 10MB.'; return; }
+  if (file.size > 650000) { errEl.textContent = 'File too large for secure portal storage. Max 650 KB per file.'; return; }
 
   const caseId = document.getElementById('uploadCaseSelect').value;
   const category = document.getElementById('uploadCategory').value;
@@ -2432,20 +2438,7 @@ async function handleFileUpload(file) {
       createdAt: uploadedAt
     });
 
-    const clientDocs = Array.isArray(currentClientData.documents) ? currentClientData.documents : [];
-    clientDocs.push({ name: file.name, fileId, uploaded: uploadedAt, size: formatFileSize(file.size), description: `Category: ${category}` });
-    await db.collection('clients').doc(currentClientId).update({ documents: clientDocs });
-
-    if (caseId && selectedCase) {
-      try {
-        const caseDoc = await db.collection('cases').doc(caseId).get();
-        if (caseDoc.exists) {
-          const existing = Array.isArray(caseDoc.data().documents) ? caseDoc.data().documents : [];
-          existing.push({ name: file.name, fileId, uploaded: uploadedAt, uploadedBy: currentUserEmail, uploadedByRole: 'client', category });
-          await db.collection('cases').doc(caseId).update({ documents: existing });
-        }
-      } catch(caseErr) { console.warn('Could not attach to case:', caseErr); }
-    }
+    // Document metadata is stored in its own client-scoped record; no client or case record is modified from the browser.
 
     bar.style.width = '100%';
     label.textContent = 'Upload complete!';
