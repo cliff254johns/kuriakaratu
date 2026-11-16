@@ -15,6 +15,9 @@ service cloud.firestore {
     function isFinanceStaff() {
       return profileExists() && role() in ['admin', 'developer', 'finance'];
     }
+    function isLegalStaff() {
+      return profileExists() && role() in ['admin', 'developer', 'clerk'];
+    }
     function accountExists() {
       return signedIn() && exists(/databases/$(database)/documents/clientAccounts/$(request.auth.uid));
     }
@@ -62,7 +65,7 @@ service cloud.firestore {
     }
 
     match /clients/{clientId} {
-      allow read: if isAdminOrDeveloper() || isLinkedClient(clientId);
+      allow read: if isLegalStaff() || isLinkedClient(clientId);
       allow update: if isAdminOrDeveloper() || (
         isLinkedClient(clientId)
         && request.resource.data.diff(resource.data).affectedKeys()
@@ -77,13 +80,13 @@ service cloud.firestore {
     }
 
     match /cases/{caseId} {
-      allow read: if isAdminOrDeveloper()
+      allow read: if isLegalStaff()
         || (approvedClient() && resource.data.clientId == linkedClientId());
       allow create, update, delete: if isAdminOrDeveloper();
     }
 
     match /documents/{documentId} {
-      allow read: if isAdminOrDeveloper()
+      allow read: if isLegalStaff()
         || (approvedClient() && resource.data.clientId == linkedClientId());
       allow create: if isAdminOrDeveloper() || (
         approvedClient()
@@ -113,7 +116,7 @@ service cloud.firestore {
     }
 
     match /tasks/{taskId} {
-      allow read: if isAdminOrDeveloper()
+      allow read: if isLegalStaff()
         || (approvedClient() && resource.data.clientId == linkedClientId());
       allow update: if isAdminOrDeveloper() || (
         approvedClient()
@@ -127,7 +130,7 @@ service cloud.firestore {
     }
 
     match /invoices/{invoiceId} {
-      allow read: if isFinanceStaff()
+      allow read: if isFinanceStaff() || isLegalStaff()
         || (approvedClient() && resource.data.clientId == linkedClientId());
       allow write: if isFinanceStaff();
     }
@@ -144,7 +147,7 @@ service cloud.firestore {
     }
 
     match /clientMessages/{messageId} {
-      allow read: if isAdminOrDeveloper()
+      allow read: if isLegalStaff()
         || (approvedClient() && resource.data.clientId == linkedClientId());
       allow create: if approvedClient()
         && request.resource.data.clientId == linkedClientId()
