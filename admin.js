@@ -4249,14 +4249,20 @@ document.getElementById('addTaskForm').addEventListener('submit', async function
     let caseName = 'General', caseIdNum = null;
     if (caseId) { const c = casesData.find(c => c.id === caseId); if (c) { caseName = c.name; caseIdNum = caseId; } }
     let clientName = null;
+    let resolvedClientId = clientId || null;
     if (clientId) { const cl = clientsData.find(c => c.id === clientId); if (cl) clientName = cl.name; }
     if (!clientName && caseIdNum) {
         const c = casesData.find(x => x.id === caseIdNum);
-        if (c && c.client) { const cl = clientsData.find(x => x.name === c.client); if (cl) clientName = cl.name; else clientName = c.client; }
+        if (c && c.clientId) resolvedClientId = c.clientId;
+        if (c && c.client) {
+            const matches = clientsData.filter(x => normalizeText(x.name) === normalizeText(c.client));
+            if (matches.length === 1) { clientName = matches[0].name; resolvedClientId = resolvedClientId || matches[0].id; }
+            else clientName = c.client;
+        }
     }
     const taskData = {
         title: title, description: description || '', caseId: caseIdNum, caseName: caseName,
-        clientId: clientId || null, clientName: clientName || null,
+        clientId: resolvedClientId, clientName: clientName || null,
         date: date, time: time,
         reminderDate: reminderDate || '', reminderTime: reminderTime || '', reminderSent: false,
         location: location || 'N/A', amount: parseInt(amount) || 0,
