@@ -2,70 +2,139 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function signedIn() {
-      return request.auth != null;
+    function signedIn() { return request.auth != null; }
+    function profileExists() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-
-    function userProfileExists() {
-      return signedIn() &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
-
-    function userRole() {
-      return get(
-        /databases/$(database)/documents/users/$(request.auth.uid)
-      ).data.role;
-    }
-
     function isAdminOrDeveloper() {
-      return userProfileExists() &&
-        userRole() in ['admin', 'developer'];
+      return profileExists() && role() in ['admin', 'developer'];
     }
-
     function isFinanceStaff() {
-      return userProfileExists() &&
-        userRole() in ['admin', 'developer', 'finance'];
+      return profileExists() && role() in ['admin', 'developer', 'finance'];
+    }
+    function accountExists() {
+      return signedIn() && exists(/databases/$(database)/documents/clientAccounts/$(request.auth.uid));
+    }
+    function approvedClient() {
+      return accountExists()
+        && get(/databases/$(database)/documents/clientAccounts/$(request.auth.uid)).data.approved == true
+        && get(/databases/$(database)/documents/clientAccounts/$(request.auth.uid)).data.clientId is string
+        && get(/databases/$(database)/documents/clientAccounts/$(request.auth.uid)).data.clientId.size() > 0;
+    }
+    function linkedClientId() {
+      return get(/databases/$(database)/documents/clientAccounts/$(request.auth.uid)).data.clientId;
+    }
+    function isLinkedClient(clientId) {
+      return approvedClient() && linkedClientId() == clientId;
     }
 
     match /users/{uid} {
-      allow read: if signedIn() &&
-        (request.auth.uid == uid || isAdminOrDeveloper());
+      allow read: if signedIn() && (request.auth.uid == uid || isAdminOrDeveloper());
       allow create, update, delete: if isAdminOrDeveloper();
     }
 
     match /clientAccounts/{uid} {
-      allow create: if signedIn() &&
-        request.auth.uid == uid &&
-        request.resource.data.uid == uid &&
-        request.resource.data.approved == false &&
-        request.resource.data.status == 'pending' &&
-        request.resource.data.role == 'client' &&
-        request.resource.data.clientId == null &&
-        request.resource.data.email == request.auth.token.email;
-      allow read: if signedIn() &&
-        (request.auth.uid == uid || isAdminOrDeveloper());
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.approved == false
+        && request.resource.data.status == 'pending'
+        && request.resource.data.role == 'client'
+        && request.resource.data.clientId == null
+        && request.resource.data.email == request.auth.token.email;
+      allow read: if signedIn() && (request.auth.uid == uid || isAdminOrDeveloper());
       allow update, delete: if isAdminOrDeveloper();
     }
 
     match /portalRequests/{uid} {
-      allow create: if signedIn() &&
-        request.auth.uid == uid &&
-        request.resource.data.uid == uid &&
-        request.resource.data.approved == false &&
-        request.resource.data.status == 'pending' &&
-        request.resource.data.clientId == null &&
-        request.resource.data.email == request.auth.token.email;
-      allow read: if signedIn() &&
-        (request.auth.uid == uid || isAdminOrDeveloper());
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.approved == false
+        && request.resource.data.status == 'pending'
+        && request.resource.data.clientId == null
+        && request.resource.data.email == request.auth.token.email;
+      allow read: if signedIn() && (request.auth.uid == uid || isAdminOrDeveloper());
       allow update, delete: if isAdminOrDeveloper();
     }
 
-    match /invoices/{id} {
-      allow read, write: if isFinanceStaff();
+    match /clients/{clientId} {
+      allow read: if isAdminOrDeveloper() || isLinkedClient(clientId);
+      allow update: if isAdminOrDeveloper() || (
+        isLinkedClient(clientId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['phone', 'address', 'preferredContact', 'profileUpdatedAt'])
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 40
+        && request.resource.data.address is string
+        && request.resource.data.address.size() <= 300
+        && request.resource.data.preferredContact in ['WhatsApp', 'Phone call', 'Email']
+      );
+      allow create, delete: if isAdminOrDeveloper();
     }
-    match /receipts/{id} {
-      allow read, write: if isFinanceStaff();
+
+    match /cases/{caseId} {
+      allow read: if isAdminOrDeveloper()
+        || (approvedClient() && resource.data.clientId == linkedClientId());
+      allow create, update, delete: if isAdminOrDeveloper();
+    }
+
+    match /documents/{documentId} {
+      allow read: if isAdminOrDeveloper()
+        || (approvedClient() && resource.data.clientId == linkedClientId());
+      allow create: if isAdminOrDeveloper() || (
+        approvedClient()
+        && request.resource.data.clientId == linkedClientId()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.uploadedBy == request.auth.token.email
+        && request.resource.data.uploadedByRole == 'client'
+        && request.resource.data.base64 is string
+        && request.resource.data.base64.size() <= 900000
+        && request.resource.data.sizeBytes is int
+        && request.resource.data.sizeBytes <= 650000
+        && request.resource.data.mimeType in [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'image/jpeg',
+          'image/png'
+        ]
+      );
+      allow update, delete: if isAdminOrDeveloper();
+      match /versions/{versionId} {
+        allow read: if isAdminOrDeveloper()
+          || (approvedClient()
+            && get(/databases/$(database)/documents/documents/$(documentId)).data.clientId == linkedClientId());
+        allow create, update, delete: if isAdminOrDeveloper();
+      }
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isAdminOrDeveloper()
+        || (approvedClient() && resource.data.clientId == linkedClientId());
+      allow update: if isAdminOrDeveloper() || (
+        approvedClient()
+        && resource.data.clientId == linkedClientId()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['cancelRequested', 'cancelRequestedAt', 'cancelRequestedBy'])
+        && request.resource.data.cancelRequested == true
+        && request.resource.data.cancelRequestedBy == request.auth.token.email
+      );
+      allow create, delete: if isAdminOrDeveloper();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isFinanceStaff()
+        || (approvedClient() && resource.data.clientId == linkedClientId());
+      allow write: if isFinanceStaff();
+    }
+    match /receipts/{receiptId} {
+      allow read: if isFinanceStaff()
+        || (approvedClient() && resource.data.clientId == linkedClientId());
+      allow write: if isFinanceStaff();
     }
     match /finance/{id} {
       allow read, write: if isFinanceStaff();
@@ -74,31 +143,40 @@ service cloud.firestore {
       allow read, write: if isFinanceStaff();
     }
 
-    match /clients/{id} {
-      allow read, write: if isAdminOrDeveloper();
+    match /clientMessages/{messageId} {
+      allow read: if isAdminOrDeveloper()
+        || (approvedClient() && resource.data.clientId == linkedClientId());
+      allow create: if approvedClient()
+        && request.resource.data.clientId == linkedClientId()
+        && request.resource.data.sender == 'client'
+        && request.resource.data.senderRole == 'client'
+        && request.resource.data.senderUid == request.auth.uid
+        && request.resource.data.clientEmail == request.auth.token.email
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 4000;
+      allow update, delete: if isAdminOrDeveloper();
     }
-    match /cases/{id} {
-      allow read, write: if isAdminOrDeveloper();
+
+    match /clientNotifications/{notificationId} {
+      allow read: if isAdminOrDeveloper()
+        || (approvedClient() && resource.data.clientId == linkedClientId());
+      allow update: if isAdminOrDeveloper() || (
+        approvedClient()
+        && resource.data.clientId == linkedClientId()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        && request.resource.data.read == true
+      );
+      allow create, delete: if isAdminOrDeveloper();
     }
-    match /documents/{id} {
-      allow read, write: if isAdminOrDeveloper();
+
+    match /settings/{settingId} {
+      allow read: if isAdminOrDeveloper()
+        || (approvedClient() && settingId == 'company');
+      allow write: if isAdminOrDeveloper();
     }
-    match /documents/{id}/versions/{versionId} {
-      allow read, write: if isAdminOrDeveloper();
-    }
-    match /tasks/{id} {
-      allow read, write: if isAdminOrDeveloper();
-    }
-    match /activityLogs/{id} {
-      allow read, write: if isAdminOrDeveloper();
-    }
-    match /clientMessages/{id} {
-      allow read, write: if isAdminOrDeveloper();
-    }
-    match /clientNotifications/{id} {
-      allow read, write: if isAdminOrDeveloper();
-    }
-    match /settings/{id} {
+
+    match /activityLogs/{logId} {
       allow read, write: if isAdminOrDeveloper();
     }
 
