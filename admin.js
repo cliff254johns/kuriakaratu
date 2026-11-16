@@ -614,6 +614,7 @@ function populateLoginDropdown() {
 }
 
 let casesData = [];
+let caseLinkBackfillRunning = false;
 let documentsData = [];
 let tasksData = [];
 let clientsData = [];
@@ -1645,9 +1646,38 @@ function renderActivityLog() {
     container.innerHTML = filtered.map(log => `<div class="activity-log-entry"><div><span class="log-user">${log.user}</span><span class="log-action">${log.action}</span>${log.detail ? `<span class="log-detail">${log.detail}</span>` : ''}</div><span class="log-time">${log.timestamp}</span></div>`).join('');
 }
 
+async function backfillCaseClientLinks() {
+    if (caseLinkBackfillRunning || !isAdminOrDeveloper() || !casesData.length || !clientsData.length) return;
+    caseLinkBackfillRunning = true;
+    let linked = 0;
+    let skipped = 0;
+    try {
+        for (const item of casesData) {
+            if (item.clientId || !item.client) continue;
+            const matches = clientsData.filter(c => normalizeText(c.name) === normalizeText(item.client));
+            if (matches.length !== 1) { skipped++; continue; }
+            await db.collection('cases').doc(item.id).update({ clientId: matches[0].id });
+            linked++;
+        }
+        if (linked) await logActivity('Portal data migration', `Linked ${linked} case record(s) to client accounts; ${skipped} ambiguous record(s) left unchanged.`);
+    } catch (e) {
+        console.warn('Case-to-client link migration stopped:', e);
+    } finally {
+        caseLinkBackfillRunning = false;
+    }
+}
+
 async function addCaseToFirestore(data) {
-    try { const ref = await db.collection('cases').add(data); await logActivity('Added Case', `${data.caseNo} - ${data.name}`); return ref.id; }
-    catch (e) { console.error(e); return null; }
+    try {
+        const record = { ...data };
+        if (!record.clientId && record.client) {
+            const matches = clientsData.filter(c => normalizeText(c.name) === normalizeText(record.client));
+            if (matches.length === 1) record.clientId = matches[0].id;
+        }
+        const ref = await db.collection('cases').add(record);
+        await logActivity('Added Case', `${record.caseNo} - ${record.name}`);
+        return ref.id;
+    } catch (e) { console.error(e); return null; }
 }
 async function updateCaseInFirestore(id, updates) {
     try { await db.collection('cases').doc(id).update(updates); await logActivity('Updated Case', `ID: ${id}`); }
@@ -1658,8 +1688,27 @@ async function deleteCaseFromFirestore(id) {
     catch (e) { console.error(e); }
 }
 async function addDocumentToFirestore(data) {
-    try { const ref = await db.collection('documents').add(data); await logActivity('Added Document', data.name); return ref.id; }
-    catch (e) { console.error(e); return null; }
+    try {
+        const record = { ...data };
+        const matchedCase = casesData.find(c => normalizeText(c.name) === normalizeText(record.matter));
+        if (!record.clientId && matchedCase && matchedCase.clientId) record.clientId = matchedCase.clientId;
+        if (!record.clientId && matchedCase && matchedCase.client) {
+            const matches = clientsData.filter(c => normalizeText(c.name) === normalizeText(matchedCase.client));
+            if (matches.length === 1) record.clientId = matches[0].id;
+        }
+        if (!record.clientId) {
+            const matches = clientsData.filter(c => normalizeText(c.name) === normalizeText(record.matter));
+            if (matches.length === 1) record.clientId = matches[0].id;
+        }
+        if (record.clientId) {
+            const client = clientsData.find(c => c.id === record.clientId);
+            if (client) record.clientName = client.name;
+        }
+        record.uploadedByRole = record.uploadedByRole || 'staff';
+        const ref = await db.collection('documents').add(record);
+        await logActivity('Added Document', record.name);
+        return ref.id;
+    } catch (e) { console.error(e); return null; }
 }
 async function deleteDocFromFirestore(docId) {
     try { const d = documentsData.find(d => d.id === docId); await db.collection('documents').doc(docId).delete(); await logActivity('Deleted Document', d ? d.name : docId); }
@@ -2815,6 +2864,7 @@ function listenCases() {
         updateCharts();
         if (selectedClientId) showClientDetail(selectedClientId);
         populateCaseClientDropdowns();
+        backfillCaseClientLinks();
         renderAllInvoices();
         if (currentPage === 'documents') renderDocuments(currentFilter);
         if (currentPage === 'targets') renderTargets();
@@ -2868,6 +2918,7 @@ function listenClients() {
         populateCaseClientDropdowns();
         populateInvoiceClientDropdown();
         populateTaskClientDropdown();
+        backfillCaseClientLinks();
         updateDashboardStats();
         if (selectedClientId) showClientDetail(selectedClientId);
         renderAllInvoices();
