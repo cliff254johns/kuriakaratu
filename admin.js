@@ -615,6 +615,7 @@ function populateLoginDropdown() {
 
 let casesData = [];
 let caseLinkBackfillRunning = false;
+let documentLinkBackfillRunning = false;
 let documentsData = [];
 let tasksData = [];
 let clientsData = [];
@@ -1664,6 +1665,37 @@ async function backfillCaseClientLinks() {
         console.warn('Case-to-client link migration stopped:', e);
     } finally {
         caseLinkBackfillRunning = false;
+    }
+}
+
+async function backfillDocumentClientLinks() {
+    if (documentLinkBackfillRunning || !isAdminOrDeveloper() || !documentsData.length || !clientsData.length) return;
+    documentLinkBackfillRunning = true;
+    let linked = 0;
+    try {
+        for (const item of documentsData) {
+            if (item.clientId || !item.matter) continue;
+            let clientId = null;
+            const matchedCase = casesData.find(c => normalizeText(c.name) === normalizeText(item.matter));
+            if (matchedCase && matchedCase.clientId) clientId = matchedCase.clientId;
+            if (!clientId && matchedCase && matchedCase.client) {
+                const matches = clientsData.filter(c => normalizeText(c.name) === normalizeText(matchedCase.client));
+                if (matches.length === 1) clientId = matches[0].id;
+            }
+            if (!clientId) {
+                const matches = clientsData.filter(c => normalizeText(c.name) === normalizeText(item.matter));
+                if (matches.length === 1) clientId = matches[0].id;
+            }
+            if (clientId) {
+                await db.collection('documents').doc(item.id).update({ clientId });
+                linked++;
+            }
+        }
+        if (linked) await logActivity('Portal document migration', `Linked ${linked} document record(s) to client accounts.`);
+    } catch (e) {
+        console.warn('Document-to-client link migration stopped:', e);
+    } finally {
+        documentLinkBackfillRunning = false;
     }
 }
 
@@ -2877,6 +2909,7 @@ function listenDocuments() {
     docsUnsubscribe = db.collection('documents').onSnapshot(snap => {
         documentsData = [];
         snap.forEach(doc => { const d = doc.data(); d.id = doc.id; documentsData.push(d); });
+        backfillDocumentClientLinks();
         if (currentPage === 'documents') renderDocuments(currentFilter);
         if (selectedCaseId) { const c = casesData.find(c => c.id === selectedCaseId); if (c) showCaseDetail(selectedCaseId); }
         if (selectedClientId) showClientDetail(selectedClientId);
@@ -2919,6 +2952,7 @@ function listenClients() {
         populateInvoiceClientDropdown();
         populateTaskClientDropdown();
         backfillCaseClientLinks();
+        backfillDocumentClientLinks();
         updateDashboardStats();
         if (selectedClientId) showClientDetail(selectedClientId);
         renderAllInvoices();
