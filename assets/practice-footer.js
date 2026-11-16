@@ -1,0 +1,17 @@
+/* Shared, homepage-consistent footer for every practice page. */
+(function(){
+ const root=/\/practices\//.test(location.pathname)?'../':'';
+ const footer=document.createElement('footer');
+ footer.className='kk-practice-footer';
+ footer.innerHTML='<div class="kk-footer-container"><div class="kk-footer-grid">'+
+ '<div class="kk-footer-brand"><h3>Kuria Karatu <span>&amp; Company</span></h3><p class="kk-footer-kicker">ADVOCATES</p><p>Strategic, practical and results-oriented legal solutions for individuals, businesses and institutions across Kenya.</p><p class="kk-disclaimer">General information on this website is not a substitute for legal advice.</p></div>'+
+ '<div class="kk-footer-links"><h3>Quick Links</h3><ul><li><a href="'+root+'index.html">Home</a></li><li><a href="'+root+'index.html#about">About</a></li><li><a href="'+root+'practices/index.html">Practice Areas</a></li><li><a href="'+root+'index.html#team">Team</a></li><li><a href="'+root+'index.html#videos">Videos</a></li><li><a href="'+root+'consultation.html">Contact / Consultation</a></li></ul></div>'+
+ '<div class="kk-footer-links"><h3>Practice Areas</h3><ul><li><a href="'+root+'practices/land-and-property-law.html">Land &amp; Property</a></li><li><a href="'+root+'practices/corporate-and-commercial-law.html">Corporate &amp; Commercial</a></li><li><a href="'+root+'practices/employment-law.html">Employment Law</a></li><li><a href="'+root+'practices/family-succession-and-personal-affairs.html">Family &amp; Succession</a></li><li><a href="'+root+'practices/civil-litigation-and-dispute-resolution.html">Litigation &amp; Dispute Resolution</a></li><li><a href="'+root+'practices/index.html">View all 26 practice areas</a></li></ul></div>'+
+ '<div class="kk-footer-links"><h3>Contact</h3><ul><li><a href="tel:+254725799752">+254 725 799 752</a></li><li><a href="mailto:info@kuriakaratuadvocates.com">info@kuriakaratuadvocates.com</a></li><li><span>Meru, Kenya</span></li></ul></div>'+
+ '</div><div class="kk-footer-bottom"><div>© '+new Date().getFullYear()+' Kuria Karatu &amp; Company Advocates. All rights reserved. Designed by Cliff Johns.</div>'+
+ '<div class="kk-legal-links"><a href="'+root+'privacy.html">Privacy Policy</a><a href="'+root+'terms.html">Terms of Use</a><a href="'+root+'cookies.html">Cookie Policy</a><a href="'+root+'data-protection.html">Data Protection</a><a href="'+root+'disclaimer.html">Legal Disclaimer</a><a href="'+root+'complaints.html">Client Complaints</a><a href="'+root+'accessibility.html">Accessibility</a></div>'+
+ '<div class="kk-socials"><a href="https://www.facebook.com/share/p/17NWZPXZsU/" target="_blank" rel="noopener noreferrer">Facebook</a><a href="https://twitter.com/kuriakaratu" target="_blank" rel="noopener noreferrer">X</a><a href="https://www.linkedin.com/company/kuria-karatu-advocates" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://wa.me/254725799752" target="_blank" rel="noopener noreferrer">WhatsApp</a><a href="https://youtube.com/@kuriakaratuandcoadvocates9803?si=yPcHtWR0nIyj_1PZ" target="_blank" rel="noopener noreferrer">YouTube</a></div></div></div>';
+ const existing=document.querySelectorAll('footer');
+ existing.forEach(el=>el.remove());
+ document.body.appendChild(footer);
+})();
