@@ -2083,7 +2083,7 @@ function closeUploadRequestModal() {
   pendingRequestContext = null;
 }
 
-async async function submitRequestedDoc() {
+async function submitRequestedDoc() {
   if (!pendingRequestContext) { showToast('No request in context.', 'error'); return; }
   const file = document.getElementById('uploadRequestFile').files[0];
   const notes = document.getElementById('uploadRequestNotes').value.trim();
