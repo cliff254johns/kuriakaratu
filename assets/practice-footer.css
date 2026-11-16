@@ -1,0 +1,22 @@
+/* Shared homepage-style footer for the complete practice-area section. */
+.kk-practice-footer{background:#0b2038;color:#fff;padding:54px 0 22px;margin-top:64px;font-family:Inter,Arial,sans-serif}
+.kk-practice-footer *{box-sizing:border-box}
+.kk-practice-footer .kk-footer-container{width:min(1200px,calc(100% - 44px));margin:0 auto}
+.kk-practice-footer .kk-footer-grid{display:grid;grid-template-columns:1.45fr 1fr 1.25fr 1.2fr;gap:34px}
+.kk-practice-footer h3{font-family:'Playfair Display',Georgia,serif;color:#fff;font-size:1.08rem;margin:0 0 17px}
+.kk-practice-footer .kk-footer-brand h3{font-size:1.35rem;margin-bottom:4px}
+.kk-practice-footer .kk-footer-brand h3 span{color:#f1dfb8}
+.kk-practice-footer .kk-footer-brand p{color:rgba(255,255,255,.72);font-size:.91rem;line-height:1.75;margin:8px 0}
+.kk-practice-footer .kk-footer-kicker{color:#f1dfb8!important;letter-spacing:3px;font-size:.66rem!important;margin:0 0 14px!important}
+.kk-practice-footer .kk-footer-links ul{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.kk-practice-footer a{color:rgba(255,255,255,.78);text-decoration:none;transition:color .2s ease}
+.kk-practice-footer a:hover{color:#f1dfb8;text-decoration:underline}
+.kk-practice-footer .kk-footer-links a{font-size:.88rem}
+.kk-practice-footer .kk-footer-bottom{border-top:1px solid rgba(255,255,255,.14);margin-top:38px;padding-top:20px;display:grid;gap:15px;color:rgba(255,255,255,.62);font-size:.78rem}
+.kk-practice-footer .kk-legal-links{display:flex;flex-wrap:wrap;gap:8px 18px}
+.kk-practice-footer .kk-socials{display:flex;gap:17px;flex-wrap:wrap}
+.kk-practice-footer .kk-socials a{font-size:1.05rem}
+.kk-practice-footer .kk-disclaimer{font-size:.76rem;color:rgba(255,255,255,.55);margin:0}
+@media(max-width:850px){.kk-practice-footer .kk-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}}
+@media(max-width:520px){.kk-practice-footer{padding:40px 0 20px}.kk-practice-footer .kk-footer-container{width:calc(100% - 36px)}.kk-practice-footer .kk-footer-grid{grid-template-columns:1fr;gap:25px}.kk-practice-footer .kk-footer-bottom{margin-top:28px}.kk-practice-footer .kk-legal-links{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
+@media(prefers-reduced-motion:reduce){.kk-practice-footer *{transition:none!important}}
