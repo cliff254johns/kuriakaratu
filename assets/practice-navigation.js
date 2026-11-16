@@ -17,7 +17,11 @@
  ];
  const header=document.createElement('header');
  header.id='mainHeader';header.className='kk-practice-header';
- header.innerHTML='<div class="nav-container"><a class="logo" href="'+home+'" aria-label="Kuria Karatu and Company Advocates homepage"><img src="'+root+'logo%20(1).jpg" alt="" width="64" height="48"><span class="text-group"><span class="brand-name">Kuria Karatu &amp; Company</span><span class="brand-sub">ADVOCATES</span></span></a><button class="hamburger" type="button" aria-label="Toggle navigation" aria-controls="kkNavLinks" aria-expanded="false"><span></span><span></span><span></span></button><ul class="nav-links" id="kkNavLinks">'+links.map(([label,href,key])=>'<li><a href="'+href+'" data-nav="'+key+'">'+label+'</a></li>').join('')+'</ul></div>';
+ header.innerHTML='<div class="nav-container"><a class="logo" href="'+home+'" aria-label="Kuria Karatu and Company Advocates homepage"><img src="'+root+'logo%20(1).jpg" alt="" width="64" height="48"><span class="text-group"><span class="brand-name">Kuria Karatu &amp; Company</span><span class="brand-sub">ADVOCATES</span></span></a><button class="hamburger" type="button" aria-label="Toggle navigation" aria-controls="kkNavLinks" aria-expanded="false"><span></span><span></span><span></span></button><ul class="nav-links" id="kkNavLinks">'+links.map(([label,href,key])=>'<li><a href="'+href+'" class="'+(key==='consultation'?'btn-nav':'')+'" data-nav="'+key+'">'+label+'</a></li>').join('')+'</ul></div>';
+ const target=document.querySelector('main')||document.querySelector('h1');
+ if(target&&!target.id)target.id='main-content';
+ const skip=document.createElement('a');skip.className='kk-skip-link';skip.href='#main-content';skip.textContent='Skip to main content';
+ document.body.prepend(skip);
  const old=document.querySelector('header.head,header');
  if(old)old.replaceWith(header);else document.body.prepend(header);
  const active=inPractice?'practices':(current.endsWith('/index.html')||current.endsWith('/')?'about':'');
