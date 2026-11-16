@@ -2113,6 +2113,7 @@ async async function submitRequestedDoc() {
       caseName: '',
       caseNo: '',
       clientId: currentClientId,
+      ownerUid: currentUser.uid,
       clientName: safeStr(currentClientData.name) || '',
       uploaded: uploadedAt,
       size: formatFileSize(file.size),
@@ -2129,6 +2130,7 @@ async async function submitRequestedDoc() {
 
     await db.collection('clientMessages').add({
       clientId: currentClientId,
+      ownerUid: currentUser.uid,
       clientName: safeStr(currentClientData && currentClientData.name) || '',
       clientEmail: currentUserEmail,
       senderUid: currentUser.uid,
