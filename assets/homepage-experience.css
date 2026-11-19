@@ -159,3 +159,45 @@ footer a:hover{color:#e2c486}
 @media(prefers-reduced-motion:reduce){
  .hero::before,.practice-card,.practice-card img,.value-card,.team-card,.case-card,.hero-cta a{transition:none!important;animation:none!important}
 }
+
+
+/* Premium, consistent calls to action on practice cards */
+.practice-card .practice-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-top:22px;padding-top:18px;border-top:1px solid rgba(16,42,67,.09)
+}
+.practice-card .practice-action{
+  min-width:0;min-height:48px;display:inline-flex;align-items:center;justify-content:center;
+  gap:9px;padding:12px 14px;border:1px solid transparent;border-radius:5px;
+  font-family:inherit;font-size:.78rem;font-weight:750;letter-spacing:.015em;
+  line-height:1.2;text-align:center;text-decoration:none!important;
+  transition:transform .22s ease,background .22s ease,border-color .22s ease,box-shadow .22s ease,color .22s ease
+}
+.practice-card .practice-action:hover{transform:translateY(-2px)}
+.practice-card .practice-action:focus-visible{outline:3px solid rgba(195,154,69,.55);outline-offset:3px}
+.practice-card .practice-action--whatsapp{
+  color:#fff!important;background:linear-gradient(135deg,#168b59,#20a86b);
+  border-color:#168b59;box-shadow:0 5px 13px rgba(22,139,89,.16)
+}
+.practice-card .practice-action--whatsapp:hover{
+  color:#fff!important;background:linear-gradient(135deg,#11764b,#168b59);
+  box-shadow:0 9px 20px rgba(22,139,89,.23)
+}
+.practice-card .practice-action--whatsapp i{font-size:1.12rem}
+.practice-card .practice-action--explore{
+  color:var(--home-navy)!important;background:linear-gradient(135deg,#fff,#f5f7fa);
+  border-color:rgba(16,42,67,.2);box-shadow:0 4px 12px rgba(16,42,67,.045)
+}
+.practice-card .practice-action--explore:hover{
+  color:#fff!important;background:linear-gradient(135deg,#102a43,#1d5d91);
+  border-color:#1d5d91;box-shadow:0 9px 20px rgba(16,42,67,.17)
+}
+.practice-card .practice-action--explore i{font-size:.76rem;transition:transform .22s ease}
+.practice-card .practice-action--explore:hover i{transform:translateX(3px)}
+@media(max-width:420px){
+  .practice-card .practice-actions{gap:8px}
+  .practice-card .practice-action{padding:11px 8px;font-size:.72rem;gap:6px}
+}
+@media(prefers-reduced-motion:reduce){
+  .practice-card .practice-action,.practice-card .practice-action i{transition:none!important}
+}
