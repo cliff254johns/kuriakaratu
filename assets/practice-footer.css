@@ -20,3 +20,11 @@
 @media(max-width:850px){.kk-practice-footer .kk-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}}
 @media(max-width:520px){.kk-practice-footer{padding:40px 0 20px}.kk-practice-footer .kk-footer-container{width:calc(100% - 36px)}.kk-practice-footer .kk-footer-grid{grid-template-columns:1fr;gap:25px}.kk-practice-footer .kk-footer-bottom{margin-top:28px}.kk-practice-footer .kk-legal-links{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
 @media(prefers-reduced-motion:reduce){.kk-practice-footer *{transition:none!important}}
+
+
+/* Persistent WhatsApp enquiry shortcut on public content pages */
+.kk-whatsapp-float{position:fixed;right:22px;bottom:22px;z-index:2800;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:12px 18px;border:1px solid #168b59;border-radius:999px;background:linear-gradient(135deg,#168b59,#20a86b);color:#fff!important;font:750 .84rem/1 Inter,Arial,sans-serif;text-decoration:none!important;box-shadow:0 8px 24px rgba(10,77,50,.24);transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.kk-whatsapp-float i{font-size:1.2rem}.kk-whatsapp-float:hover{color:#fff!important;transform:translateY(-3px);filter:brightness(1.04);box-shadow:0 12px 28px rgba(10,77,50,.3)}
+.kk-whatsapp-float:focus-visible{outline:3px solid #c39a45;outline-offset:4px}
+@media(max-width:600px){.kk-whatsapp-float{right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);min-height:46px;padding:11px 16px}}
+@media(prefers-reduced-motion:reduce){.kk-whatsapp-float{transition:none!important}}
