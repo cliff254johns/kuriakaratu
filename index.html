@@ -3482,6 +3482,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 <link rel="preconnect" href="https://images.unsplash.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" href="/ecosystem-refresh.css?v=20261115" />
+<link rel="stylesheet" href="/assets/homepage-experience.css?v=20261119" />
 </head>
 
 <body>
@@ -3522,11 +3523,9 @@
         <div class="hero-content">
           <span class="section-tag" style="color: var(--hero-gold); border-color: var(--hero-gold);">Local Practice · Global Standards</span>
           <div class="hero-tagline">PRINCIPLED IN PURPOSE · EXCEPTIONAL IN PRACTICE</div>
-          <h1>Trusted Advocacy, <br><span class="highlight">Global Standards</span></h1>
+          <h1>Clarity in Law, <br><span class="highlight">Confidence in Every Decision</span></h1>
           <div class="hero-principles">
-            <span>Expertise</span><span>Reliability</span><span>Determination</span>
-            <span>Courageous in Advocacy</span><span>Relentless in Pursuit</span>
-            <span>Rooted in Integrity</span><span>Committed to Justice</span>
+            <span>Integrity</span><span>Clear Advice</span><span>Committed Advocacy</span>
           </div>
           <p>We deliver strategic, practical and results-oriented legal solutions to individuals, businesses and institutions — with integrity, diligence and attention to detail.</p>
           <div class="hero-cta">
@@ -3604,9 +3603,10 @@
         </div>
       </div>
     </div>
-    <div class="hero-controls">
+    <div class="hero-controls" aria-label="Homepage introduction controls">
       <button id="heroPrev" aria-label="Previous slide"><i class="fas fa-chevron-left"></i></button>
       <button id="heroNext" aria-label="Next slide"><i class="fas fa-chevron-right"></i></button>
+      <button id="heroPause" class="hero-pause" type="button" aria-label="Pause automatic slides" aria-pressed="false"><i class="fas fa-pause" aria-hidden="true"></i><span>Pause</span></button>
       <div class="hero-dots" id="heroDots">
         <button class="active" data-index="0" aria-label="Slide 1"></button>
         <button data-index="1" aria-label="Slide 2"></button>
@@ -3684,7 +3684,12 @@
         <h2>Our Chambers of Expertise</h2>
         <p class="section-subtitle" style="border-left: none; padding-left: 0; max-width: 720px; margin-left: auto; margin-right: auto;">Explore our areas of legal practice. Select a service to learn more and request a consultation.</p>
       </div>
-      <div class="practice-grid">
+      <div class="practice-finder animate-on-scroll" role="search" aria-label="Find a legal practice area">
+        <label for="practiceSearch">What legal assistance are you looking for?</label>
+        <div class="practice-search-control"><i class="fas fa-search" aria-hidden="true"></i><input id="practiceSearch" type="search" placeholder="Try land disputes, employment, succession..." autocomplete="off" aria-controls="practiceResults" /><a href="practices/index.html">View all practice areas <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        <p id="practiceSearchStatus" class="practice-search-status" aria-live="polite">Search across our 26 practice areas.</p>
+      </div>
+      <div class="practice-grid" id="practiceResults">
 
         <!-- 1. Land and Property Law -->
         <div class="practice-card animate-on-scroll delay-1" data-practice-title="Land and Property Law" data-practice-desc="We provide comprehensive legal representation in land and property matters, with particular expertise in contract disputes, ownership and title challenges, boundary disputes, trusts, adverse possession claims, Land adjudication and consolidation matters, compulsory acquisitions, securities and fraud proceedings." onclick="sendPracticeWhatsApp(this)">
@@ -4633,6 +4638,9 @@
       const dots = document.querySelectorAll('#heroDots button');
       const prevBtn = document.getElementById('heroPrev');
       const nextBtn = document.getElementById('heroNext');
+      const pauseBtn = document.getElementById('heroPause');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let paused = reducedMotion;
       let current = 0;
       let interval;
 
@@ -4647,8 +4655,26 @@
 
       function prev() { goTo((current - 1 + slides.length) % slides.length); }
 
-      function resetInterval() { clearInterval(interval);
-        interval = setInterval(next, 6000); }
+      function updatePauseControl() {
+        if (!pauseBtn) return;
+        pauseBtn.setAttribute('aria-pressed', String(paused));
+        pauseBtn.setAttribute('aria-label', paused ? 'Play automatic slides' : 'Pause automatic slides');
+        pauseBtn.innerHTML = paused ? '<i class="fas fa-play" aria-hidden="true"></i><span>Play</span>' : '<i class="fas fa-pause" aria-hidden="true"></i><span>Pause</span>';
+      }
+      function resetInterval() {
+        clearInterval(interval);
+        if (!paused && !document.hidden) interval = setInterval(next, 8000);
+        updatePauseControl();
+      }
+      if (pauseBtn) pauseBtn.addEventListener('click', function() {
+        paused = !paused;
+        resetInterval();
+      });
+      document.addEventListener('visibilitychange', resetInterval);
+      heroSection.addEventListener('mouseenter', function() { clearInterval(interval); });
+      heroSection.addEventListener('mouseleave', resetInterval);
+      heroSection.addEventListener('focusin', function() { clearInterval(interval); });
+      heroSection.addEventListener('focusout', function() { setTimeout(resetInterval, 150); });
 
       prevBtn.addEventListener('click', function(e) { e.stopPropagation();
         prev();
@@ -4675,7 +4701,8 @@
           resetInterval(); } if (e.key === 'ArrowLeft') { prev();
           resetInterval(); } });
       goTo(0);
-      interval = setInterval(next, 6000);
+      updatePauseControl();
+      resetInterval();
     })();
 
     // ===== TESTIMONIAL CAROUSEL =====
@@ -4996,5 +5023,7 @@
     console.log('Kuria Karatu & Company Advocates — Final App-Style Site Loaded Successfully.');
   </script>
 
-<script>(function(){const r={"Land and Property Law":"land-and-property-law.html","Climate Change, Carbon Markets and Environmental Law":"climate-carbon-environmental-law.html","Legal Audit and Compliance":"legal-audit-and-compliance.html","Data Protection and Privacy Law":"data-protection-and-privacy-law.html","Legislative Drafting":"legislative-drafting.html","Civil Litigation and Dispute Resolution":"civil-litigation-and-dispute-resolution.html","Corporate and Commercial":"corporate-and-commercial-law.html","Banking, Finance, Insurance and Personal Injury Claims":"banking-finance-insurance-personal-injury.html","Fintech and Digital Finance Law":"fintech-and-digital-finance-law.html","Public Law":"public-law.html","Employment Law":"employment-law.html","Family, Succession and Personal Affairs":"family-succession-and-personal-affairs.html","Artificial Intelligence, Intellectual Property and Technology Law":"ai-intellectual-property-technology-law.html","Cyber Security and Cyber Crime Law":"cyber-security-and-cyber-crime-law.html","Natural Resources, Renewable Energy and Mining Law":"natural-resources-renewable-energy-mining-law.html","Infrastructure and Construction Law":"infrastructure-and-construction-law.html","Digital Assets and Crypto Currency Regulation":"digital-assets-and-cryptocurrency-regulation.html","Public Procurement and Government Contracts":"public-procurement-and-government-contracts.html","Health Care and Medical Law":"healthcare-and-medical-law.html","Immigration, Cross Border and Global Mobility Law":"immigration-cross-border-global-mobility.html","Financing and Investment Law":"financing-and-investment-law.html","Consumer Protection and Digital Commerce":"consumer-protection-and-digital-commerce.html","Transport and Logistics":"transport-and-logistics-law.html","Sport, Media and Entertainment":"sport-media-and-entertainment-law.html","Mediation, Arbitration and Alternative Dispute Resolution":"mediation-arbitration-adr.html","Criminal Law Practice":"criminal-law-practice.html"};document.querySelectorAll(".practice-card[data-practice-title]").forEach(c=>{const u=r[c.getAttribute("data-practice-title")],b=c.querySelector(".practice-body");if(!u||!b)return;const a=document.createElement("a");a.href="practices/"+u;a.textContent="Explore this practice area →";a.style.cssText="display:inline-block;margin-top:12px;font-weight:700;color:var(--primary)";a.addEventListener("click",e=>e.stopPropagation());b.appendChild(a)})})();</script></body>
+<script>(function(){const r={"Land and Property Law":"land-and-property-law.html","Climate Change, Carbon Markets and Environmental Law":"climate-carbon-environmental-law.html","Legal Audit and Compliance":"legal-audit-and-compliance.html","Data Protection and Privacy Law":"data-protection-and-privacy-law.html","Legislative Drafting":"legislative-drafting.html","Civil Litigation and Dispute Resolution":"civil-litigation-and-dispute-resolution.html","Corporate and Commercial":"corporate-and-commercial-law.html","Banking, Finance, Insurance and Personal Injury Claims":"banking-finance-insurance-personal-injury.html","Fintech and Digital Finance Law":"fintech-and-digital-finance-law.html","Public Law":"public-law.html","Employment Law":"employment-law.html","Family, Succession and Personal Affairs":"family-succession-and-personal-affairs.html","Artificial Intelligence, Intellectual Property and Technology Law":"ai-intellectual-property-technology-law.html","Cyber Security and Cyber Crime Law":"cyber-security-and-cyber-crime-law.html","Natural Resources, Renewable Energy and Mining Law":"natural-resources-renewable-energy-mining-law.html","Infrastructure and Construction Law":"infrastructure-and-construction-law.html","Digital Assets and Crypto Currency Regulation":"digital-assets-and-cryptocurrency-regulation.html","Public Procurement and Government Contracts":"public-procurement-and-government-contracts.html","Health Care and Medical Law":"healthcare-and-medical-law.html","Immigration, Cross Border and Global Mobility Law":"immigration-cross-border-global-mobility.html","Financing and Investment Law":"financing-and-investment-law.html","Consumer Protection and Digital Commerce":"consumer-protection-and-digital-commerce.html","Transport and Logistics":"transport-and-logistics-law.html","Sport, Media and Entertainment":"sport-media-and-entertainment-law.html","Mediation, Arbitration and Alternative Dispute Resolution":"mediation-arbitration-adr.html","Criminal Law Practice":"criminal-law-practice.html"};document.querySelectorAll(".practice-card[data-practice-title]").forEach(c=>{const u=r[c.getAttribute("data-practice-title")],b=c.querySelector(".practice-body");if(!u||!b)return;const a=document.createElement("a");a.href="practices/"+u;a.textContent="Explore this practice area →";a.style.cssText="display:inline-block;margin-top:12px;font-weight:700;color:var(--primary)";a.addEventListener("click",e=>e.stopPropagation());b.appendChild(a)})})();</script>
+<script src="/assets/homepage-experience.js?v=20261119" defer></script>
+</body>
 </html>
