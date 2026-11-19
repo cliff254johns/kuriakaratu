@@ -45,3 +45,12 @@ body{padding-top:76px}
 .kk-skip-link:focus{transform:translateY(0);outline:3px solid #c9a45c;outline-offset:3px}
 .kk-practice-header a:focus-visible,.kk-practice-header button:focus-visible{outline:3px solid #f5c518;outline-offset:4px;border-radius:3px}
 .kk-practice-footer a:focus-visible{outline:3px solid #f5c518;outline-offset:4px;border-radius:2px}
+
+/* Refined public navigation shared across practice, insight and consultation pages */
+#mainHeader.kk-practice-header{background:rgba(11,32,56,.97);border-bottom:1px solid rgba(195,154,69,.38);box-shadow:0 8px 28px rgba(7,24,42,.16)}
+.kk-practice-header .nav-links a{font-size:.82rem;letter-spacing:.15px}.kk-practice-header .nav-links a[aria-current=page]{color:#f0d9aa}
+.kk-practice-header .nav-links .btn-nav{background:linear-gradient(135deg,#d6b46d,#c39a45);border:1px solid #c39a45;color:#15283b;border-radius:4px;padding:11px 17px;box-shadow:0 6px 16px rgba(0,0,0,.16)}
+.kk-practice-header .nav-links .btn-nav:hover{background:#e2c486;color:#15283b;border-color:#e2c486}
+.kk-practice-header .hamburger{border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:9px 10px}.kk-practice-header .hamburger:focus-visible{outline:3px solid #e2c486;outline-offset:3px}
+.kk-practice-header .nav-links{gap:clamp(10px,1.4vw,21px)}.kk-skip-link:focus{transform:translateY(0)}
+@media(max-width:980px){.kk-practice-header .nav-links{border-top:1px solid rgba(195,154,69,.28)}.kk-practice-header .nav-links a{padding:14px 6px}.kk-practice-header .nav-links .btn-nav{margin-top:10px}}
