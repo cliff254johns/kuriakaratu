@@ -1,0 +1,161 @@
+/* Kuria Karatu & Company Advocates — premium public homepage layer
+   Scoped to the public homepage. Existing legal pages and application workflows are untouched. */
+:root{
+  --home-ink:#172b40;
+  --home-navy:#102a43;
+  --home-blue:#1d5d91;
+  --home-gold:#c39a45;
+  --home-paper:#f6f8fb;
+  --home-line:#e1e8ef;
+  --home-muted:#64758a;
+  --home-ease:cubic-bezier(.2,.75,.25,1);
+}
+html{scroll-padding-top:94px}
+body{color:var(--home-ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#mainHeader{box-shadow:0 8px 28px rgba(7,24,42,.13);border-bottom:1px solid rgba(255,255,255,.09)}
+#mainHeader .nav-links a{transition:color .22s ease,background .22s ease,transform .22s ease}
+#mainHeader .nav-links a:not(.btn-nav):hover{color:#f1dfb8;transform:translateY(-1px)}
+#mainHeader .btn-nav{border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.hero{
+  min-height:min(850px,calc(100svh - 76px));
+  padding:clamp(116px,13vw,160px) 0 112px;
+  border-bottom:4px solid var(--home-gold);
+  isolation:isolate;
+}
+.hero::before{background-position:center 44%;transform:scale(1.015);transition:opacity .8s ease,filter .8s ease}
+.hero::after{
+  background:linear-gradient(105deg,rgba(7,24,42,.94) 0%,rgba(12,42,68,.86) 48%,rgba(15,58,91,.57) 100%);
+}
+.hero-carousel{max-width:1280px;padding-inline:clamp(24px,5vw,76px)}
+.hero-slide{gap:clamp(28px,5vw,76px);min-height:480px}
+.hero-content{max-width:720px}
+.hero-content .section-tag{display:inline-flex;align-items:center;padding:8px 13px;border:1px solid rgba(195,154,69,.65);border-radius:3px;background:rgba(9,29,48,.28);font-size:.72rem;letter-spacing:1.8px;text-transform:uppercase}
+.hero-content .hero-tagline{font-size:.78rem;letter-spacing:2.4px;margin-top:20px;color:#e2c486}
+.hero-content h1,.hero-content h2{
+  max-width:760px;font-family:'Playfair Display',Georgia,serif;
+  font-size:clamp(2.65rem,5.2vw,5.15rem);line-height:1.06;letter-spacing:-.035em;
+  margin:.45rem 0 1.2rem;text-wrap:balance
+}
+.hero-content h1 .highlight,.hero-content h2 .highlight{color:#e2c486;font-style:normal}
+.hero-content .hero-principles{gap:9px;margin:16px 0 22px}
+.hero-content .hero-principles span{font-size:.68rem;letter-spacing:1.1px;color:#f0d9aa;border-color:#c39a45}
+.hero-content p{font-size:clamp(1rem,1.25vw,1.16rem);max-width:610px;line-height:1.8;color:rgba(255,255,255,.9)}
+.hero-cta{gap:12px}
+.hero-cta .btn-primary,.hero-cta .btn-outline{min-height:54px;padding:15px 25px;border-radius:4px;font-weight:700;letter-spacing:.2px;transition:transform .22s var(--home-ease),box-shadow .22s ease,background .22s ease}
+.hero-cta .btn-primary{background:var(--home-gold);border:1px solid var(--home-gold);color:#15283b;box-shadow:0 10px 26px rgba(0,0,0,.2)}
+.hero-cta .btn-primary:hover{transform:translateY(-3px);box-shadow:0 15px 30px rgba(0,0,0,.27);background:#d7b66f}
+.hero-cta .btn-outline{border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.07)}
+.hero-cta .btn-outline:hover{transform:translateY(-3px);background:rgba(255,255,255,.13)}
+.hero-stats{gap:clamp(20px,4vw,48px);margin-top:2rem;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);max-width:590px}
+.hero-stats .number{font-size:clamp(1.8rem,3vw,2.45rem)}
+.hero-stats .label{letter-spacing:1.1px}
+.hero-image .card-badge{
+  max-width:390px;margin-left:auto;padding:clamp(22px,3vw,34px);
+  background:rgba(10,31,51,.68);border:1px solid rgba(226,196,134,.42);
+  border-radius:8px;box-shadow:0 25px 70px rgba(0,0,0,.28);
+  backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px)
+}
+.hero-image .card-badge i{font-size:2rem;color:#e2c486}
+.hero-image .card-badge-title{font-family:'Playfair Display',Georgia,serif;font-size:1.35rem;line-height:1.35;color:#fff}
+.hero-image .card-badge p:last-child{color:rgba(255,255,255,.8);line-height:1.75}
+.hero-controls #heroPrev,.hero-controls #heroNext{width:46px;height:46px;border-width:1px;background:rgba(8,25,42,.45)}
+.hero-controls #heroPrev{left:16px}.hero-controls #heroNext{right:16px}
+.hero-dots{bottom:27px;gap:10px}
+.hero-dots button{width:9px;height:9px;border-radius:20px;transition:width .25s ease,background .25s ease}
+.hero-dots button.active{width:27px;background:var(--home-gold)}
+.hero-controls .hero-pause{
+  position:absolute;right:30px;bottom:18px;display:inline-flex;align-items:center;gap:8px;
+  min-height:38px;padding:7px 12px;border:1px solid rgba(255,255,255,.35);border-radius:3px;
+  color:#fff;background:rgba(8,25,42,.5);font-size:.75rem;cursor:pointer;backdrop-filter:blur(8px)
+}
+.hero-controls .hero-pause:hover{background:var(--home-gold);border-color:var(--home-gold);color:var(--home-navy)}
+.trust-bar{background:#fff;border-bottom:1px solid var(--home-line);box-shadow:0 8px 24px rgba(16,42,67,.035)}
+.trust-bar .container{gap:18px;padding-block:22px}
+.trust-item{font-size:.84rem;letter-spacing:.15px}
+.section-padding{padding-block:clamp(68px,8vw,112px)}
+.section-tag{letter-spacing:1.8px}
+.section-padding h2,.text-center h2{font-family:'Playfair Display',Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
+.section-subtitle{max-width:740px;line-height:1.8}
+.about-grid{gap:clamp(32px,6vw,80px);align-items:center}
+.founder-card{border-radius:9px;overflow:hidden;box-shadow:0 22px 55px rgba(16,42,67,.12);border:1px solid var(--home-line)}
+.founder-img-wrap img{width:100%;object-fit:cover}
+.founder-body{padding:clamp(22px,3vw,34px)}
+.value-card,.practice-card,.team-card,.case-card{border-radius:8px;transition:transform .28s var(--home-ease),box-shadow .28s ease,border-color .28s ease}
+.value-card:hover,.team-card:hover,.case-card:hover{transform:translateY(-5px);box-shadow:0 18px 42px rgba(16,42,67,.1)}
+.practice-finder{
+  max-width:900px;margin:34px auto 36px;padding:clamp(20px,3vw,30px);
+  background:linear-gradient(135deg,#f7f9fc,#fff);border:1px solid var(--home-line);
+  border-radius:9px;box-shadow:0 12px 34px rgba(16,42,67,.055)
+}
+.practice-finder label{display:block;margin-bottom:12px;color:var(--home-navy);font-family:'Playfair Display',Georgia,serif;font-size:1.2rem;font-weight:700}
+.practice-search-control{display:flex;align-items:center;gap:12px;min-height:58px;padding:6px 8px 6px 17px;background:#fff;border:1px solid #cbd6e1;border-radius:5px;box-shadow:0 5px 18px rgba(16,42,67,.04)}
+.practice-search-control>i{color:var(--home-gold);font-size:1.05rem}
+.practice-search-control input{flex:1;min-width:0;min-height:44px;border:0!important;outline:0!important;box-shadow:none!important;background:transparent;font-size:1rem;color:var(--home-ink)}
+.practice-search-control input::placeholder{color:#8997a6}
+.practice-search-control a{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;padding:12px 14px;border-radius:4px;background:var(--home-navy);color:#fff;text-decoration:none;font-size:.78rem;font-weight:700;transition:background .2s ease}
+.practice-search-control a:hover{background:var(--home-blue)}
+.practice-search-status{margin:10px 2px 0;color:var(--home-muted);font-size:.8rem}
+.practice-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.practice-card{border:1px solid var(--home-line);border-radius:8px;box-shadow:0 8px 26px rgba(16,42,67,.055)}
+.practice-card:hover{transform:translateY(-6px);box-shadow:0 20px 44px rgba(16,42,67,.12);border-color:rgba(195,154,69,.65)}
+.practice-card .practice-img{height:clamp(150px,17vw,205px)}
+.practice-card .practice-img img{transition:transform .65s var(--home-ease),filter .4s ease}
+.practice-card:hover .practice-img img{transform:scale(1.055);filter:saturate(1.08)}
+.practice-card .practice-body{padding:22px 22px 24px}
+.practice-card .practice-body h3{font-family:'Playfair Display',Georgia,serif;font-size:1.18rem}
+.practice-card .practice-body p{line-height:1.75}
+.practice-card[hidden]{display:none!important}
+.practice-empty{grid-column:1/-1;padding:32px 20px;text-align:center;background:#f8fafc;border:1px dashed #cbd6e1;border-radius:8px;color:var(--home-muted)}
+.practice-empty strong{display:block;color:var(--home-navy);font-family:'Playfair Display',Georgia,serif;font-size:1.2rem;margin-bottom:5px}
+.contact-wrap{border-radius:9px;overflow:hidden;box-shadow:0 20px 55px rgba(16,42,67,.1);border:1px solid var(--home-line)}
+.contact-form input,.contact-form select,.contact-form textarea{border-radius:5px}
+.contact-form button{border-radius:4px}
+footer{background:#0b2038}
+footer a{transition:color .2s ease}
+footer a:hover{color:#e2c486}
+@media(max-width:1100px){
+ .hero{min-height:auto;padding-top:125px}
+ .hero-content h1,.hero-content h2{font-size:clamp(2.55rem,5.5vw,4.2rem)}
+ .practice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:820px){
+ .hero{padding:112px 0 100px}
+ .hero-slide{gap:25px;min-height:0}
+ .hero-content{margin-inline:auto}
+ .hero-image .card-badge{margin:0 auto;max-width:540px}
+ .hero-controls #heroPrev{left:8px}.hero-controls #heroNext{right:8px}
+ .hero-controls .hero-pause{right:14px;bottom:14px}
+ .hero-dots{bottom:24px}
+ .hero-stats{justify-content:center}
+}
+@media(max-width:600px){
+ .hero{padding:104px 0 88px;min-height:0}
+ .hero-carousel{padding-inline:22px}
+ .hero-content .hero-tagline{font-size:.65rem;letter-spacing:1.5px}
+ .hero-content h1,.hero-content h2{font-size:clamp(2.35rem,11vw,3.35rem);line-height:1.08}
+ .hero-content .hero-principles{justify-content:center;gap:8px 12px}
+ .hero-content .hero-principles span{font-size:.6rem}
+ .hero-content p{font-size:1rem}
+ .hero-cta{display:grid;grid-template-columns:1fr}
+ .hero-cta .btn-primary,.hero-cta .btn-outline{width:100%;text-align:center}
+ .hero-stats{gap:18px;margin-top:1.5rem}
+ .hero-stats .number{font-size:1.75rem}
+ .hero-stats .label{font-size:.61rem}
+ .hero-image .card-badge{padding:20px}
+ .hero-controls #heroPrev,.hero-controls #heroNext{top:auto;bottom:10px;width:36px;height:36px;font-size:.9rem}
+ .hero-controls #heroPrev{left:12px}.hero-controls #heroNext{right:12px}
+ .hero-controls .hero-pause{right:12px;bottom:54px;min-height:34px;padding:5px 9px}
+ .hero-dots{bottom:17px;gap:7px}
+ .hero-dots button{width:7px;height:7px}.hero-dots button.active{width:21px}
+ .trust-bar .container{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-block:17px}
+ .trust-item{font-size:.72rem}
+ .practice-grid{grid-template-columns:1fr;gap:17px}
+ .practice-card .practice-img{height:190px}
+ .practice-search-control{flex-wrap:wrap;padding:9px 12px}
+ .practice-search-control input{flex-basis:calc(100% - 38px)}
+ .practice-search-control a{width:100%;justify-content:center}
+ .practice-finder{margin:25px auto 28px}
+}
+@media(prefers-reduced-motion:reduce){
+ .hero::before,.practice-card,.practice-card img,.value-card,.team-card,.case-card,.hero-cta a{transition:none!important;animation:none!important}
+}
