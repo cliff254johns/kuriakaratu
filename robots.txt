@@ -12,4 +12,5 @@ Disallow: /track.html
 Allow: /blog/
 Allow: /newsletter/
 Allow: /papers/
+Allow: /insights-library/
 Sitemap: https://www.kuriakaratuadvocates.com/sitemap.xml

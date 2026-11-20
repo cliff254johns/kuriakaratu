@@ -89,6 +89,17 @@
           "sizes": "32x32"
         }
       ]
+    },
+    {
+      "name": "Insights",
+      "short_name": "Insights",
+      "url": "/insights-library/",
+      "icons": [
+        {
+          "src": "/favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
     }
   ]
 }

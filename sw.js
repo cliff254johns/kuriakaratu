@@ -8,6 +8,8 @@ const CORE_FILES = [
   '/index.html',
   '/papers/index.html',
   '/papers/catalog.json',
+  '/insights-library/index.html',
+  '/insights-library/catalog.json',
   '/offline.html',
   '/manifest.json',
   '/android-chrome-192x192.png',
