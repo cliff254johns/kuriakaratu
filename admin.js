@@ -452,7 +452,7 @@ function logoImgTag(extraStyle) {
 
 auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => console.warn('Persistence error:', err));
 
-const OWNER_ADMIN_EMAIL = 'cliff254johns@gmail.com';
+const OWNER_ADMIN_EMAIL = 'admin@kuriakaratu.com';
 let loginInProgress = false;
 let initializedSessionUid = null;
 
