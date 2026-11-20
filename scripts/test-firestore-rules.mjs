@@ -47,6 +47,26 @@ try {
   const stranger = testEnv.authenticatedContext('stranger-1', { email: 'stranger@example.com' }).firestore();
   const newClient = testEnv.authenticatedContext('client-new', { email: 'new@example.com' }).firestore();
   const unauth = testEnv.unauthenticatedContext().firestore();
+  const owner = testEnv.authenticatedContext('owner-1', {
+    email: 'cliff254johns@gmail.com', email_verified: true
+  }).firestore();
+  const unverifiedOwner = testEnv.authenticatedContext('owner-unverified', {
+    email: 'cliff254johns@gmail.com', email_verified: false
+  }).firestore();
+
+  // Owner bootstrap is restricted to the exact verified owner identity.
+  await assertSucceeds(setDoc(doc(owner, 'users/owner-1'), {
+    email: 'cliff254johns@gmail.com', role: 'admin'
+  }));
+  await assertSucceeds(getDoc(doc(owner, 'cases/case-1')));
+  await assertFails(setDoc(doc(unverifiedOwner, 'users/owner-unverified'), {
+    email: 'cliff254johns@gmail.com', role: 'admin'
+  }));
+
+  // Staff can update their own last-login timestamp, but cannot elevate roles.
+  await assertSucceeds(updateDoc(doc(clerk, 'users/clerk-1'), { lastLogin: '2026-11-20 10:00:00' }));
+  await assertFails(updateDoc(doc(clerk, 'users/clerk-1'), { role: 'admin' }));
+  await assertFails(getDocs(collection(stranger, 'users')));
 
   await assertSucceeds(getDoc(doc(admin, 'cases/case-1')));
   await assertSucceeds(getDoc(doc(clerk, 'cases/case-1')));
@@ -124,6 +144,10 @@ try {
   }));
   await assertFails(setDoc(doc(finance, 'cases/unauthorised'), { title: 'No' }));
 
+  console.log('PASS: verified owner can bootstrap the first admin profile');
+  console.log('PASS: unverified owner identity cannot bootstrap admin access');
+  console.log('PASS: staff can update only their own lastLogin, not elevate roles');
+  console.log('PASS: public users cannot enumerate staff profiles');
   console.log('PASS: client isolation across cases, documents, invoices and appointments');
   console.log('PASS: client profile updates are restricted to contact fields');
   console.log('PASS: client uploads and messages are identity-bound');
