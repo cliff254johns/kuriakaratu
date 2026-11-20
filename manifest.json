@@ -78,6 +78,17 @@
           "sizes": "32x32"
         }
       ]
+    },
+    {
+      "name": "Conference Papers",
+      "short_name": "Papers",
+      "url": "/papers/",
+      "icons": [
+        {
+          "src": "/favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
     }
   ]
 }

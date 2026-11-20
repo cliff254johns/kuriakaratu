@@ -1,11 +1,13 @@
 'use strict';
 
-const VERSION = 'kk-public-pwa-v1';
+const VERSION = 'kk-public-pwa-v2';
 const SHELL_CACHE = VERSION + '-shell';
 const PAGE_CACHE = VERSION + '-pages';
 const ASSET_CACHE = VERSION + '-assets';
 const CORE_FILES = [
   '/index.html',
+  '/papers/index.html',
+  '/papers/catalog.json',
   '/offline.html',
   '/manifest.json',
   '/android-chrome-192x192.png',
@@ -69,7 +71,7 @@ self.addEventListener('fetch', event => {
 
   if (isPrivateAsset(url.pathname)) return;
 
-  if (/\.(?:css|js|png|jpe?g|webp|svg|ico|woff2?)$/i.test(url.pathname)) {
+  if (/\.(?:css|js|png|jpe?g|webp|svg|ico|woff2?|json)$/i.test(url.pathname)) {
     event.respondWith((async () => {
       const cached = await caches.match(request);
       try {
