@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js'];
+const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -13,7 +13,7 @@ for (const file of files) {
   }
 }
 
-for (const file of ['index.html', 'client.html', 'finance.html']) {
+for (const file of ['index.html', 'client.html', 'finance.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html']) {
   const html = fs.readFileSync(file, 'utf8');
   const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
@@ -104,6 +104,58 @@ if (!fs.readFileSync('assets/public-navigation.js', 'utf8').includes('kk-whatsap
   failures++;
   console.error('FAIL: public subpages are missing the WhatsApp contact shortcut');
 } else console.log('PASS: public subpages include the WhatsApp contact shortcut');
+
+
+const blogPage = fs.readFileSync('blog/index.html', 'utf8');
+const newsletterPage = fs.readFileSync('newsletter/index.html', 'utf8');
+const firstIssue = fs.readFileSync('newsletter/2026-12/index.html', 'utf8');
+const publicNav = fs.readFileSync('assets/public-navigation.js', 'utf8');
+const practiceNav = fs.readFileSync('assets/practice-navigation.js', 'utf8');
+if (!blogPage.includes('<title>') || !blogPage.includes('rel="canonical"') || !blogPage.includes('name="description"') || !blogPage.includes('id="blogSearch"')) {
+  failures++;
+  console.error('FAIL: legal blog is missing SEO metadata or search');
+} else console.log('PASS: searchable legal blog and core SEO metadata are present');
+if (!newsletterPage.includes('<title>') || !newsletterPage.includes('rel="canonical"') || !newsletterPage.includes('id="subscribe"') || !newsletterPage.includes('mailto:info@kuriakaratuadvocates.com')) {
+  failures++;
+  console.error('FAIL: newsletter archive or email subscription information is missing');
+} else console.log('PASS: newsletter archive and email subscription route are present');
+const newsletterPages = (firstIssue.match(/class="newsletter-page"/g) || []).length;
+if (newsletterPages < 6 || !firstIssue.includes('window.print()') || !firstIssue.includes('datePublished')) {
+  failures++;
+  console.error('FAIL: first newsletter edition must contain at least six printable pages and publication metadata');
+} else console.log('PASS: first monthly newsletter edition contains ' + newsletterPages + ' printable editorial pages');
+if (!homepage.includes('href="blog/"') || !homepage.includes('href="newsletter/"')
+    || !manifest.shortcuts?.some?.(shortcut => shortcut.url === '/blog/')
+    || !manifest.shortcuts?.some?.(shortcut => shortcut.url === '/newsletter/')) {
+  failures++;
+  console.error('FAIL: homepage or PWA shortcuts do not expose the blog and newsletter');
+} else console.log('PASS: homepage and PWA expose blog and newsletter');
+if (!sitemap.includes('/blog/') || !sitemap.includes('/newsletter/') || !sitemap.includes('/newsletter/2026-12/')) {
+  failures++;
+  console.error('FAIL: blog and newsletter URLs are missing from the XML sitemap');
+} else console.log('PASS: blog and newsletter are discoverable in the XML sitemap');
+if (!publicNav.includes('enrichPublicSeo') || !practiceNav.includes('enrichPublicSeo')
+    || !publicNav.includes('BreadcrumbList') || !practiceNav.includes('BlogPosting')
+    || !fs.readFileSync('assets/seo-meta.js', 'utf8').includes('og:description')) {
+  failures++;
+  console.error('FAIL: shared public-page SEO metadata and structured data are incomplete');
+} else console.log('PASS: shared public pages receive canonical, social and structured SEO metadata');
+function collectHtml(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const full = dir === '.' ? entry.name : dir + '/' + entry.name;
+    if (entry.isDirectory()) return collectHtml(full);
+    return entry.isFile() && full.endsWith('.html') ? [full] : [];
+  });
+}
+const seoPages = collectHtml('.').filter(file => !/^(admin|admin-v2|client|finance|generator|track|offline)\.html$/.test(file) && !file.startsWith('google'));
+for (const file of seoPages) {
+  const html = fs.readFileSync(file, 'utf8');
+  if (!/<title>[^<]{5,}<\/title>/i.test(html) || !/<meta\s+name=["']description["']\s+content=["'][^"']{40,}/i.test(html) || !/<link\s+rel=["']canonical["']/i.test(html)) {
+    failures++;
+    console.error('FAIL: public page needs a unique title, description and canonical URL:', file);
+  }
+}
+if (seoPages.length) console.log('PASS: static SEO title, description and canonical checks completed for ' + seoPages.length + ' public HTML pages');
 
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
