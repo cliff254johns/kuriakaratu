@@ -4,3 +4,12 @@
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Strict-Transport-Security: max-age=31536000
+
+/assets/public-navigation.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/practice-navigation.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/homepage-experience.css
+  Cache-Control: public, max-age=0, must-revalidate

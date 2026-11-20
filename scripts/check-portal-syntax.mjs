@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js'];
+const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -60,7 +60,7 @@ if (!homepage.includes('rel="manifest"') || !homepage.includes("navigator.servic
   failures++;
   console.error('FAIL: homepage is missing its manifest link or service-worker registration');
 } else console.log('PASS: homepage links the PWA manifest and registers its service worker');
-if (/whatsapp-float|home-whatsapp-float|request-float|apk-download-float|Download Our App/i.test(homepage)) {
+if (/home-whatsapp-float|request-float|apk-download-float|Download Our App/i.test(homepage) || (homepage.match(/class="kk-whatsapp-float"/g) || []).length !== 1) {
   failures++;
   console.error('FAIL: duplicate floating contact/download actions remain on the homepage');
 } else console.log('PASS: duplicate homepage floating actions removed');
@@ -84,6 +84,26 @@ if (!homepage.includes('id="prepChecklist"')
   failures++;
   console.error('FAIL: consultation preparation checklist is missing a required interactive control');
 } else console.log('PASS: consultation preparation checklist controls are present');
+
+
+if (!homepage.includes('id="readingProgressFill"') || !homepage.includes('id="shareSiteButton"') || !homepage.includes('navigator.share')) {
+  failures++;
+  console.error('FAIL: homepage reading progress or native sharing controls are missing');
+} else console.log('PASS: reading progress and native sharing controls are present');
+if (!homepage.includes("const sections = ['home', 'practices', 'insights', 'contact']")) {
+  failures++;
+  console.error('FAIL: mobile navigation active-section targets are inconsistent');
+} else console.log('PASS: mobile navigation uses the correct section targets');
+const consultation = fs.readFileSync('consultation.html', 'utf8');
+const enquiryScript = fs.readFileSync('assets/site-enhancements.js', 'utf8');
+if (!consultation.includes('id="summaryCount"') || !enquiryScript.includes("value('contact')") || !enquiryScript.includes("value('date')") || !enquiryScript.includes("value('time')")) {
+  failures++;
+  console.error('FAIL: consultation form character count or appointment preferences are missing');
+} else console.log('PASS: consultation form includes character count and preferred contact/date/time');
+if (!fs.readFileSync('assets/public-navigation.js', 'utf8').includes('kk-whatsapp-float') || !fs.readFileSync('assets/practice-navigation.css', 'utf8').includes('.kk-whatsapp-float')) {
+  failures++;
+  console.error('FAIL: public subpages are missing the WhatsApp contact shortcut');
+} else console.log('PASS: public subpages include the WhatsApp contact shortcut');
 
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
