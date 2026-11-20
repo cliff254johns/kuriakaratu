@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js'];
+const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -13,7 +13,7 @@ for (const file of files) {
   }
 }
 
-for (const file of ['index.html', 'client.html', 'finance.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html']) {
+for (const file of ['index.html', 'client.html', 'finance.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html']) {
   const html = fs.readFileSync(file, 'utf8');
   const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
@@ -157,6 +157,31 @@ for (const file of seoPages) {
   }
 }
 if (seoPages.length) console.log('PASS: static SEO title, description and canonical checks completed for ' + seoPages.length + ' public HTML pages');
+
+
+const papersPage = fs.readFileSync('papers/index.html', 'utf8');
+const paperCatalog = JSON.parse(fs.readFileSync('papers/catalog.json', 'utf8'));
+const papersScript = fs.readFileSync('assets/conference-papers.js', 'utf8');
+if (!papersPage.includes('rel="canonical"') || !papersPage.includes('name="description"') || !papersPage.includes('id="paperGrid"') || !papersPage.includes('id="submit"')) {
+  failures++;
+  console.error('FAIL: conference papers page needs SEO metadata, catalogue and submission route');
+} else console.log('PASS: conference papers public library and submission route are present');
+if (!Array.isArray(paperCatalog.papers) || paperCatalog.schemaVersion !== 1) {
+  failures++;
+  console.error('FAIL: conference papers catalogue schema is invalid');
+} else console.log('PASS: conference papers catalogue schema is valid');
+if (!papersScript.includes('navigator.share') || !papersScript.includes('clipboard.writeText') || !papersScript.includes('Download PDF') || !papersScript.includes('ScholarlyArticle')) {
+  failures++;
+  console.error('FAIL: paper PDF download, citation, share or structured-data capability is missing');
+} else console.log('PASS: paper sharing, citations, PDF links and scholarly structured data are implemented');
+if (!homepage.includes('href="papers/"') || !manifest.shortcuts.some(shortcut => shortcut.url === '/papers/')) {
+  failures++;
+  console.error('FAIL: homepage or PWA does not link to conference papers');
+} else console.log('PASS: homepage and PWA expose the conference papers library');
+if (!sitemap.includes('/papers/') || !fs.readFileSync('robots.txt', 'utf8').includes('Allow: /papers/')) {
+  failures++;
+  console.error('FAIL: conference papers library is missing from sitemap or robots rules');
+} else console.log('PASS: conference papers library is discoverable to search engines');
 
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
