@@ -22,3 +22,6 @@
 
 /assets/seo-meta.js
   Cache-Control: public, max-age=0, must-revalidate
+
+/assets/conference-papers.js
+  Cache-Control: public, max-age=0, must-revalidate
