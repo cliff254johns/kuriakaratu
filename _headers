@@ -13,3 +13,12 @@
 
 /assets/homepage-experience.css
   Cache-Control: public, max-age=0, must-revalidate
+
+/assets/public-navigation.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/practice-navigation.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/seo-meta.js
+  Cache-Control: public, max-age=0, must-revalidate
