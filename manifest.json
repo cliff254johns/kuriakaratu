@@ -1,0 +1,43 @@
+{
+  "id": "/",
+  "name": "Kuria Karatu & Company Advocates",
+  "short_name": "Kuria Karatu",
+  "description": "Legal services and client information from Kuria Karatu & Company Advocates, Kenya.",
+  "lang": "en-KE",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#0A3A66",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Practice areas",
+      "short_name": "Practices",
+      "url": "/practices/index.html",
+      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Request consultation",
+      "short_name": "Consultation",
+      "url": "/consultation.html",
+      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

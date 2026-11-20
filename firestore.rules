@@ -13,7 +13,7 @@ service cloud.firestore {
     // profile. The Firebase password remains the authentication factor.
     function isOwnerAdmin() {
       return signedIn()
-        && request.auth.token.email == 'cliff254johns@gmail.com'
+        && request.auth.token.email == 'admin@kuriakaratu.com'
         && request.auth.token.email_verified == true;
     }
     function isAdminOrDeveloper() {

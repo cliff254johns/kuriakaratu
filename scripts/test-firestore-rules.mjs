@@ -48,19 +48,19 @@ try {
   const newClient = testEnv.authenticatedContext('client-new', { email: 'new@example.com' }).firestore();
   const unauth = testEnv.unauthenticatedContext().firestore();
   const owner = testEnv.authenticatedContext('owner-1', {
-    email: 'cliff254johns@gmail.com', email_verified: true
+    email: 'admin@kuriakaratu.com', email_verified: true
   }).firestore();
   const unverifiedOwner = testEnv.authenticatedContext('owner-unverified', {
-    email: 'cliff254johns@gmail.com', email_verified: false
+    email: 'admin@kuriakaratu.com', email_verified: false
   }).firestore();
 
   // Owner bootstrap is restricted to the exact verified owner identity.
   await assertSucceeds(setDoc(doc(owner, 'users/owner-1'), {
-    email: 'cliff254johns@gmail.com', role: 'admin'
+    email: 'admin@kuriakaratu.com', role: 'admin'
   }));
   await assertSucceeds(getDoc(doc(owner, 'cases/case-1')));
   await assertFails(setDoc(doc(unverifiedOwner, 'users/owner-unverified'), {
-    email: 'cliff254johns@gmail.com', role: 'admin'
+    email: 'admin@kuriakaratu.com', role: 'admin'
   }));
 
   // Staff can update their own last-login timestamp, but cannot elevate roles.

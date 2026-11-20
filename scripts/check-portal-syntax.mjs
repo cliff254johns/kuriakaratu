@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'generator.js'];
+const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -13,7 +13,7 @@ for (const file of files) {
   }
 }
 
-for (const file of ['client.html', 'finance.html']) {
+for (const file of ['index.html', 'client.html', 'finance.html']) {
   const html = fs.readFileSync(file, 'utf8');
   const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
@@ -41,5 +41,35 @@ if (/matchedClient|auto-match-|signupCaseRef/.test(client)) {
   failures++;
   console.error('FAIL: client self-linking or case-reference matching remains');
 } else console.log('PASS: no public client auto-linking identifiers');
+
+const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+const homepage = fs.readFileSync('index.html', 'utf8');
+const rules = fs.readFileSync('firestore.rules', 'utf8');
+const ownerEmail = 'admin@kuriakaratu.com';
+if (manifest.display !== 'standalone' || manifest.scope !== '/') {
+  failures++;
+  console.error('FAIL: PWA manifest must use standalone display and root scope');
+} else console.log('PASS: PWA manifest is installable and root-scoped');
+for (const icon of manifest.icons || []) {
+  if (!fs.existsSync(icon.src.replace(/^\//, ''))) {
+    failures++;
+    console.error('FAIL: PWA icon is missing:', icon.src);
+  }
+}
+if (!homepage.includes('rel="manifest"') || !homepage.includes("navigator.serviceWorker.register('/sw.js'")) {
+  failures++;
+  console.error('FAIL: homepage is missing its manifest link or service-worker registration');
+} else console.log('PASS: homepage links the PWA manifest and registers its service worker');
+if (/whatsapp-float|home-whatsapp-float|request-float|apk-download-float|Download Our App/i.test(homepage)) {
+  failures++;
+  console.error('FAIL: duplicate floating contact/download actions remain on the homepage');
+} else console.log('PASS: duplicate homepage floating actions removed');
+if (!fs.readFileSync('admin.js', 'utf8').includes("const OWNER_ADMIN_EMAIL = '" + ownerEmail + "';")
+    || !rules.includes("request.auth.token.email == '" + ownerEmail + "'")
+    || /cliff254johns@gmail\.com/.test(fs.readFileSync('admin.js', 'utf8') + rules)) {
+  failures++;
+  console.error('FAIL: owner administrator identity is inconsistent');
+} else console.log('PASS: owner administrator identity is consistently configured');
+
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
