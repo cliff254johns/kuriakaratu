@@ -1153,9 +1153,28 @@
 
     /* ===== Team ===== */
     .team-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: stretch;
       gap: 24px;
+      max-width: 1080px;
+      margin: 30px auto 0;
+    }
+    .team-grid .team-card {
+      flex: 0 1 calc((100% - 48px) / 3);
+      min-width: 250px;
+      max-width: 344px;
+      display: flex;
+      flex-direction: column;
+    }
+    .team-grid .team-card .info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 112px;
     }
     .team-card {
       background: var(--white);
@@ -1943,6 +1962,39 @@
     }
     .insight-card a:hover {
       gap: 14px;
+    }
+
+    /* ===== Consultation preparation checklist ===== */
+    .consultation-prep { background: linear-gradient(135deg,#f5f8fb 0%,#fff 72%); }
+    .prep-panel { max-width: 920px; margin: 28px auto 0; padding: clamp(24px,4vw,38px); border: 1px solid #dce5ee; border-radius: 10px; background: #fff; box-shadow: 0 16px 42px rgba(12,39,64,.07); }
+    .prep-panel-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap; margin-bottom:22px; }
+    .prep-panel-head h3 { margin:0 0 7px; color:var(--primary-dark); font:700 1.35rem var(--font-serif); }
+    .prep-panel-head p { margin:0; color:var(--gray); max-width:590px; }
+    .prep-progress { min-width:130px; padding:10px 14px; border-radius:6px; background:#f0f5f9; color:var(--primary-dark); font-size:.82rem; font-weight:700; text-align:center; }
+    .prep-progress-track { height:5px; overflow:hidden; margin-top:7px; border-radius:10px; background:#dce5ee; }
+    .prep-progress-fill { display:block; width:0; height:100%; border-radius:10px; background:var(--primary); transition:width .2s ease; }
+    .prep-checklist { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:0; margin:0; list-style:none; }
+    .prep-checklist li { min-width:0; }
+    .prep-checklist label { display:flex; align-items:flex-start; gap:12px; height:100%; padding:15px 16px; border:1px solid #e4eaf0; border-radius:6px; color:#334b60; font-size:.93rem; line-height:1.55; cursor:pointer; transition:border-color .2s ease,background .2s ease; }
+    .prep-checklist label:has(input:checked) { border-color:#9cb8ce; background:#f3f8fc; }
+    .prep-checklist input { width:18px; height:18px; flex:0 0 18px; margin:2px 0 0; accent-color:var(--primary); }
+    .prep-checklist strong { display:block; margin-bottom:2px; color:var(--primary-dark); }
+    .prep-note { margin:18px 0 0; padding:13px 15px; border-left:3px solid #c99d53; background:#fbf8f2; color:#66543a; font-size:.86rem; line-height:1.6; }
+    .prep-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+    .prep-action { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:11px 17px; border:1px solid var(--primary); border-radius:4px; background:var(--primary); color:#fff; font:700 .84rem var(--font-sans); cursor:pointer; text-decoration:none; transition:transform .2s ease,background .2s ease; }
+    .prep-action:hover { transform:translateY(-2px); background:var(--primary-dark); }
+    .prep-action--secondary { background:#fff; color:var(--primary); }
+    .prep-action--secondary:hover { color:#fff; }
+    .prep-feedback { min-height:1.3em; margin:10px 0 0; color:var(--primary-dark); font-size:.82rem; }
+    @media(max-width:700px) { .prep-checklist { grid-template-columns:1fr; } .prep-panel { padding:22px 18px; } }
+    @media print {
+      body.print-consultation-checklist * { visibility:hidden!important; }
+      body.print-consultation-checklist #consultation-prep,
+      body.print-consultation-checklist #consultation-prep * { visibility:visible!important; }
+      body.print-consultation-checklist #consultation-prep { position:absolute!important; inset:0!important; width:100%!important; padding:18px!important; background:#fff!important; }
+      body.print-consultation-checklist #consultation-prep .prep-actions,
+      body.print-consultation-checklist #consultation-prep .prep-feedback { display:none!important; }
+      body.print-consultation-checklist #consultation-prep .prep-panel { max-width:none!important; box-shadow:none!important; border:0!important; }
     }
 
     /* ===== FAQ ===== */
@@ -3972,6 +4024,37 @@
 <article class="insight-card"><div class="date">Business</div><h3>A Data Protection Checklist for Businesses</h3><p>A practical starting point for organisations that collect or use personal information.</p><a href="insights/business-data-protection-checklist.html">Read the guide <i class="fas fa-arrow-right" aria-hidden="true"></i></a></article>
 </div><p class="text-center" style="margin-top:28px"><a class="btn-primary" href="insights/index.html">Explore all legal guides</a></p></div></section>
 
+  <!-- ===== CONSULTATION PREPARATION TOOL ===== -->
+  <section id="consultation-prep" class="section-padding consultation-prep">
+    <div class="container">
+      <div class="text-center animate-on-scroll">
+        <span class="section-tag">A More Prepared First Conversation</span>
+        <h2>Prepare for Your Consultation</h2>
+        <p class="section-subtitle" style="border-left:none;padding-left:0">Use this simple checklist to organise your thoughts before contacting the firm.</p>
+      </div>
+      <div class="prep-panel animate-on-scroll">
+        <div class="prep-panel-head">
+          <div><h3>Your consultation checklist</h3><p>Tick each item as you prepare. Your progress is shown here and is not sent to the firm.</p></div>
+          <div class="prep-progress"><span id="prepProgressText" aria-live="polite">0 of 5 complete</span><span class="prep-progress-track"><span class="prep-progress-fill" id="prepProgressFill"></span></span></div>
+        </div>
+        <ul class="prep-checklist" id="prepChecklist">
+          <li><label><input type="checkbox" value="practice"><span><strong>Identify the legal area</strong>Choose the practice area that best matches your issue.</span></label></li>
+          <li><label><input type="checkbox" value="summary"><span><strong>Write a short timeline</strong>Note the key events in date order, using brief and clear points.</span></label></li>
+          <li><label><input type="checkbox" value="deadlines"><span><strong>Note important dates</strong>Record any court dates, notices, deadlines or upcoming appointments.</span></label></li>
+          <li><label><input type="checkbox" value="documents"><span><strong>List relevant documents</strong>Make a list of agreements, letters, notices or records that may be relevant.</span></label></li>
+          <li><label><input type="checkbox" value="questions"><span><strong>Prepare your questions</strong>Write down what you need clarified and the outcome you are seeking.</span></label></li>
+        </ul>
+        <p class="prep-note"><strong>Protect your privacy:</strong> Do not upload or send confidential documents, identity numbers, detailed case facts or opposing-party information through a public enquiry. Wait for the firm to advise on a suitable secure channel. This checklist is for preparation only and is not legal advice.</p>
+        <div class="prep-actions">
+          <button type="button" class="prep-action" id="printPrepChecklist"><i class="fas fa-print" aria-hidden="true"></i> Print checklist</button>
+          <button type="button" class="prep-action prep-action--secondary" id="copyPrepChecklist"><i class="fas fa-copy" aria-hidden="true"></i> Copy checklist</button>
+          <a class="prep-action prep-action--secondary" href="consultation.html"><i class="fas fa-calendar-check" aria-hidden="true"></i> Request consultation</a>
+        </div>
+        <p class="prep-feedback" id="prepFeedback" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== FREQUENTLY ASKED QUESTIONS ===== --><section id="faq" class="section-padding"><div class="container">
 <div class="text-center animate-on-scroll"><span class="section-tag">Before You Contact Us</span><h2>Frequently Asked Questions</h2><p class="section-subtitle" style="border-left:none;padding-left:0">A few practical points about making an initial enquiry.</p></div>
 <div class="faq-list">
@@ -4358,6 +4441,46 @@
       window.open('https://wa.me/254725799752?text=' + body, '_blank', 'noopener,noreferrer');
       form.reset();
     });
+
+    // ===== CONSULTATION PREPARATION CHECKLIST =====
+    (function () {
+      const checklist = document.getElementById('prepChecklist');
+      if (!checklist) return;
+      const checks = Array.from(checklist.querySelectorAll('input[type="checkbox"]'));
+      const progressText = document.getElementById('prepProgressText');
+      const progressFill = document.getElementById('prepProgressFill');
+      const feedback = document.getElementById('prepFeedback');
+      function updateProgress() {
+        const complete = checks.filter(input => input.checked).length;
+        if (progressText) progressText.textContent = complete + ' of ' + checks.length + ' complete';
+        if (progressFill) progressFill.style.width = (complete / checks.length * 100) + '%';
+      }
+      checks.forEach(input => input.addEventListener('change', updateProgress));
+      document.getElementById('printPrepChecklist')?.addEventListener('click', function () {
+        document.body.classList.add('print-consultation-checklist');
+        window.print();
+      });
+      window.addEventListener('afterprint', function () {
+        document.body.classList.remove('print-consultation-checklist');
+      });
+      document.getElementById('copyPrepChecklist')?.addEventListener('click', async function () {
+        const lines = checks.map(input => {
+          const label = input.closest('label');
+          const title = label?.querySelector('strong')?.textContent || '';
+          const detail = label?.querySelector('span')?.textContent.replace(title, '').trim() || '';
+          return (input.checked ? '[x] ' : '[ ] ') + title + (detail ? ' — ' + detail : '');
+        });
+        const content = 'Kuria Karatu & Company Advocates — Consultation preparation checklist\n\n'
+          + lines.join('\n') + '\n\nPrivacy: Do not send confidential documents or detailed case facts through a public enquiry.';
+        try {
+          await navigator.clipboard.writeText(content);
+          if (feedback) feedback.textContent = 'Checklist copied. You can paste it into your notes.';
+        } catch (error) {
+          if (feedback) feedback.textContent = 'Copy is not available in this browser. Use Print checklist instead.';
+        }
+      });
+      updateProgress();
+    })();
 
     // ===== ACCESSIBLE FAQ ACCORDION =====
     document.querySelectorAll('.faq-question').forEach(button => {
