@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-KE">
 <head>
 <!-- ★ CORE HTML HEAD SETTINGS ★ -->
 <meta charset="UTF-8" />
@@ -17,6 +17,7 @@
 <meta name="language" content="English" />
 <meta name="rating" content="General" />
 <link rel="canonical" href="https://www.kuriakaratuadvocates.com/" />
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1280&amp;h=720&amp;fit=crop&amp;crop=entropy&amp;auto=format&amp;q=70" fetchpriority="high" />
 
 <!-- ★ MOBILE & BROWSER FAVICON / APP OPTIMIZATION ★ -->
 <link rel="icon" type="image/x-icon" href="https://www.kuriakaratuadvocates.com/favicon.ico" />
@@ -61,7 +62,10 @@
 
 <!-- ★ RICH ADVANCED SCHEMA MARKUP (LOCAL BUSINESS + LAW SERVICES + SERVICES OFFERED) ★ -->
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"LegalService","@id":"https://www.kuriakaratuadvocates.com/#organization","name":"Kuria Karatu & Company Advocates","url":"https://www.kuriakaratuadvocates.com/","description":"Legal services in Kenya, including property, commercial, employment, family, succession and dispute matters.","telephone":"+254725799752","email":"info@kuriakaratuadvocates.com","areaServed":{"@type":"Country","name":"Kenya"},"sameAs":["https://www.facebook.com/share/p/17NWZPXZsU/","https://twitter.com/kuriakaratu","https://www.linkedin.com/company/kuria-karatu-advocates"]}
+{"@context":"https://schema.org","@type":"LegalService","@id":"https://www.kuriakaratuadvocates.com/#organization","name":"Kuria Karatu & Company Advocates","url":"https://www.kuriakaratuadvocates.com/","description":"Legal services in Kenya, including property, commercial, employment, family, succession and dispute matters.","telephone":"+254725799752","email":"info@kuriakaratuadvocates.com","address":{"@type":"PostalAddress","addressLocality":"Meru","addressRegion":"Meru County","addressCountry":"KE"},"areaServed":{"@type":"Country","name":"Kenya"},"sameAs":["https://www.facebook.com/share/p/17NWZPXZsU/","https://twitter.com/kuriakaratu","https://www.linkedin.com/company/kuria-karatu-advocates"]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I request a consultation?","acceptedAnswer":{"@type":"Answer","text":"Use the consultation form, call the office or send a WhatsApp message. The online form prepares a message for you to review and send; it does not send automatically."}},{"@type":"Question","name":"Does an online enquiry make me a client?","acceptedAnswer":{"@type":"Answer","text":"No. An enquiry does not create an advocate-client relationship, guarantee that the firm can accept the matter or pause any legal deadline. An engagement begins only after the firm confirms acceptance and the terms."}},{"@type":"Question","name":"What should I include in my first message?","acceptedAnswer":{"@type":"Answer","text":"Share the practice area, a brief non-confidential outline and your preferred contact method. Do not include identification numbers, detailed case facts, opposing-party names or confidential documents in a public enquiry."}},{"@type":"Question","name":"What if my matter is urgent or has a deadline?","acceptedAnswer":{"@type":"Answer","text":"Call the office promptly. Do not wait for an online enquiry or WhatsApp response where a court date, filing deadline or other urgent time limit may apply."}},{"@type":"Question","name":"Are the legal guides legal advice?","acceptedAnswer":{"@type":"Answer","text":"No. The Legal Knowledge Centre provides general educational information. The law and procedure may change, and advice depends on the facts of each matter."}}]}
 </script>
 
   
@@ -259,11 +263,15 @@
 
     /* ===== Animations ===== */
     .animate-on-scroll {
-      opacity: 0;
-      transform: translateY(40px);
+      opacity: 1;
+      transform: none;
       transition: opacity 0.9s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.9s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
-    .animate-on-scroll.is-visible {
+    html.js-motion .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    html.js-motion .animate-on-scroll.is-visible {
       opacity: 1;
       transform: translateY(0);
     }
@@ -3299,11 +3307,12 @@
         <li><a href="#insights">Insights</a></li>
         <li><a href="consultation.html" class="btn-nav">Request Consultation</a></li>
       </ul>
-      <div class="hamburger" id="hamburger" role="button" tabindex="0" aria-controls="navLinks" aria-expanded="false" onclick="toggleMenu()" aria-label="Toggle navigation menu">
+      <button class="hamburger" id="hamburger" type="button" aria-controls="navLinks" aria-expanded="false" onclick="toggleMenu()" aria-label="Toggle navigation menu">
         <span></span><span></span><span></span>
-      </div>
+      </button>
     </div>
   </header>
+  <div class="reading-progress" aria-hidden="true"><span id="readingProgressFill"></span></div>
 
   <!-- ===== HERO CAROUSEL WITH BACKGROUND IMAGES ===== -->
   <main id="main-content">
@@ -4078,8 +4087,9 @@
       <div class="contact-wrap animate-on-scroll">
         <div class="contact-info">
           <div class="detail"><i class="fas fa-map-marker-alt"></i><div><p><strong>Visit Our Office</strong><br />Meru Town, along Meru-Nanyuki Road<br />P.O. Box 60200, Meru, Kenya</p></div></div>
-          <div class="detail"><i class="fas fa-phone"></i><div><p><strong>Phone</strong><br />+254 725 799 752</p></div></div>
-          <div class="detail"><i class="fas fa-envelope"></i><div><p><strong>Email</strong><br />info@kuriakaratuadvocates.com</p></div></div>
+          <div class="detail"><i class="fas fa-phone" aria-hidden="true"></i><div><p><strong>Phone</strong><br /><a href="tel:+254725799752">+254 725 799 752</a></p></div></div>
+          <div class="detail"><i class="fas fa-envelope" aria-hidden="true"></i><div><p><strong>Email</strong><br /><a href="mailto:info@kuriakaratuadvocates.com">info@kuriakaratuadvocates.com</a></p></div></div>
+          <p class="global-contact-note">Based in Meru, Kenya. You can send an initial enquiry online from any location; any consultation arrangements are confirmed directly by the firm.</p>
           
           <div class="security-badge" style="margin-top: 16px;"><i class="fas fa-info-circle"></i> Please do not send confidential documents through this public enquiry form.</div>
         </div>
@@ -4117,9 +4127,14 @@
           <a href="https://youtube.com/@kuriakaratuandcoadvocates9803?si=yPcHtWR0nIyj_1PZ" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
         </div>
         <button id="installAppButton" class="pwa-install-button" type="button" hidden><i class="fas fa-mobile-alt" aria-hidden="true"></i> Install this website</button>
+        <button id="shareSiteButton" class="pwa-install-button share-site-button" type="button"><i class="fas fa-share-alt" aria-hidden="true"></i> Share this website</button>
+        <span id="shareSiteStatus" class="share-site-status" role="status" aria-live="polite"></span>
       </div>
     </div>
   </footer>
+
+  <!-- ===== SINGLE WHATSAPP CONTACT ACTION ===== -->
+  <a class="kk-whatsapp-float" href="https://wa.me/254725799752?text=Hello%20Kuria%20Karatu%20%26%20Company%20Advocates.%20I%20would%20like%20to%20make%20an%20initial%20enquiry.%20Please%20let%20me%20know%20the%20appropriate%20next%20step." target="_blank" rel="noopener noreferrer" aria-label="Contact Kuria Karatu &amp; Company Advocates on WhatsApp" title="Contact us on WhatsApp"><span class="kk-whatsapp-icon" aria-hidden="true"><i class="fab fa-whatsapp"></i></span><span class="kk-whatsapp-label">WhatsApp us</span></a>
 
   <!-- ===== SINGLE UTILITY CONTROL ===== -->
   <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
@@ -4159,7 +4174,7 @@
   </div>
 
   <!-- ===== MOBILE APP BOTTOM NAVIGATION ===== -->
-  <nav class="mobile-app-nav" id="mobileAppNav" aria-label="Mobile navigation"><a href="#home" class="app-nav-item active" data-section="home"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a><a href="#practices" class="app-nav-item" data-section="practices"><i class="fas fa-briefcase" aria-hidden="true"></i><span>Practices</span></a><a href="#insights" class="app-nav-item" data-section="insights"><i class="fas fa-book-open" aria-hidden="true"></i><span>Insights</span></a><a href="consultation.html" class="app-nav-item" data-section="consultation"><i class="fas fa-calendar-check" aria-hidden="true"></i><span>Contact</span></a><a href="https://wa.me/254725799752" class="app-nav-item" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp" aria-hidden="true"></i><span>WhatsApp</span></a></nav>
+  <nav class="mobile-app-nav" id="mobileAppNav" aria-label="Mobile navigation"><a href="#home" class="app-nav-item active" data-section="home"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a><a href="#practices" class="app-nav-item" data-section="practices"><i class="fas fa-briefcase" aria-hidden="true"></i><span>Practices</span></a><a href="#insights" class="app-nav-item" data-section="insights"><i class="fas fa-book-open" aria-hidden="true"></i><span>Insights</span></a><a href="#contact" class="app-nav-item" data-section="contact"><i class="fas fa-envelope" aria-hidden="true"></i><span>Contact</span></a></nav>
 
   <!-- ============================================================ -->
   <!-- ===== JAVASCRIPT ===== -->
@@ -4246,14 +4261,17 @@
       const open = menu.classList.toggle('active');
       button.setAttribute('aria-expanded', String(open));
     }
-    document.getElementById('hamburger')?.addEventListener('keydown', function(event) {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleMenu(); }
+    document.querySelectorAll('#navLinks a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        document.getElementById('navLinks')?.classList.remove('active');
+        document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
+      });
     });
 
     // ===== MOBILE APP NAV — ACTIVE STATE TRACKING =====
     (function() {
       const appNavItems = document.querySelectorAll('.mobile-app-nav .app-nav-item[data-section]');
-      const sections = ['home', 'practices', 'videos', 'gallery', 'contact'];
+      const sections = ['home', 'practices', 'insights', 'contact'];
       const observerOptions = {
         root: null,
         rootMargin: '-40% 0px -50% 0px',
@@ -4285,6 +4303,38 @@
       const msg = encodeURIComponent(`Hello, I'm interested in your ${title} services. ${desc ? '\n\n' + desc : ''}`);
       window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
     }
+
+    // ===== READING PROGRESS + NATIVE PAGE SHARING =====
+    (function () {
+      const fill = document.getElementById('readingProgressFill');
+      function updateProgress() {
+        if (!fill) return;
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0;
+        fill.style.transform = 'scaleX(' + progress + ')';
+      }
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      window.addEventListener('resize', updateProgress);
+      updateProgress();
+      const shareButton = document.getElementById('shareSiteButton');
+      const shareStatus = document.getElementById('shareSiteStatus');
+      if (shareButton) shareButton.addEventListener('click', async function () {
+        const shareData = { title: document.title, text: 'Kuria Karatu & Company Advocates — legal services in Kenya', url: window.location.href };
+        try {
+          if (navigator.share) {
+            await navigator.share(shareData);
+            if (shareStatus) shareStatus.textContent = 'Share options opened.';
+          } else if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareData.url);
+            if (shareStatus) shareStatus.textContent = 'Website link copied.';
+          } else if (shareStatus) {
+            shareStatus.textContent = 'Copy this website address from your browser: ' + shareData.url;
+          }
+        } catch (error) {
+          if (error && error.name !== 'AbortError' && shareStatus) shareStatus.textContent = 'Sharing is unavailable in this browser.';
+        }
+      });
+    })();
 
     // ===== BACK TO TOP =====
     const backBtn = document.getElementById('backToTop');
@@ -4423,8 +4473,15 @@
     // ===== SCROLL ANIMATIONS =====
     document.addEventListener('DOMContentLoaded', function() {
       const elements = document.querySelectorAll('.animate-on-scroll');
-      const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry
-              .target.classList.add('is-visible'); } }); }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+      if (!('IntersectionObserver' in window)) {
+        elements.forEach(el => el.classList.add('is-visible'));
+        return;
+      }
+      document.documentElement.classList.add('js-motion');
+      const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      } }); }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
       elements.forEach(el => observer.observe(el));
     });
 
