@@ -23,6 +23,9 @@
 <link rel="icon" type="image/png" sizes="32x32" href="https://www.kuriakaratuadvocates.com/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="https://www.kuriakaratuadvocates.com/favicon-16x16.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="https://www.kuriakaratuadvocates.com/apple-touch-icon.png" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="application-name" content="Kuria Karatu Advocates" />
+<meta name="apple-mobile-web-app-title" content="Kuria Karatu" />
 <meta name="theme-color" content="#0A3A66" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -2162,33 +2165,6 @@
       color: var(--primary-light);
     }
 
-    /* ===== Floating Buttons ===== */
-    .whatsapp-float {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      background: #25D366;
-      color: white;
-      width: 62px;
-      height: 62px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.4rem;
-      box-shadow: 0 6px 30px rgba(37, 211, 102, 0.4);
-      z-index: 999;
-      transition: var(--transition);
-      border: none;
-      touch-action: manipulation;
-    }
-    .whatsapp-float:hover {
-      transform: scale(1.1);
-      background: #20b85f;
-      color: white;
-      box-shadow: 0 8px 40px rgba(37, 211, 102, 0.6);
-    }
-
     .back-to-top {
       position: fixed;
       bottom: 110px;
@@ -2218,67 +2194,6 @@
       background: var(--primary);
       color: var(--white);
       transform: translateY(-4px);
-    }
-
-    .request-float {
-      position: fixed;
-      bottom: 110px;
-      right: 28px;
-      background: var(--primary);
-      color: var(--white);
-      padding: 14px 24px;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      box-shadow: 0 6px 30px rgba(13, 71, 125, 0.4);
-      z-index: 998;
-      transition: var(--transition);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      letter-spacing: 0.5px;
-      touch-action: manipulation;
-    }
-    .request-float:hover {
-      transform: scale(1.05);
-      background: var(--primary-dark);
-      box-shadow: 0 8px 40px rgba(13, 71, 125, 0.5);
-    }
-    .request-float i {
-      font-size: 1.3rem;
-    }
-
-    .apk-download-float {
-      position: fixed;
-      bottom: 185px;
-      right: 28px;
-      background: #1a1a2e;
-      color: #fff;
-      padding: 14px 24px;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
-      z-index: 997;
-      transition: var(--transition);
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      letter-spacing: 0.5px;
-      touch-action: manipulation;
-      text-decoration: none;
-    }
-    .apk-download-float:hover {
-      transform: scale(1.05);
-      background: #2a2a4e;
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
-    }
-    .apk-download-float i {
-      font-size: 1.3rem;
     }
 
     /* ===== Cookie Consent Banner ===== */
@@ -2787,13 +2702,6 @@
         padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
       }
 
-      .whatsapp-float {
-        width: 54px;
-        height: 54px;
-        font-size: 1.8rem;
-        bottom: calc(var(--mobile-nav-height) + 18px);
-        right: 18px;
-      }
       .back-to-top {
         bottom: calc(var(--mobile-nav-height) + 82px);
         right: 18px;
@@ -2801,33 +2709,6 @@
         height: 46px;
         font-size: 1.2rem;
       }
-      .request-float {
-        bottom: calc(var(--mobile-nav-height) + 82px);
-        right: 18px;
-        padding: 12px 18px;
-        font-size: 0.8rem;
-      }
-      .request-float span {
-        display: none;
-      }
-      .request-float i {
-        font-size: 1.3rem;
-        margin: 0;
-      }
-      .apk-download-float {
-        bottom: calc(var(--mobile-nav-height) + 150px);
-        right: 18px;
-        padding: 12px 18px;
-        font-size: 0.8rem;
-      }
-      .apk-download-float span {
-        display: none;
-      }
-      .apk-download-float i {
-        font-size: 1.3rem;
-        margin: 0;
-      }
-
       .founder-card .founder-img-wrap {
         height: 240px;
       }
@@ -3071,7 +2952,7 @@
 
     /* ===== Print Styles ===== */
     @media print {
-      header, .mobile-app-nav, .whatsapp-float, .back-to-top, .request-float, .apk-download-float, .cookie-banner, .hero-controls {
+      header, .mobile-app-nav, .back-to-top, .cookie-banner, .hero-controls {
         display: none !important;
       }
       .hero::before, .hero::after {
@@ -3330,6 +3211,11 @@
 .cookie-settings-link:hover{color:#fff}
 @media(max-width:700px){.cookie-banner .cookie-inner{align-items:stretch}.cookie-banner .cookie-buttons{width:100%}.cookie-banner .cookie-buttons button{flex:1;padding:11px 12px}.cookie-preferences .cookie-buttons button{flex:1}}
 
+
+    .pwa-install-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;margin-top:16px;padding:11px 16px;border:1px solid rgba(226,196,134,.65);border-radius:4px;background:rgba(255,255,255,.07);color:#fff;font:700 .82rem var(--font-sans);cursor:pointer;transition:background .2s ease,border-color .2s ease,transform .2s ease}
+    .pwa-install-button:hover{background:rgba(226,196,134,.16);border-color:#e2c486;transform:translateY(-1px)}
+    .pwa-install-button:focus-visible{outline:3px solid #e2c486;outline-offset:3px}
+    .pwa-install-button[hidden]{display:none!important}
   </style>
   <!-- Font Awesome (for icons) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -4147,16 +4033,13 @@
           <a href="https://wa.me/254725799752" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
           <a href="https://youtube.com/@kuriakaratuandcoadvocates9803?si=yPcHtWR0nIyj_1PZ" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
         </div>
+        <button id="installAppButton" class="pwa-install-button" type="button" hidden><i class="fas fa-mobile-alt" aria-hidden="true"></i> Install this website</button>
       </div>
     </div>
   </footer>
 
-  <!-- ===== FLOATING BUTTONS ===== -->
-  <a href="https://wa.me/254725799752" target="_blank" class="whatsapp-float" aria-label="Chat on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <!-- ===== SINGLE UTILITY CONTROL ===== -->
   <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
-  <a href="consultation.html" class="request-float" id="requestFloat" aria-label="Request a consultation"><i class="fas fa-pen-fancy" aria-hidden="true"></i><span>Request Consultation</span></a>
-  <a class="home-whatsapp-float" href="https://wa.me/254725799752?text=Hello%2C%20I%20would%20like%20to%20make%20an%20initial%20legal%20enquiry." target="_blank" rel="noopener noreferrer" aria-label="Start an initial enquiry on WhatsApp"><i class="fab fa-whatsapp" aria-hidden="true"></i><span>WhatsApp</span></a>
-  <a href="https://www.kuriakaratuadvocates.com/kuriakaratuadvocates.apk" class="apk-download-float" aria-label="Download Our App"><i class="fas fa-download"></i> <span>Download Our App</span></a>
 
   <!-- ===== PRIVACY-FIRST COOKIE CONSENT ===== -->
   <section class="cookie-banner" id="cookieBanner" role="region" aria-label="Cookie preferences" aria-live="polite">
@@ -4516,5 +4399,41 @@
 
 <script>(function(){const routes={"Land and Property Law":"land-and-property-law.html","Climate Change, Carbon Markets and Environmental Law":"climate-carbon-environmental-law.html","Legal Audit and Compliance":"legal-audit-and-compliance.html","Data Protection and Privacy Law":"data-protection-and-privacy-law.html","Legislative Drafting":"legislative-drafting.html","Civil Litigation and Dispute Resolution":"civil-litigation-and-dispute-resolution.html","Corporate and Commercial":"corporate-and-commercial-law.html","Banking, Finance, Insurance and Personal Injury Claims":"banking-finance-insurance-personal-injury.html","Fintech and Digital Finance Law":"fintech-and-digital-finance-law.html","Public Law":"public-law.html","Employment Law":"employment-law.html","Family, Succession and Personal Affairs":"family-succession-and-personal-affairs.html","Artificial Intelligence, Intellectual Property and Technology Law":"ai-intellectual-property-technology-law.html","Cyber Security and Cyber Crime Law":"cyber-security-and-cyber-crime-law.html","Natural Resources, Renewable Energy and Mining Law":"natural-resources-renewable-energy-mining-law.html","Infrastructure and Construction Law":"infrastructure-and-construction-law.html","Digital Assets and Crypto Currency Regulation":"digital-assets-and-cryptocurrency-regulation.html","Public Procurement and Government Contracts":"public-procurement-and-government-contracts.html","Health Care and Medical Law":"healthcare-and-medical-law.html","Immigration, Cross Border and Global Mobility Law":"immigration-cross-border-global-mobility.html","Financing and Investment Law":"financing-and-investment-law.html","Consumer Protection and Digital Commerce":"consumer-protection-and-digital-commerce.html","Transport and Logistics":"transport-and-logistics-law.html","Sport, Media and Entertainment":"sport-media-and-entertainment-law.html","Mediation, Arbitration and Alternative Dispute Resolution":"mediation-arbitration-adr.html","Criminal Law Practice":"criminal-law-practice.html"};document.querySelectorAll(".practice-card[data-practice-title]").forEach(card=>{const title=card.getAttribute("data-practice-title"),route=routes[title],body=card.querySelector(".practice-body");if(!route||!body)return;const row=document.createElement("div");row.className="practice-actions";const wa=document.createElement("a");wa.className="practice-action practice-action--whatsapp";wa.href="https://wa.me/254725799752?text="+encodeURIComponent("Hello Kuria Karatu & Company Advocates, I would like to enquire about "+title+".");wa.target="_blank";wa.rel="noopener noreferrer";wa.innerHTML='<i class="fab fa-whatsapp" aria-hidden="true"></i><span>WhatsApp enquiry</span>';wa.setAttribute("aria-label","Enquire about "+title+" on WhatsApp");wa.addEventListener("click",e=>e.stopPropagation());const explore=document.createElement("a");explore.className="practice-action practice-action--explore";explore.href="practices/"+route;explore.innerHTML='<span>Explore practice</span><i class="fas fa-arrow-right" aria-hidden="true"></i>';explore.addEventListener("click",e=>e.stopPropagation());row.append(wa,explore);const hint=body.querySelector(".wa-hint");if(hint)hint.remove();body.appendChild(row)})})();</script>
 <script src="/assets/homepage-experience.js?v=20261119" defer></script>
+<script>
+(function () {
+  'use strict';
+  var installButton = document.getElementById('installAppButton');
+  var installPrompt = null;
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    installPrompt = event;
+    if (installButton && !isStandalone) installButton.hidden = false;
+  });
+
+  if (installButton) {
+    installButton.addEventListener('click', async function () {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      var result = await installPrompt.userChoice;
+      if (result && result.outcome === 'accepted') installButton.hidden = true;
+      installPrompt = null;
+    });
+  }
+
+  window.addEventListener('appinstalled', function () {
+    if (installButton) installButton.hidden = true;
+    installPrompt = null;
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .catch(function (error) { console.warn('PWA service worker registration failed:', error); });
+    });
+  }
+})();
+</script>
 </body>
 </html>
