@@ -217,15 +217,9 @@ footer a:hover{color:#e2c486}
 .contact-next-step{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:clamp(22px,3vw,34px);background:#fff;border:1px solid var(--light-gray);border-radius:10px;box-shadow:var(--shadow)}
 .contact-next-step h3{margin:0;color:var(--primary-dark);font-family:var(--font-serif);font-size:1.45rem}
 .contact-next-step p{margin:0;max-width:58ch}.contact-next-step .btn-primary{margin-top:8px}
-.request-float{text-decoration:none!important}.request-float:focus-visible{outline:3px solid var(--hero-gold);outline-offset:4px}
 @media(max-width:1050px){.approach-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.approach-grid{grid-template-columns:1fr}.approach-card{padding:22px 20px}.request-float{right:14px;bottom:calc(var(--mobile-nav-height) + 18px);padding:12px 17px;font-size:.78rem}.request-float i{font-size:1.05rem}}
+@media(max-width:600px){.approach-grid{grid-template-columns:1fr}.approach-card{padding:22px 20px}}
 @media(prefers-reduced-motion:reduce){.approach-card{transition:none!important}}
 
 
 /* Desktop WhatsApp shortcut; mobile uses the dedicated bottom navigation item */
-.home-whatsapp-float{position:fixed;right:28px;bottom:24px;z-index:998;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:12px 19px;border:1px solid #168b59;border-radius:999px;background:linear-gradient(135deg,#168b59,#20a86b);color:#fff!important;font-weight:800;text-decoration:none!important;box-shadow:0 8px 24px rgba(10,77,50,.24);transition:transform .2s ease,box-shadow .2s ease}
-.home-whatsapp-float i{font-size:1.2rem}.home-whatsapp-float:hover{color:#fff!important;transform:translateY(-3px);box-shadow:0 12px 28px rgba(10,77,50,.3)}
-.home-whatsapp-float:focus-visible{outline:3px solid var(--hero-gold);outline-offset:4px}
-@media(max-width:600px){.home-whatsapp-float{display:none}.request-float{bottom:calc(var(--mobile-nav-height) + 70px)}}
-@media(prefers-reduced-motion:reduce){.home-whatsapp-float{transition:none!important}}
