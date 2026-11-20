@@ -19,7 +19,8 @@ function enrichPublicSeo(){
  if(!document.documentElement.lang||document.documentElement.lang==='en')document.documentElement.lang='en-KE';
  setMeta('meta[name="robots"]','name=robots','index,follow,max-image-preview:large');
  setMeta('meta[name="author"]','name=author','Kuria Karatu & Company Advocates');
- setMeta('meta[property="og:type"]','property=og:type',/\/(blog|newsletter|insights)\//.test(location.pathname)?'article':'website');
+ const articlePage=location.pathname.indexOf('/insights/')>=0&&!location.pathname.endsWith('/index.html');
+ setMeta('meta[property="og:type"]','property=og:type',articlePage?'article':'website');
  setMeta('meta[property="og:site_name"]','property=og:site_name','Kuria Karatu & Company Advocates');
  setMeta('meta[property="og:url"]','property=og:url',canonical);
  setMeta('meta[property="og:title"]','property=og:title',title);
