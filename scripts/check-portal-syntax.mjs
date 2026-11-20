@@ -106,6 +106,7 @@ if (!fs.readFileSync('assets/public-navigation.js', 'utf8').includes('kk-whatsap
 } else console.log('PASS: public subpages include the WhatsApp contact shortcut');
 
 
+const sitemap = fs.readFileSync('sitemap.xml', 'utf8');
 const blogPage = fs.readFileSync('blog/index.html', 'utf8');
 const newsletterPage = fs.readFileSync('newsletter/index.html', 'utf8');
 const firstIssue = fs.readFileSync('newsletter/2026-12/index.html', 'utf8');
