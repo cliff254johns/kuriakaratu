@@ -60,6 +60,7 @@ self.addEventListener('fetch', event => {
         const cachedPage = await caches.match(request);
         if (cachedPage) return cachedPage;
         const shell = await caches.open(SHELL_CACHE);
+        if (isPrivatePath(url.pathname)) return await shell.match('/offline.html');
         return (await shell.match('/index.html')) || (await shell.match('/offline.html'));
       }
     })());
@@ -71,7 +72,6 @@ self.addEventListener('fetch', event => {
   if (/\.(?:css|js|png|jpe?g|webp|svg|ico|woff2?)$/i.test(url.pathname)) {
     event.respondWith((async () => {
       const cached = await caches.match(request);
-      if (cached) return cached;
       try {
         const response = await fetch(request);
         if (response && response.ok) {
