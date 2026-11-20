@@ -71,5 +71,19 @@ if (!fs.readFileSync('admin.js', 'utf8').includes("const OWNER_ADMIN_EMAIL = '" 
   console.error('FAIL: owner administrator identity is inconsistent');
 } else console.log('PASS: owner administrator identity is consistently configured');
 
+
+const teamCards = (homepage.match(/class="team-card animate-on-scroll delay-/g) || []).length;
+if (teamCards !== 3 || !homepage.includes('display: flex;') || !homepage.includes('justify-content: center;')) {
+  failures++;
+  console.error('FAIL: homepage team section must contain three centered team cards');
+} else console.log('PASS: three-person team layout is centered');
+if (!homepage.includes('id="prepChecklist"')
+    || !homepage.includes('id="printPrepChecklist"')
+    || !homepage.includes('id="copyPrepChecklist"')
+    || !homepage.includes('id="prepProgressText"')) {
+  failures++;
+  console.error('FAIL: consultation preparation checklist is missing a required interactive control');
+} else console.log('PASS: consultation preparation checklist controls are present');
+
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
