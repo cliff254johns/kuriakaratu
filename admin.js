@@ -452,10 +452,6 @@ function logoImgTag(extraStyle) {
 
 auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => console.warn('Persistence error:', err));
 
-let isSeeding = false;
-
-const DEFAULT_USERS = []; // No browser-seeded staff accounts or default passwords.
-
 const OWNER_ADMIN_EMAIL = 'cliff254johns@gmail.com';
 let loginInProgress = false;
 let initializedSessionUid = null;
@@ -2195,6 +2191,10 @@ document.getElementById('loginForm').addEventListener('submit', async function (
 
     } catch (error) {
         loginInProgress = false;
+        // Clear a Firebase session when staff-profile validation fails.
+        if (!currentUser && auth.currentUser) {
+            await auth.signOut().catch(signOutError => console.warn('Sign-out after failed login failed:', signOutError));
+        }
         // ----- Reset the button and box on failure -----
         if (submitBtn) {
             submitBtn.classList.remove('is-loading');
