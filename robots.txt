@@ -9,4 +9,6 @@ Disallow: /client.html
 Disallow: /finance.html
 Disallow: /generator.html
 Disallow: /track.html
+Allow: /blog/
+Allow: /newsletter/
 Sitemap: https://www.kuriakaratuadvocates.com/sitemap.xml
