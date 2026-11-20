@@ -47,11 +47,8 @@
             <form id="loginForm">
                <div class="form-group">
     <label><i class="fas fa-user"></i> Email</label>
-    <input type="email" id="loginEmailInput" list="loginEmailOptions"
-           placeholder="you@kuriakaratu.com" autocomplete="username" required>
-    <datalist id="loginEmailOptions">
-        <!-- Populated dynamically by admin.js -->
-    </datalist>
+    <input type="email" id="loginEmailInput"
+           placeholder="Enter your staff email" autocomplete="username" required>
 </div>
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Password</label>
@@ -64,7 +61,6 @@
         <span></span><span></span><span></span>
     </span>
 </button>
-                <div id="loginLoading" class="login-loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>
            
             </form>
         </div>

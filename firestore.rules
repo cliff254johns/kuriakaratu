@@ -9,8 +9,15 @@ service cloud.firestore {
     function role() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
+    // Only the verified, exact owner email can bootstrap the initial admin
+    // profile. The Firebase password remains the authentication factor.
+    function isOwnerAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'cliff254johns@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
     function isAdminOrDeveloper() {
-      return profileExists() && role() in ['admin', 'developer'];
+      return isOwnerAdmin() || (profileExists() && role() in ['admin', 'developer']);
     }
     function isFinanceStaff() {
       return profileExists() && role() in ['admin', 'developer', 'finance'];
@@ -36,7 +43,18 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdminOrDeveloper());
-      allow create, update, delete: if isAdminOrDeveloper();
+      // The verified owner can create their own first admin profile. Admins
+      // can manage staff; other staff can update only their own lastLogin.
+      allow create: if isAdminOrDeveloper()
+        || (isOwnerAdmin()
+          && request.auth.uid == uid
+          && request.resource.data.email == request.auth.token.email
+          && request.resource.data.role == 'admin');
+      allow update: if isAdminOrDeveloper()
+        || (signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']));
+      allow delete: if isAdminOrDeveloper();
     }
 
     match /clientAccounts/{uid} {

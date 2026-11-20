@@ -452,48 +452,106 @@ function logoImgTag(extraStyle) {
 
 auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => console.warn('Persistence error:', err));
 
-let isSeeding = false;
+const OWNER_ADMIN_EMAIL = 'cliff254johns@gmail.com';
+let loginInProgress = false;
+let initializedSessionUid = null;
 
-const DEFAULT_USERS = []; // No browser-seeded staff accounts or default passwords.
+// The owner account is bootstrapped only after Firebase has authenticated the
+// exact, verified owner email. No password or default account is embedded here.
+async function getStaffProfile(user) {
+    const email = (user.email || '').trim().toLowerCase();
+    const isVerifiedOwner = email === OWNER_ADMIN_EMAIL && user.emailVerified === true;
 
-let authStateReady = false;
-auth.onAuthStateChanged(user => {
-    if (isSeeding) return;
-    if (!authStateReady) return;  // wait until seeding is done
+    if (email === OWNER_ADMIN_EMAIL && !isVerifiedOwner) {
+        throw new Error('Verify the owner email address before accessing the administrator account.');
+    }
+
+    const userRef = db.collection('users').doc(user.uid);
+    let profileDoc = await userRef.get();
+
+    if (isVerifiedOwner) {
+        if (!profileDoc.exists) {
+            await userRef.set({
+                email: OWNER_ADMIN_EMAIL,
+                role: 'admin',
+                createdAt: getDateTime(),
+                provisionedBy: 'verified-owner-bootstrap'
+            });
+        } else if (profileDoc.data().role !== 'admin' || profileDoc.data().email !== OWNER_ADMIN_EMAIL) {
+            await userRef.update({ email: OWNER_ADMIN_EMAIL, role: 'admin' });
+        }
+        profileDoc = await userRef.get();
+    } else if (!profileDoc.exists) {
+        throw new Error('This account has not been provisioned by the firm. Contact the administrator.');
+    }
+
+    const profile = profileDoc.data() || {};
+    if (!['admin', 'developer', 'clerk'].includes(profile.role)) {
+        throw new Error('This account has no valid staff role. Contact the administrator.');
+    }
+    return profile;
+}
+
+auth.onAuthStateChanged(async user => {
     const overlay = document.getElementById('loginOverlay');
     const app = document.getElementById('mainApp');
-    if (user) {
-        auth.signOut().catch(err => console.warn('SignOut error:', err));
-    } else {
-        if (overlay) overlay.classList.remove('hidden');
+
+    if (!user) {
+        if (loginInProgress) return;
+        initializedSessionUid = null;
+        currentUser = null;
+        currentUserEmail = '';
+        currentUserRole = 'clerk';
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            overlay.style.display = '';
+        }
         if (app) app.style.display = 'none';
+        return;
+    }
+
+    // The submit handler owns the animated sign-in flow. This branch restores
+    // an already-authenticated session after a refresh or PWA restart.
+    if (loginInProgress || initializedSessionUid === user.uid) return;
+
+    try {
+        const profile = await getStaffProfile(user);
+        currentUser = user;
+        currentUserEmail = user.email || '';
+        currentUserRole = profile.role;
+        await db.collection('users').doc(user.uid).update({ lastLogin: getDateTime() });
+
+        const avatarEl = document.getElementById('userAvatar');
+        const nameEl = document.getElementById('userNameDisplay');
+        const roleEl = document.getElementById('userRoleDisplay');
+        if (avatarEl) avatarEl.textContent = currentUserEmail.charAt(0).toUpperCase();
+        if (nameEl) nameEl.textContent = currentUserEmail.split('@')[0];
+        if (roleEl) roleEl.textContent = currentUserRole;
+
+        if (app) app.style.display = 'flex';
+        if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }
+        applyRoleGating();
+        await loadCompanyLogoFromFirestore();
+        initApp();
+        initializedSessionUid = user.uid;
+    } catch (error) {
+        console.error('Session restore failed:', error);
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            overlay.style.display = '';
+        }
+        if (app) app.style.display = 'none';
+        const errorEl = document.getElementById('loginError');
+        if (errorEl) errorEl.textContent = error.message;
+        await auth.signOut().catch(signOutError => console.warn('Sign-out after invalid session failed:', signOutError));
     }
 });
-// Start seeding immediately after handler is attached
-// Keep the legacy startup auth observer disabled: it signs out every
-// authenticated user, including users who have just completed sign-in.
-loadUsersForLogin().catch(err => console.error('Unable to load staff directory:', err));
 
-// Watchdog: never leave the user stuck on "loading users"
-setTimeout(() => {
-    const loadingEl = document.getElementById('loginLoading');
-    if (loadingEl && loadingEl.style.display !== 'none') {
-        loadingEl.style.display = 'none';
-    }
-    const sel = document.getElementById('loginEmailSelect');
-    if (sel && (!sel.options.length || sel.options.length <= 1)) {
-        usersData = DEFAULT_USERS.map(u => ({ id: u.email, email: u.email, role: u.role }));
-        populateLoginDropdown();
-    }
-}, 8000);
-async function seedDefaultUsers() {
-    // Intentionally disabled: privileged staff accounts must be provisioned
-    // through a trusted administrator process, never from a public browser.
-    isSeeding = false;
-    const loadingEl = document.getElementById('loginLoading');
-    if (loadingEl) loadingEl.style.display = 'none';
-    await loadUsersForLogin();
-}
+// Staff identities are entered manually at sign-in. Never enumerate the
+// protected users collection from the public login screen.
 
 /* ============================================================
    GLOBAL LOGO PROPAGATION
@@ -582,36 +640,6 @@ function applyCompanyLogoEverywhere() {
     }
 }
 window.applyCompanyLogoEverywhere = applyCompanyLogoEverywhere;
-
-async function loadUsersForLogin() {
-    usersData = [];
-    try {
-        const snap = await db.collection('users').get();
-        snap.forEach(doc => {
-            const d = doc.data();
-            d.id = doc.id;
-            if (d.email && d.email !== 'user@kuriakaratu.com') usersData.push(d);
-        });
-    } catch (e) {
-        console.warn('Failed to load users from Firestore:', e.code || e.message);
-    }
-
-    // No hard-coded credential fallback. Staff accounts must exist in Auth and
-    // have a provisioned profile before they can enter the application.
-
-    populateLoginDropdown();
-}
-
-function populateLoginDropdown() {
-    const list = document.getElementById('loginEmailOptions');
-    if (!list) return;
-    const sorted = [...usersData]
-        .filter(u => (u.email || '').toLowerCase() !== 'developer@kuriakaratu.com')
-        .sort((a, b) => a.email.localeCompare(b.email));
-    list.innerHTML = sorted.map(u =>
-        `<option value="${u.email}"></option>`
-    ).join('');
-}
 
 let casesData = [];
 let caseLinkBackfillRunning = false;
@@ -2095,29 +2123,19 @@ document.getElementById('loginForm').addEventListener('submit', async function (
     }
     if (errorEl) errorEl.textContent = '';
 
+    loginInProgress = true;
     try {
         // ----- Firebase sign-in -----
         const userCred = await auth.signInWithEmailAndPassword(email, password);
         const user = userCred.user;
 
-        // ----- Load or create the user profile in Firestore -----
-        const doc = await db.collection('users').doc(user.uid).get();
-        if (!doc.exists) {
-            await auth.signOut();
-            throw new Error('This account has not been provisioned by the firm. Contact the administrator.');
-        }
-        const profile = doc.data();
-        const allowedRoles = ['admin', 'developer', 'clerk'];
-        if (!allowedRoles.includes(profile.role)) {
-            await auth.signOut();
-            throw new Error('This account has no valid staff role. Contact the administrator.');
-        }
+        // ----- Validate staff access and securely provision the verified owner -----
+        const profile = await getStaffProfile(user);
         currentUserRole = profile.role;
         await db.collection('users').doc(user.uid).update({ lastLogin: getDateTime() });
 
         currentUser = user;
         currentUserEmail = email;
-        await updateLastLogin(email);
 
         // ② Login box lifts away
         if (loginBox) loginBox.classList.add('is-exiting');
@@ -2152,6 +2170,8 @@ document.getElementById('loginForm').addEventListener('submit', async function (
         await logActivity('User Login', `Logged in as ${currentUserRole}`);
         await loadCompanyLogoFromFirestore();
         initApp();
+        initializedSessionUid = user.uid;
+        loginInProgress = false;
 
         // ④ Remove curtain, reveal app with entrance animations
         await new Promise(r => setTimeout(r, 620));
@@ -2170,6 +2190,11 @@ document.getElementById('loginForm').addEventListener('submit', async function (
         }, 1400);
 
     } catch (error) {
+        loginInProgress = false;
+        // Clear a Firebase session when staff-profile validation fails.
+        if (!currentUser && auth.currentUser) {
+            await auth.signOut().catch(signOutError => console.warn('Sign-out after failed login failed:', signOutError));
+        }
         // ----- Reset the button and box on failure -----
         if (submitBtn) {
             submitBtn.classList.remove('is-loading');
@@ -2197,7 +2222,6 @@ if (logoutBtnEl) logoutBtnEl.addEventListener('click', async function() {
         if (taskReminderInterval) { clearInterval(taskReminderInterval); taskReminderInterval = null; }
         if (feeReminderInterval) { clearInterval(feeReminderInterval); feeReminderInterval = null; }
         if (reminderInterval) { clearInterval(reminderInterval); reminderInterval = null; }
-        await loadUsersForLogin();
         showToast('Logged out successfully.', 'info');
     }
 });
@@ -3040,7 +3064,6 @@ function listenUsers() {
             if (d.email !== 'user@kuriakaratu.com') usersData.push(d);
         });
         if (currentPage === 'users') renderUsers();
-        populateLoginDropdown();
     });
 }
 
