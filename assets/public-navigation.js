@@ -21,7 +21,9 @@ menu.addEventListener('click',e=>{if(e.target.closest('a'))closeMenu()});documen
 function enrichPublicSeo(){
  const title=document.title||'Kuria Karatu & Company Advocates';
  const desc=document.querySelector('meta[name="description"]')?.content||(document.querySelector('main h1,h1')?.textContent||'Legal services and practical legal information from Kuria Karatu & Company Advocates in Kenya.').trim();
- const canonical=document.querySelector('link[rel="canonical"]')?.href||new URL(location.pathname,location.origin).href;\n let canonicalLink=document.head.querySelector('link[rel="canonical"]');if(!canonicalLink){canonicalLink=document.createElement('link');canonicalLink.rel='canonical';document.head.appendChild(canonicalLink)}canonicalLink.href=canonical;\n if(!document.head.querySelector('link[hreflang="en-KE"]')){const alternate=document.createElement('link');alternate.rel='alternate';alternate.hreflang='en-KE';alternate.href=canonical;document.head.appendChild(alternate)}
+ const canonical=document.querySelector('link[rel="canonical"]')?.href||new URL(location.pathname,location.origin).href;
+ let canonicalLink=document.head.querySelector('link[rel="canonical"]');if(!canonicalLink){canonicalLink=document.createElement('link');canonicalLink.rel='canonical';document.head.appendChild(canonicalLink)}canonicalLink.href=canonical;
+ if(!document.head.querySelector('link[hreflang="en-KE"]')){const alternate=document.createElement('link');alternate.rel='alternate';alternate.hreflang='en-KE';alternate.href=canonical;document.head.appendChild(alternate)}
  const setMeta=(selector,key,value)=>{let el=document.head.querySelector(selector);if(!el){el=document.createElement('meta');const pair=key.split('=');el.setAttribute(pair[0],pair[1]);document.head.appendChild(el)}el.content=value};
  if(!document.documentElement.lang||document.documentElement.lang==='en')document.documentElement.lang='en-KE';
  setMeta('meta[name="robots"]','name=robots','index,follow,max-image-preview:large');
@@ -36,12 +38,14 @@ function enrichPublicSeo(){
  setMeta('meta[name="twitter:card"]','name=twitter:card','summary_large_image');
  setMeta('meta[name="twitter:title"]','name=twitter:title',title);
  setMeta('meta[name="twitter:description"]','name=twitter:description',desc);
- setMeta('meta[name="twitter:image"]','name=twitter:image',location.origin+'/android-chrome-512x512.png');\n setMeta('meta[name="twitter:url"]','name=twitter:url',canonical);
+ setMeta('meta[name="twitter:image"]','name=twitter:image',location.origin+'/android-chrome-512x512.png');
+ setMeta('meta[name="twitter:url"]','name=twitter:url',canonical);
  if(!document.head.querySelector('script[data-kk-webpage-schema]')){
   const parts=location.pathname.split('/').filter(Boolean);
   const items=[{name:'Home',url:location.origin+'/'}];let path='';
   parts.forEach((part,index)=>{path+='/'+part;items.push({name:index===parts.length-1?title.replace(/\s*[|–-]\s*Kuria Karatu.*$/i,''):decodeURIComponent(part.replace(/\.html$/,'').replace(/[-_]/g,' ')).replace(/\b\w/g,c=>c.toUpperCase()),url:location.origin+path+(part.includes('.')?'':'/')})});
-  const graph={'@context':'https://schema.org','@graph':[{'@type':'WebPage','name':title,'description':desc,'url':canonical,'inLanguage':'en-KE','isPartOf':{'@type':'WebSite','name':'Kuria Karatu & Company Advocates','url':location.origin+'/'},'publisher':{'@type':'Organization','name':'Kuria Karatu & Company Advocates','url':location.origin+'/'}},{'@type':'BreadcrumbList','itemListElement':items.map((item,i)=>({'@type':'ListItem','position':i+1,'name':item.name,'item':item.url}))}]};\n  if(location.pathname.includes('/insights/')&&!location.pathname.endsWith('/index.html'))graph['@graph'].push({'@type':'BlogPosting','headline':title,'description':desc,'author':{'@type':'Organization','name':'Kuria Karatu & Company Advocates'},'publisher':{'@type':'Organization','name':'Kuria Karatu & Company Advocates'},'mainEntityOfPage':canonical,'inLanguage':'en-KE'});
+  const graph={'@context':'https://schema.org','@graph':[{'@type':'WebPage','name':title,'description':desc,'url':canonical,'inLanguage':'en-KE','isPartOf':{'@type':'WebSite','name':'Kuria Karatu & Company Advocates','url':location.origin+'/'},'publisher':{'@type':'Organization','name':'Kuria Karatu & Company Advocates','url':location.origin+'/'}},{'@type':'BreadcrumbList','itemListElement':items.map((item,i)=>({'@type':'ListItem','position':i+1,'name':item.name,'item':item.url}))}]};
+  if(location.pathname.includes('/insights/')&&!location.pathname.endsWith('/index.html'))graph['@graph'].push({'@type':'BlogPosting','headline':title,'description':desc,'author':{'@type':'Organization','name':'Kuria Karatu & Company Advocates'},'publisher':{'@type':'Organization','name':'Kuria Karatu & Company Advocates'},'mainEntityOfPage':canonical,'inLanguage':'en-KE'});
   const schema=document.createElement('script');schema.type='application/ld+json';schema.dataset.kkWebpageSchema='true';schema.textContent=JSON.stringify(graph);document.head.appendChild(schema);
  }
 }
