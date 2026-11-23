@@ -681,22 +681,23 @@
             writeBatch,
             getDocs
         } from 'firebase/firestore';
-        import { getAnalytics, logEvent } from 'firebase/analytics';
+        // Analytics is intentionally disabled until a measurement ID for kuriakaratu-b5c90 is configured.
 
         // ─── CONFIG ───
         const firebaseConfig = {
             apiKey: "AIzaSyD9v8E-ylZJdjrCRhxvU--HdZxu_0gvKWQ",
-            authDomain: "kuriatrack.firebaseapp.com",
-            projectId: "kuriatrack",
-            storageBucket: "kuriatrack.firebasestorage.app",
-            messagingSenderId: "1010901949997",
-            appId: "1:1010901949997:web:bf79e73f6d00dc503062a4",
-            measurementId: "G-SB7XB7RX05"
+            authDomain: "kuriakaratu-b5c90.firebaseapp.com",
+            databaseURL: "https://kuriakaratu-b5c90-default-rtdb.firebaseio.com",
+            projectId: "kuriakaratu-b5c90",
+            storageBucket: "kuriakaratu-b5c90.firebasestorage.app",
+            messagingSenderId: "14852374326",
+            appId: "1:14852374326:web:b171bd36719d8700953d97"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const analytics = getAnalytics(app);
+        const analytics = null;
+        const logEvent = () => {}; // Safe no-op until the shared project's Analytics property is configured.
 
         // ─── COLLECTIONS ───
         const PRACTICES_COLL = 'practices';
