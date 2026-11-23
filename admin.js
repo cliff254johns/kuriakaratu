@@ -6042,5 +6042,42 @@ loadCompanyLogoFromFirestore();
 setTimeout(() => { if (currentUser && isFullAccess()) { updateAccidentSummary(); } }, 1500);
 
 console.log('Kuria Karatu & Company Advocates System Loaded');
+
+/* Self-service password change for the signed-in staff member. */
+(function bindOwnPasswordChange() {
+    const button = document.getElementById('changePasswordBtn');
+    const modal = document.getElementById('changeOwnPasswordModal');
+    const form = document.getElementById('changeOwnPasswordForm');
+    const error = document.getElementById('ownPasswordError');
+    const close = () => { if (modal) modal.style.display = 'none'; if (form) form.reset(); if (error) error.textContent = ''; };
+    if (button && modal && form) {
+        button.addEventListener('click', () => { modal.style.display = 'flex'; });
+        document.getElementById('closeOwnPasswordModal')?.addEventListener('click', close);
+        document.getElementById('cancelOwnPassword')?.addEventListener('click', close);
+        modal.addEventListener('click', event => { if (event.target === modal) close(); });
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (error) error.textContent = '';
+            const current = document.getElementById('ownCurrentPassword').value;
+            const next = document.getElementById('ownNewPassword').value;
+            const confirm = document.getElementById('ownConfirmPassword').value;
+            const user = auth.currentUser || currentUser;
+            if (next.length < 8) { if (error) error.textContent = 'Use at least 8 characters.'; return; }
+            if (next !== confirm) { if (error) error.textContent = 'The new passwords do not match.'; return; }
+            if (!user || !user.email) { if (error) error.textContent = 'Please sign in again before changing your password.'; return; }
+            try {
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+                await user.reauthenticateWithCredential(credential);
+                await user.updatePassword(next);
+                await logActivity('Changed Own Password', 'Signed-in user updated their password');
+                close();
+                showToast('Your password has been updated.', 'success');
+            } catch (err) {
+                if (error) error.textContent = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+                    ? 'Your current password is incorrect.' : (err.message || 'Could not update your password.');
+            }
+        });
+    }
+})();
 })();      
    
