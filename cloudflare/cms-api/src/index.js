@@ -4,11 +4,15 @@ const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache
 function json(data, status = 200, origin = '*') {
   return new Response(JSON.stringify(data), { status, headers: { ...JSON_HEADERS, 'access-control-allow-origin': origin, 'access-control-allow-headers': 'authorization,content-type', 'access-control-allow-methods': 'GET,POST,PUT,DELETE,OPTIONS', 'vary': 'Origin' } });
 }
-function uidFromToken(token) {
+function claimsFromToken(token) {
   try {
     const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(part)).user_id || JSON.parse(atob(part)).sub || null;
+    return JSON.parse(atob(part));
   } catch { return null; }
+}
+function uidFromToken(token) {
+  const claims = claimsFromToken(token);
+  return claims && (claims.user_id || claims.sub) || null;
 }
 async function authorize(request, allowedRoles = ['cms_admin','public_admin']) {
   const auth = request.headers.get('authorization') || '';
@@ -43,23 +47,29 @@ export default {
     if (url.pathname === '/api/portal/verified' && request.method === 'POST') {
       const authHeader = request.headers.get('authorization') || '';
       const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-      const uid = uidFromToken(token);
+      const claims = claimsFromToken(token);
+      const uid = claims && (claims.user_id || claims.sub);
       if (!uid) return json({ error: 'Sign in again to verify your account.' }, 401, origin);
-      const verification = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + encodeURIComponent(env.FIREBASE_API_KEY), {
-        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idToken: token })
-      });
-      if (!verification.ok) return json({ error: 'Could not verify your sign-in. Please sign in again.' }, 401, origin);
-      const identity = await verification.json();
-      const verifiedUser = identity.users?.[0];
-      if (!verifiedUser || verifiedUser.localId !== uid || verifiedUser.emailVerified !== true) {
+      if (claims.email_verified !== true || !claims.email) {
         return json({ error: 'Verify your email address before requesting automatic client linking.' }, 403, origin);
       }
-      const body = await request.json();
-      const name = cleanText(body.name, 180), phone = cleanText(body.phone, 40);
-      if (!name || !phone || !verifiedUser.email) return json({ error: 'Your registered name and phone number are required.' }, 400, origin);
+      // Firestore validates the Firebase ID token and permits this user to read only
+      // their own portal account document. No service-account credential is required.
+      const profileResponse = await fetch('https://firestore.googleapis.com/v1/projects/kuriakaratu-b5c90/databases/(default)/documents/clientAccounts/' + encodeURIComponent(uid), {
+        headers: { authorization: 'Bearer ' + token }
+      });
+      if (!profileResponse.ok) return json({ error: 'Could not verify your portal registration. Sign in again.' }, 401, origin);
+      const profile = await profileResponse.json();
+      const fields = profile.fields || {};
+      const email = String(fields.email?.stringValue || '').trim().toLowerCase();
+      const name = cleanText(fields.name?.stringValue, 180);
+      const phone = cleanText(fields.phone?.stringValue, 40);
+      if (email !== String(claims.email).trim().toLowerCase() || !name || !phone) {
+        return json({ error: 'Your verified email and registration details do not match.' }, 403, origin);
+      }
       const now = new Date().toISOString();
       await env.CMS_DB.prepare("INSERT INTO portal_link_queue (uid,email,name,phone,verified_at,status) VALUES (?,?,?,?,?,'pending') ON CONFLICT(uid) DO UPDATE SET email=excluded.email,name=excluded.name,phone=excluded.phone,verified_at=excluded.verified_at,status=CASE WHEN portal_link_queue.status='linked' THEN 'linked' ELSE 'pending' END")
-        .bind(uid, String(verifiedUser.email).toLowerCase(), name, phone, now).run();
+        .bind(uid, email, name, phone, now).run();
       return json({ ok: true, status: 'verified_pending_link' }, 202, origin);
     }
     if (!url.pathname.startsWith('/api/admin/')) return json({ error: 'Not found' }, 404, origin);
