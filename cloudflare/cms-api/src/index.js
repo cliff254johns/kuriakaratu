@@ -63,8 +63,6 @@ export default {
       return json({ ok: true, status: 'verified_pending_link' }, 202, origin);
     }
     if (!url.pathname.startsWith('/api/admin/')) return json({ error: 'Not found' }, 404, origin);
-    const actor = await authorize(request);
-    if (!actor) return json({ error: 'Unauthorized. Sign in with the separate public CMS administrator account.' }, 401, origin);
     if (url.pathname === '/api/admin/portal-queue' && request.method === 'GET') {
       const portalActor = await authorize(request, ['admin','developer']);
       if (!portalActor) return json({ error: 'Only an authorised firm admin or developer may process portal linking.' }, 403, origin);
@@ -79,6 +77,8 @@ export default {
       await env.CMS_DB.prepare("UPDATE portal_link_queue SET status='linked',processed_at=? WHERE uid=?").bind(now,queueMatch[1]).run();
       return json({ ok: true }, 200, origin);
     }
+    const actor = await authorize(request);
+    if (!actor) return json({ error: 'Unauthorized. Sign in with the separate public CMS administrator account.' }, 401, origin);
     if (url.pathname === '/api/admin/content' && request.method === 'GET') {
       const rows = await env.CMS_DB.prepare('SELECT * FROM cms_content ORDER BY updated_at DESC').all();
       return json({ items: rows.results || [] }, 200, origin);
