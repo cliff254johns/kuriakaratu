@@ -677,8 +677,10 @@ let taskReminderInterval = null;
 let feeReminderInterval = null;
 let reminderInterval = null;
 
-const PRACTICE_AREAS = ['ELCs', 'Criminal', 'Succession', 'Civil', 'Tribunal',
-    'Divorce', 'Conveyancing', 'Running Down', 'Children', 'Employment', 'Kadhi'];
+const PRACTICE_AREAS = window.KK_PRACTICE_AREAS;
+if (!Array.isArray(PRACTICE_AREAS) || !PRACTICE_AREAS.length) {
+    throw new Error('Shared practice-area catalogue failed to load.');
+}
     // Default document sections tree (used only if Firestore empty)
 const DEFAULT_DOC_SECTIONS = [
     { name: 'Agreements', subSections: [] },
