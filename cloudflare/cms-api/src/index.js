@@ -17,8 +17,9 @@ function uidFromToken(token) {
 async function authorize(request, allowedRoles = ['cms_admin','public_admin']) {
   const auth = request.headers.get('authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-  const uid = uidFromToken(token);
-  if (!token || !uid) return null;
+  const claims = claimsFromToken(token);
+  const uid = claims && (claims.user_id || claims.sub);
+  if (!token || !uid || claims.email_verified !== true) return null;
   const url = 'https://firestore.googleapis.com/v1/projects/kuriakaratu-b5c90/databases/(default)/documents/users/' + encodeURIComponent(uid);
   const response = await fetch(url, { headers: { authorization: 'Bearer ' + token } });
   if (!response.ok) return null;
