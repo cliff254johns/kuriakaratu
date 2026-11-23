@@ -217,8 +217,8 @@ if (!adminHtml.includes('id="changePasswordBtn"') || !adminHtml.includes('id="ch
   failures++;
   console.error('FAIL: admin self-service password change must reauthenticate and update the Firebase Auth password');
 } else console.log('PASS: admin can securely change their password after reauthentication');
-const finance = fs.readFileSync('finance.html', 'utf8');
-if (!finance.includes('id="changePasswordBtn"') || !finance.includes('id="changePasswordForm"') || !finance.includes('reauthenticateWithCredential') || !finance.includes('updatePassword(next)')) {
+const financePasswordPage = fs.readFileSync('finance.html', 'utf8');
+if (!financePasswordPage.includes('id="changePasswordBtn"') || !financePasswordPage.includes('id="changePasswordForm"') || !financePasswordPage.includes('reauthenticateWithCredential') || !financePasswordPage.includes('updatePassword(next)')) {
   failures++;
   console.error('FAIL: finance self-service password change must reauthenticate and update the Firebase Auth password');
 } else console.log('PASS: finance users can securely change their password after reauthentication');
