@@ -203,6 +203,13 @@ if (!tracker.includes('projectId:"kuriakaratu-b5c90"') || tracker.includes('kuri
   failures++;
   console.error('FAIL: tracker is not fully switched to the firm Firebase project');
 } else console.log('PASS: tracker uses the same Firebase project as the main system');
+const trackerCatalogueScript = tracker.indexOf('<script src="/practice-areas.js"></script>');
+const trackerApplicationScript = tracker.indexOf('<script>', trackerCatalogueScript + 1);
+if (trackerCatalogueScript < 0 || trackerApplicationScript < 0 || trackerCatalogueScript > trackerApplicationScript) {
+  failures++;
+  console.error('FAIL: tracker must load the shared practice catalogue before its application code');
+} else console.log('PASS: tracker loads the shared practice catalogue before application code');
+
 if (!tracker.includes('window.KK_PRACTICE_AREAS') || !tracker.includes("db.collection('settings').doc('practiceTracker')") || !tracker.includes("auth.signInWithEmailAndPassword") || !tracker.includes("profile.data().role")) {
   failures++;
   console.error('FAIL: tracker must use shared practice names, protected Firebase login and the authorised tracker settings document');
