@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'practice-areas.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js', 'assets/public-cms.js', 'cloudflare/cms-api/src/index.js'];
+const files = ['admin.js', 'admin-v2.js', 'practice-areas.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js', 'assets/public-cms.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -96,6 +96,15 @@ if (!matchFunction) {
 }
 
 
+
+const cmsWorkerSource = fs.readFileSync('cloudflare/cms-api/src/index.js', 'utf8');
+try {
+  new vm.Script(cmsWorkerSource.replace(/^export default /m, 'const worker = '), { filename: 'cloudflare/cms-api/src/index.js' });
+  console.log('PASS JavaScript module syntax: Cloudflare CMS Worker');
+} catch (error) {
+  failures++;
+  console.error('FAIL Cloudflare CMS Worker syntax:', error.message);
+}
 
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 const homepage = fs.readFileSync('index.html', 'utf8');
