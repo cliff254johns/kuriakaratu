@@ -215,40 +215,78 @@ function updatePortalBadge() {
 }
 
 const autoPortalLinkInFlight = new Set();
+const PORTAL_LINK_API = 'https://kuriakaratu-cms-api.cliff254johns.workers.dev';
 
-// Existing clients are linked automatically only from the authenticated firm dashboard.
-// Firestore rules permit this signed-in admin/developer to read client records and approve
-// portal accounts; public signup never gets access to the clients collection.
+async function getVerifiedPortalQueue() {
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error('Sign in again to process verified portal requests.');
+    const token = await user.getIdToken();
+    const response = await fetch(PORTAL_LINK_API + '/api/admin/portal-queue', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not retrieve verified portal requests.');
+    return data.items || [];
+}
+
+async function markPortalQueueLinked(uid) {
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error('Admin session expired.');
+    const token = await user.getIdToken();
+    const response = await fetch(PORTAL_LINK_API + '/api/admin/portal-queue/' + encodeURIComponent(uid) + '/complete', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!response.ok) throw new Error('Could not close verified portal queue item.');
+}
+
+// Runs only in the signed-in firm admin/developer dashboard. Cloudflare verifies
+// the Firebase email identity first; Firestore rules then authorize this staff
+// session to inspect private client records and approve a unique exact match.
 async function autoLinkExactPortalRequests() {
     if (!isFullAccess() || !Array.isArray(clientsData) || !clientsData.length) return;
-    const pending = portalRequestsData.filter(r =>
-        r && r.uid && (!r.status || r.status === 'pending') && !autoPortalLinkInFlight.has(r.uid)
-    );
-    for (const request of pending) {
-        const match = findExactPortalClientMatch(request);
+    let verifiedQueue;
+    try { verifiedQueue = await getVerifiedPortalQueue(); }
+    catch (error) { console.warn('Verified portal queue unavailable:', error.message); return; }
+    const requestsByUid = new Map(portalRequestsData.map(r => [r.uid, r]));
+    const pending = verifiedQueue.filter(q => q.status === 'pending' && requestsByUid.has(q.uid));
+    for (const verified of pending) {
+        if (autoPortalLinkInFlight.has(verified.uid)) continue;
+        const request = requestsByUid.get(verified.uid);
+        const account = portalAccountsData.find(a => a.uid === verified.uid);
+        if (!request || !account || request.status === 'rejected' || account.approved === true) continue;
+        const email = String(verified.email || '').trim().toLowerCase();
+        const phone = normalizePhone(verified.phone);
+        if (String(account.email || '').trim().toLowerCase() !== email ||
+            String(request.email || '').trim().toLowerCase() !== email ||
+            normalizePhone(account.phone) !== phone ||
+            normalizeText(account.name) !== normalizeText(verified.name)) continue;
+        const match = findExactPortalClientMatch({ name: verified.name, email, phone: verified.phone });
         if (match.reason !== 'exact' || !match.client || !match.client.id) continue;
-        autoPortalLinkInFlight.add(request.uid);
+        autoPortalLinkInFlight.add(verified.uid);
         try {
-            const accountRef = db.collection('clientAccounts').doc(request.uid);
-            const accountSnap = await accountRef.get();
-            if (!accountSnap.exists) continue;
-            const account = accountSnap.data() || {};
-            if (account.approved === true || account.status === 'rejected' || account.rejected === true) continue;
-            const reviewedAt = getDateTime();
-            await accountRef.update({
-                approved: true, clientId: match.client.id, approvedAt: reviewedAt,
-                approvedBy: currentUserEmail, autoLinked: true, autoLinkedBy: 'exact-verified-profile-match'
+            const allAccounts = await db.collection('clientAccounts').get();
+            const alreadyLinked = allAccounts.docs.some(doc => {
+                if (doc.id === verified.uid) return false;
+                const data = doc.data() || {};
+                return data.approved === true && data.clientId === match.client.id;
             });
-            await db.collection('portalRequests').doc(request.uid).update({
+            if (alreadyLinked) continue;
+            const reviewedAt = getDateTime();
+            await db.collection('clientAccounts').doc(verified.uid).update({
+                approved: true, clientId: match.client.id, approvedAt: reviewedAt,
+                approvedBy: currentUserEmail, autoLinked: true, autoLinkedBy: 'verified-unique-exact-match'
+            });
+            await db.collection('portalRequests').doc(verified.uid).update({
                 status: 'approved', clientId: match.client.id, reviewedAt,
                 reviewedBy: currentUserEmail, autoLinked: true
             });
-            await logActivity('Automatically Linked Client Portal',
-                (request.name || request.email || request.uid) + ' → Client: ' + (match.client.name || match.client.id));
+            await logActivity('Automatically Linked Verified Client Portal',
+                (verified.name || email) + ' → Client: ' + (match.client.name || match.client.id));
+            await markPortalQueueLinked(verified.uid);
         } catch (error) {
-            console.error('Automatic portal linking failed for ' + request.uid, error);
+            console.error('Automatic portal linking failed for ' + verified.uid, error);
         } finally {
-            autoPortalLinkInFlight.delete(request.uid);
+            autoPortalLinkInFlight.delete(verified.uid);
         }
     }
 }
