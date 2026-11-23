@@ -45,7 +45,7 @@ export default {
       const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
       const uid = uidFromToken(token);
       if (!uid) return json({ error: 'Sign in again to verify your account.' }, 401, origin);
-      const verification = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + encodeURIComponent(env.FIREBASE_API_KEY)', {
+      const verification = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + encodeURIComponent(env.FIREBASE_API_KEY), {
         method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idToken: token })
       });
       if (!verification.ok) return json({ error: 'Could not verify your sign-in. Please sign in again.' }, 401, origin);
