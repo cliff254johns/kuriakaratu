@@ -42,6 +42,11 @@ if (/matchedClient|auto-match-|signupCaseRef/.test(client)) {
   console.error('FAIL: client self-linking or case-reference matching remains');
 } else console.log('PASS: no public client auto-linking identifiers');
 
+if (!client.includes('id="signupPhone"') || !/id="signupPhone"[^>]*\\brequired\\b/.test(client)) {
+  failures++;
+  console.error('FAIL: client portal registration must require a phone number for identity matching');
+} else console.log('PASS: client portal registration requires a phone number');
+
 if (!admin.includes('function findExactPortalClientMatch')
     || !admin.includes('normalizeText(client && client.name) === name')
     || !admin.includes("String(client && client.email || '').trim().toLowerCase() === email")
