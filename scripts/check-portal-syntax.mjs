@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js'];
+const files = ['admin.js', 'admin-v2.js', 'practice-areas.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -13,7 +13,7 @@ for (const file of files) {
   }
 }
 
-for (const file of ['index.html', 'client.html', 'finance.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html']) {
+for (const file of ['index.html', 'client.html', 'finance.html', 'track.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html']) {
   const html = fs.readFileSync(file, 'utf8');
   const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
@@ -182,6 +182,35 @@ if (!sitemap.includes('/papers/') || !fs.readFileSync('robots.txt', 'utf8').incl
   failures++;
   console.error('FAIL: conference papers library is missing from sitemap or robots rules');
 } else console.log('PASS: conference papers library is discoverable to search engines');
+
+
+const sharedPractices = fs.readFileSync('practice-areas.js', 'utf8');
+const tracker = fs.readFileSync('track.html', 'utf8');
+const adminHtml = fs.readFileSync('admin.html', 'utf8');
+const adminJs = fs.readFileSync('admin.js', 'utf8');
+const expectedPracticeAreas = ['ELCs', 'Criminal', 'Succession', 'Civil', 'Tribunal', 'Divorce', 'Conveyancing', 'Running Down', 'Children', 'Employment', 'Kadhi'];
+const categoryList = sharedPractices.match(/root\.KK_PRACTICE_AREAS\s*=\s*Object\.freeze\(\[([\s\S]*?)\]\)/);
+const actualPracticeAreas = categoryList ? [...categoryList[1].matchAll(/'([^']+)'/g)].map(match => match[1]) : [];
+if (JSON.stringify(actualPracticeAreas) !== JSON.stringify(expectedPracticeAreas)) {
+  failures++;
+  console.error('FAIL: shared practice catalogue does not exactly match the main management system');
+} else console.log('PASS: one shared practice catalogue contains the exact 11 main-system practice areas');
+if (!adminHtml.includes('<script src="practice-areas.js"></script>') || adminHtml.indexOf('<script src="practice-areas.js"></script>') > adminHtml.indexOf('<script src="admin.js"></script>') || !adminJs.includes('const PRACTICE_AREAS = window.KK_PRACTICE_AREAS;')) {
+  failures++;
+  console.error('FAIL: admin system is not loading the shared practice catalogue before admin.js');
+} else console.log('PASS: main management system consumes the shared practice catalogue');
+if (!tracker.includes('projectId:"kuriakaratu-b5c90"') || tracker.includes('kuriatrack') || tracker.includes('G-SB7XB7RX05')) {
+  failures++;
+  console.error('FAIL: tracker is not fully switched to the firm Firebase project');
+} else console.log('PASS: tracker uses the same Firebase project as the main system');
+if (!tracker.includes('window.KK_PRACTICE_AREAS') || !tracker.includes("db.collection('settings').doc('practiceTracker')") || !tracker.includes("auth.signInWithEmailAndPassword") || !tracker.includes("profile.data().role")) {
+  failures++;
+  console.error('FAIL: tracker must use shared practice names, protected Firebase login and the authorised tracker settings document');
+} else console.log('PASS: tracker uses shared categories, authenticated access and the existing protected settings document');
+if (/SAMPLE_PRACTICES|seedPracticesIfEmpty|addPractice\(|deletePractice\(|PRACTICES_COLL\s*=\s*['"]practices/.test(tracker)) {
+  failures++;
+  console.error('FAIL: legacy sample practice seeding or independent practice CRUD remains in the tracker');
+} else console.log('PASS: legacy tracker practice records and sample seeding have been removed from the application');
 
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
