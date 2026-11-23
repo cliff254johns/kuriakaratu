@@ -2265,7 +2265,7 @@ document.addEventListener('DOMContentLoaded', function(){
       try {
         if (!user.email) throw new Error('This account has no verified staff email.');
         var profile = await db.collection('users').doc(user.uid).get();
-        if (!profile.exists || !['admin','developer','clerk'].includes(profile.data().role)) {
+        if (!profile.exists || !['admin','developer','finance'].includes(profile.data().role)) {
           throw new Error('This account has not been provisioned with an authorised finance role.');
         }
         showApp(user.email, profile.data().role);
