@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "kuriakaratu-cms-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-23",
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "CMS_DB", "database_name": "kuriakaratu-public-cms", "database_id": "1d6984d2-2274-4786-8b7d-ce26e1dee75e" }
+  ]
+}
