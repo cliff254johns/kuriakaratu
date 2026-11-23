@@ -13,6 +13,7 @@ try {
   await testEnv.withSecurityRulesDisabled(async (context) => {
     const db = context.firestore();
     await setDoc(doc(db, 'users/admin-1'), { role: 'admin' });
+    await setDoc(doc(db, 'users/developer-1'), { role: 'developer' });
     await setDoc(doc(db, 'users/finance-1'), { role: 'finance' });
     await setDoc(doc(db, 'users/clerk-1'), { role: 'clerk' });
     await setDoc(doc(db, 'users/client-1'), { role: 'client' });
@@ -41,6 +42,7 @@ try {
 
   const admin = testEnv.authenticatedContext('admin-1', { email: 'admin@example.com' }).firestore();
   const finance = testEnv.authenticatedContext('finance-1', { email: 'finance@example.com' }).firestore();
+  const developer = testEnv.authenticatedContext('developer-1', { email: 'developer@example.com' }).firestore();
   const clerk = testEnv.authenticatedContext('clerk-1', { email: 'clerk@example.com' }).firestore();
   const client = testEnv.authenticatedContext('client-1', { email: 'client@example.com' }).firestore();
   const otherClient = testEnv.authenticatedContext('client-2', { email: 'other@example.com' }).firestore();
@@ -125,6 +127,17 @@ try {
   await assertSucceeds(getDoc(doc(client, 'clientNotifications/notice-1')));
   await assertSucceeds(updateDoc(doc(client, 'clientNotifications/notice-1'), { read: true }));
   await assertFails(updateDoc(doc(client, 'clientNotifications/notice-1'), { title: 'Forged notice' }));
+  // The tracker uses the existing admin-protected settings document rather than a new open collection.
+  await assertSucceeds(setDoc(doc(admin, 'settings/practiceTracker'), {
+    metrics: { criminal: { targetRevenue: 1000, actualRevenue: 500 } }
+  }));
+  await assertSucceeds(getDoc(doc(admin, 'settings/practiceTracker')));
+  await assertSucceeds(getDoc(doc(developer, 'settings/practiceTracker')));
+  await assertFails(getDoc(doc(clerk, 'settings/practiceTracker')));
+  await assertFails(setDoc(doc(clerk, 'settings/practiceTracker'), { metrics: {} }));
+  await assertFails(getDoc(doc(finance, 'settings/practiceTracker')));
+  await assertFails(getDoc(doc(client, 'settings/practiceTracker')));
+  await assertFails(getDoc(doc(unauth, 'settings/practiceTracker')));
   await assertSucceeds(getDoc(doc(client, 'settings/company')));
   await assertFails(getDoc(doc(client, 'settings/docSections')));
   await assertFails(getDoc(doc(unauth, 'settings/company')));
@@ -153,6 +166,7 @@ try {
   console.log('PASS: client uploads and messages are identity-bound');
   console.log('PASS: finance and clerk permissions remain role-scoped');
   console.log('PASS: notification updates are restricted to read status');
+  console.log('PASS: practice tracker metrics are restricted to admin/developer profiles by existing settings rules');
   console.log('PASS: pending-only self-registration and default-deny checks');
 } finally {
   await testEnv.cleanup();
