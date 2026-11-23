@@ -234,12 +234,26 @@ async function loadPortalRequests() {
     renderPortalAccounts();
 }
 
+function findExactPortalClientMatch(request, clients = clientsData) {
+    const name = normalizeText(request && request.name);
+    const email = String(request && request.email || '').trim().toLowerCase();
+    const phone = normalizePhone(request && request.phone);
+    if (!name || !email || !phone) return { client: null, reason: 'incomplete' };
+    const matches = clients.filter(client =>
+        normalizeText(client && client.name) === name
+        && String(client && client.email || '').trim().toLowerCase() === email
+        && normalizePhone(client && client.phone) === phone
+    );
+    if (matches.length === 1) return { client: matches[0], reason: 'exact' };
+    return { client: null, reason: matches.length > 1 ? 'ambiguous' : 'none' };
+}
+
 function openApprovePortalModal(uid) {
     if (!isFullAccess()) { showToast('Only admins and developers can approve.', 'warning'); return; }
     const req = portalRequestsData.find(r => r.uid === uid);
     if (!req) { showToast('Request not found.', 'error'); return; }
-    let matchedClient = clientsData.find(c => (c.email || '').toLowerCase() === (req.email || '').toLowerCase());
-    if (!matchedClient && req.phone) matchedClient = clientsData.find(c => (c.phone || '').replace(/\s/g, '') === req.phone.replace(/\s/g, ''));
+    const portalMatch = findExactPortalClientMatch(req);
+    const matchedClient = portalMatch.client;
     const existing = document.getElementById('approvePortalModal');
     if (existing) existing.remove();
     const modal = document.createElement('div');
@@ -267,7 +281,7 @@ function openApprovePortalModal(uid) {
                     <option value="">— Select a client —</option>
                     ${clientsData.map(c => `<option value="${c.id}" ${matchedClient && matchedClient.id === c.id ? 'selected' : ''}>${c.name} ${c.email ? '• ' + c.email : ''} ${c.phone ? '• ' + c.phone : ''}</option>`).join('')}
                 </select>
-                ${matchedClient ? `<div class="fs-small" style="color:#22c55e;margin-top:0.3rem;"><i class="fas fa-check-circle"></i> Auto-matched to <strong>${matchedClient.name}</strong></div>` : ''}
+                ${portalMatch.reason === 'exact' ? '<div class="fs-small" style="color:#22c55e;margin-top:0.3rem;"><i class="fas fa-check-circle"></i> Exact name, email and phone match. Administrator approval is still required.</div>' : portalMatch.reason === 'ambiguous' ? '<div class="fs-small" style="color:#b45309;margin-top:0.3rem;">More than one exact match found. Review manually; no client is preselected.</div>' : portalMatch.reason === 'incomplete' ? '<div class="fs-small" style="color:#b45309;margin-top:0.3rem;">Name, email and phone are all required for an exact match. Review manually.</div>' : ''}
             </div>
             <div class="form-group">
                 <label style="display:flex;align-items:center;gap:0.4rem;">
