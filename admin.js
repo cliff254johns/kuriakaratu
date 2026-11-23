@@ -291,6 +291,11 @@ async function autoLinkExactPortalRequests() {
     }
 }
 
+// Poll the verified Cloudflare queue while the authenticated firm dashboard is open.
+if (typeof window !== 'undefined' && !window.__portalLinkQueueTimer) {
+    window.__portalLinkQueueTimer = setInterval(() => { autoLinkExactPortalRequests(); }, 30000);
+}
+
 function listenPortalRequests() {
     if (portalRequestsUnsub) portalRequestsUnsub();
     portalRequestsUnsub = db.collection('portalRequests').onSnapshot(snap => {
@@ -438,6 +443,7 @@ async function confirmApprovePortal(uid) {
         await db.collection('clientAccounts').doc(uid).update({ approved: true, clientId: clientId, approvedAt: getDateTime(), approvedBy: currentUserEmail });
         await db.collection('portalRequests').doc(uid).update({ status: 'approved', clientId: clientId, reviewedAt: getDateTime(), reviewedBy: currentUserEmail });
         await logActivity('Approved Portal Access', `${req.name || req.email} → Client: ${clientName}`);
+        await markPortalQueueLinked(uid);
         showToast(`Portal access approved for ${req.name || req.email}.`, 'info');
         closeModal('approvePortalModal');
     } catch (e) { showToast('Failed to approve: ' + e.message, 'error'); }
