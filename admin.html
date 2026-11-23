@@ -161,6 +161,7 @@
                     <span class="user-avatar" id="userAvatar">A</span>
                     <span id="userNameDisplay">Admin</span>
                     <span class="user-role" id="userRoleDisplay">Admin</span>
+                    <button class="logout-btn" id="changePasswordBtn" title="Change password"><i class="fas fa-key"></i></button>
                     <button class="logout-btn" id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
@@ -1471,6 +1472,20 @@
     </div>
     <iframe id="docGenFrame" src="about:self" title="Document Generator"></iframe>
 </aside>
+
+<div id="changeOwnPasswordModal" class="modal-overlay" style="display:none;z-index:10000;">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header"><h2><i class="fas fa-key"></i> Change your password</h2><button class="modal-close" type="button" id="closeOwnPasswordModal">&times;</button></div>
+    <form id="changeOwnPasswordForm">
+      <div class="form-group"><label for="ownCurrentPassword">Current password</label><input id="ownCurrentPassword" type="password" autocomplete="current-password" required></div>
+      <div class="form-group"><label for="ownNewPassword">New password (minimum 8 characters)</label><input id="ownNewPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div class="form-group"><label for="ownConfirmPassword">Confirm new password</label><input id="ownConfirmPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div id="ownPasswordError" class="login-error" role="alert"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;"><button class="btn btn-outline" type="button" id="cancelOwnPassword">Cancel</button><button class="btn btn-primary" type="submit">Update password</button></div>
+    </form>
+  </div>
+</div>
+
       <script src="practice-areas.js"></script>
       <script src="admin.js"></script>
     <script src="sidebar-counters.js"></script>
