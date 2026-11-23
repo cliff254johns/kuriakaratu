@@ -72,7 +72,7 @@ if (!matchFunction) {
   const normalizePortalName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const normalizePortalPhone = value => {
     if (!value) return '';
-    let clean = String(value).replace(/\\s/g, '').replace(/^\\+/, '');
+    let clean = String(value).replace(/\s/g, '').replace(/^\+/, '');
     if (clean.startsWith('0')) clean = clean.substring(1);
     if (!clean.startsWith('254')) clean = '254' + clean;
     return clean;
