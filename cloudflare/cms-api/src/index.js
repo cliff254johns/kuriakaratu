@@ -14,7 +14,7 @@ function uidFromToken(token) {
   const claims = claimsFromToken(token);
   return claims && (claims.user_id || claims.sub) || null;
 }
-async function authorize(request, allowedRoles = ['cms_admin','public_admin']) {
+async function authorize(request, allowedRoles = ['admin','developer','cms_admin','public_admin']) {
   const auth = request.headers.get('authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   const claims = claimsFromToken(token);
@@ -91,7 +91,7 @@ export default {
       return json({ ok: true }, 200, origin);
     }
     const actor = await authorize(request);
-    if (!actor) return json({ error: 'Unauthorized. Sign in with the separate public CMS administrator account.' }, 401, origin);
+    if (!actor) return json({ error: 'Unauthorized. Sign in with a verified firm administrator account.' }, 401, origin);
     if (url.pathname === '/api/admin/content' && request.method === 'GET') {
       const rows = await env.CMS_DB.prepare('SELECT * FROM cms_content ORDER BY updated_at DESC').all();
       return json({ items: rows.results || [] }, 200, origin);
