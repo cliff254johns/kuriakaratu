@@ -69,12 +69,13 @@ export default {
       const rows = await env.CMS_DB.prepare("SELECT uid,email,name,phone,verified_at,status FROM portal_link_queue WHERE status='pending' ORDER BY verified_at ASC").all();
       return json({ items: rows.results || [] }, 200, origin);
     }
-    const queueMatch = url.pathname.match(/^\\/api\\/admin\\/portal-queue\\/([a-zA-Z0-9_-]+)\\/complete$/);
-    if (queueMatch && request.method === 'POST') {
+    const queueParts = url.pathname.split('/');
+    const queueUid = queueParts.length === 6 && queueParts[1] === 'api' && queueParts[2] === 'admin' && queueParts[3] === 'portal-queue' && queueParts[5] === 'complete' ? queueParts[4] : null;
+    if (queueUid && request.method === 'POST') {
       const portalActor = await authorize(request, ['admin','developer']);
       if (!portalActor) return json({ error: 'Only an authorised firm admin or developer may process portal linking.' }, 403, origin);
       const now = new Date().toISOString();
-      await env.CMS_DB.prepare("UPDATE portal_link_queue SET status='linked',processed_at=? WHERE uid=?").bind(now,queueMatch[1]).run();
+      await env.CMS_DB.prepare("UPDATE portal_link_queue SET status='linked',processed_at=? WHERE uid=?").bind(now,queueUid).run();
       return json({ ok: true }, 200, origin);
     }
     const actor = await authorize(request);
