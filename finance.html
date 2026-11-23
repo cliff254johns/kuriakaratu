@@ -259,13 +259,8 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
     <div class="login-sub">Kuria Karatu &amp; Company Advocates</div>
     <form id="loginForm">
       <div class="form-group">
-        <label><i class="fas fa-user"></i> Select User</label>
-        <select id="loginEmailSelect" required>
-          <option value="">— Select a user —</option>
-          <option value="admin@kuriakaratu.com">admin@kuriakaratu.com</option>
-          <option value="developer@kuriakaratu.com">developer@kuriakaratu.com</option>
-          <option value="clerk@kuriakaratu.com">clerk@kuriakaratu.com</option>
-        </select>
+        <label><i class="fas fa-user"></i> Staff email</label>
+        <input type="email" id="loginEmailSelect" placeholder="Enter your assigned staff email" required autocomplete="username">
       </div>
       <div class="form-group">
         <label><i class="fas fa-lock"></i> Password</label>
@@ -2256,17 +2251,28 @@ document.addEventListener('DOMContentLoaded', function(){
   setupLogin();
   setupLogout();
   if (fbOK && auth) {
-    auth.onAuthStateChanged(function(user){
-      if (user && !currentUserEmail) {
-        var email = user.email;
-        var role = 'clerk';
-        var hc = HARDCODED.find(function(u){ return u.email === email; });
-        if (hc) role = hc.role;
-        db.collection('users').doc(user.uid).get().then(function(doc){
-          if (doc.exists && doc.data().role) role = doc.data().role;
-        }).catch(function(){}).finally(function(){
-          showApp(email, role);
-        });
+    auth.onAuthStateChanged(async function(user){
+      if (!user) {
+        currentUserEmail = '';
+        currentUserRole = 'clerk';
+        $('appHeader').style.display = 'none';
+        $('appContent').style.display = 'none';
+        $('appNav').style.display = 'none';
+        $('loginOverlay').classList.remove('hidden');
+        return;
+      }
+      if (currentUserEmail === user.email) return;
+      try {
+        if (!user.email) throw new Error('This account has no verified staff email.');
+        var profile = await db.collection('users').doc(user.uid).get();
+        if (!profile.exists || !['admin','developer','clerk'].includes(profile.data().role)) {
+          throw new Error('This account has not been provisioned with an authorised finance role.');
+        }
+        showApp(user.email, profile.data().role);
+      } catch (error) {
+        console.error('Finance session validation failed:', error);
+        $('loginError').textContent = error.message || 'This account is not authorised.';
+        await auth.signOut().catch(function(){});
       }
     });
   }
