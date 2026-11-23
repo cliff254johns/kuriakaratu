@@ -214,6 +214,45 @@ function updatePortalBadge() {
     else badge.style.display = 'none';
 }
 
+const autoPortalLinkInFlight = new Set();
+
+// Existing clients are linked automatically only from the authenticated firm dashboard.
+// Firestore rules permit this signed-in admin/developer to read client records and approve
+// portal accounts; public signup never gets access to the clients collection.
+async function autoLinkExactPortalRequests() {
+    if (!isFullAccess() || !Array.isArray(clientsData) || !clientsData.length) return;
+    const pending = portalRequestsData.filter(r =>
+        r && r.uid && (!r.status || r.status === 'pending') && !autoPortalLinkInFlight.has(r.uid)
+    );
+    for (const request of pending) {
+        const match = findExactPortalClientMatch(request);
+        if (match.reason !== 'exact' || !match.client || !match.client.id) continue;
+        autoPortalLinkInFlight.add(request.uid);
+        try {
+            const accountRef = db.collection('clientAccounts').doc(request.uid);
+            const accountSnap = await accountRef.get();
+            if (!accountSnap.exists) continue;
+            const account = accountSnap.data() || {};
+            if (account.approved === true || account.status === 'rejected' || account.rejected === true) continue;
+            const reviewedAt = getDateTime();
+            await accountRef.update({
+                approved: true, clientId: match.client.id, approvedAt: reviewedAt,
+                approvedBy: currentUserEmail, autoLinked: true, autoLinkedBy: 'exact-verified-profile-match'
+            });
+            await db.collection('portalRequests').doc(request.uid).update({
+                status: 'approved', clientId: match.client.id, reviewedAt,
+                reviewedBy: currentUserEmail, autoLinked: true
+            });
+            await logActivity('Automatically Linked Client Portal',
+                (request.name || request.email || request.uid) + ' → Client: ' + (match.client.name || match.client.id));
+        } catch (error) {
+            console.error('Automatic portal linking failed for ' + request.uid, error);
+        } finally {
+            autoPortalLinkInFlight.delete(request.uid);
+        }
+    }
+}
+
 function listenPortalRequests() {
     if (portalRequestsUnsub) portalRequestsUnsub();
     portalRequestsUnsub = db.collection('portalRequests').onSnapshot(snap => {
@@ -221,6 +260,7 @@ function listenPortalRequests() {
         snap.forEach(doc => { const d = doc.data(); d.uid = doc.id; portalRequestsData.push(d); });
         if (currentPage === 'portal') renderPortalRequests();
         updatePortalBadge();
+        autoLinkExactPortalRequests();
     });
 }
 
