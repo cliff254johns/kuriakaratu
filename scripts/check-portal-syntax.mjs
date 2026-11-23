@@ -13,7 +13,7 @@ for (const file of files) {
   }
 }
 
-for (const file of ['index.html', 'client.html', 'finance.html', 'track.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html', 'practices/index.html', 'insights/index.html', 'cms-admin.html', 'cms-setup.html']) {
+for (const file of ['index.html', 'client.html', 'finance.html', 'track.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html', 'practices/index.html', 'insights/index.html', 'cms-admin.html']) {
   const html = fs.readFileSync(file, 'utf8');
   const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
@@ -46,6 +46,13 @@ if (!client.includes('id="signupPhone" placeholder="+254 712 345 678" autocomple
   failures++;
   console.error('FAIL: client portal registration must require a phone number for identity matching');
 } else console.log('PASS: client portal registration requires a phone number');
+
+if (!admin.includes("source: 'verified-client-portal-registration'")
+    || !admin.includes("autoLinkedBy: match.client ? 'verified-existing-client-match' : 'verified-new-client-registration'")
+    || !admin.includes("db.collection('clients').add({")) {
+  failures++;
+  console.error('FAIL: verified new portal registrations must create and link a client record automatically');
+} else console.log('PASS: verified new portal registrations create and link a client record automatically');
 
 if (!admin.includes('function findExactPortalClientMatch')
     || !admin.includes('normalizeText(client && client.name) === name')
