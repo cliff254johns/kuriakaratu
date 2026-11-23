@@ -62,7 +62,9 @@ if (!admin.includes('Administrator approval is still required.')
   console.error('FAIL: portal account linking must remain behind authorised administrator approval');
 } else console.log('PASS: portal linking remains an explicit administrator action');
 
-const matchFunction = admin.match(/function findExactPortalClientMatch\\(request, clients = clientsData\\) \\{([\\s\\S]*?)\\n\\}/);
+const matchStart = admin.indexOf('function findExactPortalClientMatch(');
+const matchEnd = admin.indexOf('\n}\n', matchStart);
+const matchFunction = matchStart >= 0 && matchEnd >= 0 ? admin.slice(matchStart, matchEnd + 2) : '';
 if (!matchFunction) {
   failures++;
   console.error('FAIL: exact portal identity matcher could not be extracted for behavior tests');
@@ -75,7 +77,7 @@ if (!matchFunction) {
     if (!clean.startsWith('254')) clean = '254' + clean;
     return clean;
   };
-  const matcher = vm.runInNewContext('(' + matchFunction[0] + ')', {
+  const matcher = vm.runInNewContext('(' + matchFunction + ')', {
     normalizeText: normalizePortalName,
     normalizePhone: normalizePortalPhone,
     clientsData: []
