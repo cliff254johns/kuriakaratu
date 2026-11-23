@@ -42,7 +42,7 @@ if (/matchedClient|auto-match-|signupCaseRef/.test(client)) {
   console.error('FAIL: client self-linking or case-reference matching remains');
 } else console.log('PASS: no public client auto-linking identifiers');
 
-if (!client.includes('id="signupPhone"') || !/id="signupPhone"[^>]*\\brequired\\b/.test(client)) {
+if (!client.includes('id="signupPhone" placeholder="+254 712 345 678" autocomplete="tel" required')) {
   failures++;
   console.error('FAIL: client portal registration must require a phone number for identity matching');
 } else console.log('PASS: client portal registration requires a phone number');
