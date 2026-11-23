@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'practice-areas.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js'];
+const files = ['admin.js', 'admin-v2.js', 'practice-areas.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js', 'assets/public-cms.js', 'cloudflare/cms-api/src/index.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -13,7 +13,7 @@ for (const file of files) {
   }
 }
 
-for (const file of ['index.html', 'client.html', 'finance.html', 'track.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html']) {
+for (const file of ['index.html', 'client.html', 'finance.html', 'track.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html', 'practices/index.html', 'insights/index.html', 'cms-admin.html', 'cms-setup.html']) {
   const html = fs.readFileSync(file, 'utf8');
   const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
