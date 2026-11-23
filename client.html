@@ -1048,7 +1048,7 @@ document.getElementById('signupForm').addEventListener('submit', async function(
     await cred.user.sendEmailVerification();
 
     setLoadingStep(2, 'Verify your email address...');
-    infoEl.textContent = 'We sent a verification link to ' + email + '. Verify your email, then sign in again. If your details uniquely match an existing client record, the firm dashboard will link your account automatically.';
+    infoEl.textContent = 'We sent a verification link to ' + email + '. Verify your email, then sign in again. After email verification, your client record and portal access will be created automatically when the firm dashboard is online.';
     infoEl.style.display = 'block';
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
@@ -1143,8 +1143,8 @@ async function routeUser(user) {
       const heading = document.querySelector('#pendingScreen h2');
       const paragraphs = document.querySelectorAll('#pendingScreen .box p');
       if (heading) heading.textContent = 'Verify Your Email Address';
-      if (paragraphs[0]) paragraphs[0].textContent = 'We sent a verification link to ' + (user.email || 'your email address') + '. Verify it before your portal request can be matched to a client record.';
-      if (paragraphs[1]) paragraphs[1].textContent = 'After verifying, sign out and sign in again. Unique exact matches are linked automatically by the authorised firm dashboard.';
+      if (paragraphs[0]) paragraphs[0].textContent = 'We sent a verification link to ' + (user.email || 'your email address') + '. Verify it to activate automatic client registration and portal linking.';
+      if (paragraphs[1]) paragraphs[1].textContent = 'After verifying, sign out and sign in again. The firm system will create your client record and link your portal automatically.';
       currentClientId = null;
       routeInProgress = false;
       return;
