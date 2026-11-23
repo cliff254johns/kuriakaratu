@@ -212,5 +212,20 @@ if (/SAMPLE_PRACTICES|seedPracticesIfEmpty|addPractice\(|deletePractice\(|PRACTI
   console.error('FAIL: legacy sample practice seeding or independent practice CRUD remains in the tracker');
 } else console.log('PASS: legacy tracker practice records and sample seeding have been removed from the application');
 
+
+if (!adminHtml.includes('id="changePasswordBtn"') || !adminHtml.includes('id="changeOwnPasswordForm"') || !adminJs.includes('reauthenticateWithCredential') || !adminJs.includes('updatePassword(next)')) {
+  failures++;
+  console.error('FAIL: admin self-service password change must reauthenticate and update the Firebase Auth password');
+} else console.log('PASS: admin can securely change their password after reauthentication');
+const finance = fs.readFileSync('finance.html', 'utf8');
+if (!finance.includes('id="changePasswordBtn"') || !finance.includes('id="changePasswordForm"') || !finance.includes('reauthenticateWithCredential') || !finance.includes('updatePassword(next)')) {
+  failures++;
+  console.error('FAIL: finance self-service password change must reauthenticate and update the Firebase Auth password');
+} else console.log('PASS: finance users can securely change their password after reauthentication');
+if (!client.includes('reauthenticateWithCredential') || !client.includes('updatePassword(newPwd)') || !tracker.includes('reauthenticateWithCredential') || !tracker.includes('updatePassword(next)')) {
+  failures++;
+  console.error('FAIL: client portal and practice tracker password-change flows are incomplete');
+} else console.log('PASS: client portal and practice tracker include reauthenticated password changes');
+
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
