@@ -308,6 +308,7 @@ function listenPortalAccounts() {
         portalAccountsData = [];
         snap.forEach(doc => { const d = doc.data(); d.uid = doc.id; portalAccountsData.push(d); });
         if (currentPage === 'portal') renderPortalAccounts();
+        autoLinkExactPortalRequests();
     });
 }
 
@@ -395,6 +396,16 @@ function openApprovePortalModal(uid) {
 
 async function confirmApprovePortal(uid) {
     if (!isFullAccess()) { showToast('Permission denied.', 'warning'); return; }
+    try {
+        const verified = await getVerifiedPortalQueue();
+        if (!verified.some(item => item.uid === uid)) {
+            showToast('The client must verify their email address and sign in before portal approval.', 'warning');
+            return;
+        }
+    } catch (verificationError) {
+        showToast('Could not verify the client email status: ' + verificationError.message, 'error');
+        return;
+    }
     const req = portalRequestsData.find(r => r.uid === uid);
     if (!req) { showToast('Request not found.', 'error'); return; }
     const createNewEl = $('approveCreateNewClient');
