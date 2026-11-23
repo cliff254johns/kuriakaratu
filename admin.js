@@ -62,6 +62,11 @@ window.addEventListener('appinstalled', () => {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // Provision staff accounts with a secondary Firebase Auth instance so the
+    // administrator's active session is never replaced by the new account.
+    const provisioningApp = firebase.apps.find(app => app.name === 'kk-user-provisioning')
+        || firebase.initializeApp(firebaseConfig, 'kk-user-provisioning');
+    const provisioningAuth = provisioningApp.auth();
 
     db.enablePersistence({ synchronizeTabs: true }).catch(err => {
         if (err.code === 'failed-precondition') console.warn('Persistence failed: multiple tabs open');
@@ -1999,25 +2004,41 @@ function renderUsers() {
 }
 
 async function createUser(email, password, role) {
+    let createdUser = null;
     try {
-        const userCred = await auth.createUserWithEmailAndPassword(email, password);
-        await db.collection('users').doc(userCred.user.uid).set({ email: email, role: role, createdAt: getDateTime(), lastLogin: getDateTime() });
+        const userCred = await provisioningAuth.createUserWithEmailAndPassword(email, password);
+        createdUser = userCred.user;
+        await db.collection('users').doc(createdUser.uid).set({
+            email: email, role: role, createdAt: getDateTime(), lastLogin: getDateTime()
+        });
+        await createdUser.sendEmailVerification().catch(err => console.warn('Staff verification email was not sent:', err));
         await logActivity('Created User', email);
-        showToast(`User ${email} created successfully!`, 'info');
+        showToast(`User ${email} created. A verification email was requested.`, 'success');
         return true;
-    } catch (e) { showToast(e.message, 'error'); return false; }
+    } catch (e) {
+        if (createdUser) {
+            await db.collection('users').doc(createdUser.uid).delete().catch(() => {});
+            await createdUser.delete().catch(() => {});
+        }
+        showToast(e.message, 'error');
+        return false;
+    } finally {
+        await provisioningAuth.signOut().catch(() => {});
+    }
 }
 
-async function updateUserRole(uid, role, password) {
+async function updateUserRole(uid, role, sendReset) {
     try {
-        const updates = { role: role };
-        if (password && password.length >= 6) {
-            await auth.currentUser.updatePassword(password);
-            await logActivity('Changed Password', `User: ${uid}`);
-        }
-        await db.collection('users').doc(uid).update(updates);
+        const target = usersData.find(user => user.id === uid);
+        if (!target || !target.email) throw new Error('Could not find the selected staff email.');
+        await db.collection('users').doc(uid).update({ role: role });
         await logActivity('Updated User Role', `User: ${uid} -> ${role}`);
-        showToast('User updated successfully!', 'info');
+        if (sendReset) {
+            await auth.sendPasswordResetEmail(target.email);
+            showToast('Role updated. A password-reset email was sent to the staff member.', 'success');
+        } else {
+            showToast('User role updated successfully.', 'success');
+        }
         return true;
     } catch (e) { showToast(e.message, 'error'); return false; }
 }
@@ -2282,7 +2303,7 @@ function editUser(uid) {
     document.getElementById('editUserId').value = uid;
     document.getElementById('editUserEmail').value = user.email;
     document.getElementById('editUserRole').value = user.role || 'clerk';
-    document.getElementById('editUserPassword').value = '';
+    document.getElementById('editUserSendReset').checked = false;
     openModal('editUserModal');
 }
 
@@ -2290,8 +2311,8 @@ document.getElementById('editUserForm').addEventListener('submit', async functio
     e.preventDefault();
     const uid = document.getElementById('editUserId').value;
     const role = document.getElementById('editUserRole').value;
-    const password = document.getElementById('editUserPassword').value;
-    await updateUserRole(uid, role, password);
+    const sendReset = document.getElementById('editUserSendReset').checked;
+    await updateUserRole(uid, role, sendReset);
     closeModal('editUserModal');
 });
 
