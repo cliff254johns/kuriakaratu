@@ -10,7 +10,7 @@ function uidFromToken(token) {
     return JSON.parse(atob(part)).user_id || JSON.parse(atob(part)).sub || null;
   } catch { return null; }
 }
-async function authorize(request) {
+async function authorize(request, allowedRoles = ['cms_admin','public_admin']) {
   const auth = request.headers.get('authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   const uid = uidFromToken(token);
@@ -20,7 +20,7 @@ async function authorize(request) {
   if (!response.ok) return null;
   const doc = await response.json();
   const role = doc.fields?.role?.stringValue || doc.fields?.userRole?.stringValue || '';
-  if (!['cms_admin','public_admin'].includes(role)) return null;
+  if (!allowedRoles.includes(role)) return null;
   return { uid, role };
 }
 function cleanText(value, max) { return String(value ?? '').trim().slice(0, max); }
@@ -40,9 +40,45 @@ export default {
         : await env.CMS_DB.prepare('SELECT * FROM cms_content WHERE status = ? ORDER BY type ASC, sort_order ASC, updated_at DESC').bind('published').all();
       return json({ items: rows.results || [] }, 200, origin);
     }
+    if (url.pathname === '/api/portal/verified' && request.method === 'POST') {
+      const authHeader = request.headers.get('authorization') || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+      const uid = uidFromToken(token);
+      if (!uid) return json({ error: 'Sign in again to verify your account.' }, 401, origin);
+      const verification = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAv35HANTesz9EqroXt3QaHpYvZwk2fa3o', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idToken: token })
+      });
+      if (!verification.ok) return json({ error: 'Could not verify your sign-in. Please sign in again.' }, 401, origin);
+      const identity = await verification.json();
+      const verifiedUser = identity.users?.[0];
+      if (!verifiedUser || verifiedUser.localId !== uid || verifiedUser.emailVerified !== true) {
+        return json({ error: 'Verify your email address before requesting automatic client linking.' }, 403, origin);
+      }
+      const body = await request.json();
+      const name = cleanText(body.name, 180), phone = cleanText(body.phone, 40);
+      if (!name || !phone || !verifiedUser.email) return json({ error: 'Your registered name and phone number are required.' }, 400, origin);
+      const now = new Date().toISOString();
+      await env.CMS_DB.prepare("INSERT INTO portal_link_queue (uid,email,name,phone,verified_at,status) VALUES (?,?,?,?,?,'pending') ON CONFLICT(uid) DO UPDATE SET email=excluded.email,name=excluded.name,phone=excluded.phone,verified_at=excluded.verified_at,status=CASE WHEN portal_link_queue.status='linked' THEN 'linked' ELSE 'pending' END")
+        .bind(uid, String(verifiedUser.email).toLowerCase(), name, phone, now).run();
+      return json({ ok: true, status: 'verified_pending_link' }, 202, origin);
+    }
     if (!url.pathname.startsWith('/api/admin/')) return json({ error: 'Not found' }, 404, origin);
     const actor = await authorize(request);
     if (!actor) return json({ error: 'Unauthorized. Sign in with the separate public CMS administrator account.' }, 401, origin);
+    if (url.pathname === '/api/admin/portal-queue' && request.method === 'GET') {
+      const portalActor = await authorize(request, ['admin','developer']);
+      if (!portalActor) return json({ error: 'Only an authorised firm admin or developer may process portal linking.' }, 403, origin);
+      const rows = await env.CMS_DB.prepare("SELECT uid,email,name,phone,verified_at,status FROM portal_link_queue WHERE status='pending' ORDER BY verified_at ASC").all();
+      return json({ items: rows.results || [] }, 200, origin);
+    }
+    const queueMatch = url.pathname.match(/^\\/api\\/admin\\/portal-queue\\/([a-zA-Z0-9_-]+)\\/complete$/);
+    if (queueMatch && request.method === 'POST') {
+      const portalActor = await authorize(request, ['admin','developer']);
+      if (!portalActor) return json({ error: 'Only an authorised firm admin or developer may process portal linking.' }, 403, origin);
+      const now = new Date().toISOString();
+      await env.CMS_DB.prepare("UPDATE portal_link_queue SET status='linked',processed_at=? WHERE uid=?").bind(now,queueMatch[1]).run();
+      return json({ ok: true }, 200, origin);
+    }
     if (url.pathname === '/api/admin/content' && request.method === 'GET') {
       const rows = await env.CMS_DB.prepare('SELECT * FROM cms_content ORDER BY updated_at DESC').all();
       return json({ items: rows.results || [] }, 200, origin);
