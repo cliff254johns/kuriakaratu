@@ -289,5 +289,22 @@ if (!client.includes('reauthenticateWithCredential') || !client.includes('update
   console.error('FAIL: client portal and practice tracker password-change flows are incomplete');
 } else console.log('PASS: client portal and practice tracker include reauthenticated password changes');
 
+const staffAdminHtml = fs.readFileSync('admin.html', 'utf8');
+if (!adminJs.includes("firebase.initializeApp(firebaseConfig, 'kk-user-provisioning')")
+    || !adminJs.includes('provisioningAuth.createUserWithEmailAndPassword')
+    || !adminJs.includes('await provisioningAuth.signOut()')) {
+  failures++;
+  console.error('FAIL: staff provisioning must use a secondary Auth instance and preserve the administrator session');
+} else console.log('PASS: staff provisioning uses a secondary Auth instance without replacing the administrator session');
+if (adminJs.includes('auth.currentUser.updatePassword(password)')) {
+  failures++;
+  console.error('FAIL: administrator must not change another staff member password through the current session');
+} else console.log('PASS: staff password changes do not modify the administrator current session');
+if (!staffAdminHtml.includes('id="editUserSendReset"')
+    || !staffAdminHtml.includes('<option value="finance">Finance (Finance Portal)</option>')) {
+  failures++;
+  console.error('FAIL: staff administration must support finance role and secure password-reset requests');
+} else console.log('PASS: staff administration supports the finance role and password-reset emails');
+
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');
