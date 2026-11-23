@@ -57,6 +57,38 @@ if (!admin.includes('Administrator approval is still required.')
   console.error('FAIL: portal account linking must remain behind authorised administrator approval');
 } else console.log('PASS: portal linking remains an explicit administrator action');
 
+const matchFunction = admin.match(/function findExactPortalClientMatch\\(request, clients = clientsData\\) \\{([\\s\\S]*?)\\n\\}/);
+if (!matchFunction) {
+  failures++;
+  console.error('FAIL: exact portal identity matcher could not be extracted for behavior tests');
+} else {
+  const normalizePortalName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const normalizePortalPhone = value => {
+    if (!value) return '';
+    let clean = String(value).replace(/\\s/g, '').replace(/^\\+/, '');
+    if (clean.startsWith('0')) clean = clean.substring(1);
+    if (!clean.startsWith('254')) clean = '254' + clean;
+    return clean;
+  };
+  const matcher = vm.runInNewContext('(' + matchFunction[0] + ')', {
+    normalizeText: normalizePortalName,
+    normalizePhone: normalizePortalPhone,
+    clientsData: []
+  });
+  const clientFixture = { id: 'client-1', name: 'Jane Doe', email: 'jane@example.com', phone: '+254 712 345 678' };
+  const exact = matcher({ name: ' Jane Doe ', email: 'JANE@example.com', phone: '0712345678' }, [clientFixture]);
+  const mismatch = matcher({ name: 'Jane Doe', email: 'jane@example.com', phone: '0712345679' }, [clientFixture]);
+  const incomplete = matcher({ name: 'Jane Doe', email: 'jane@example.com', phone: '' }, [clientFixture]);
+  const ambiguous = matcher({ name: 'Jane Doe', email: 'jane@example.com', phone: '0712345678' }, [clientFixture, { ...clientFixture, id: 'client-2' }]);
+  if (exact.reason !== 'exact' || exact.client?.id !== 'client-1'
+      || mismatch.reason !== 'none' || incomplete.reason !== 'incomplete'
+      || ambiguous.reason !== 'ambiguous' || ambiguous.client !== null) {
+    failures++;
+    console.error('FAIL: exact portal identity matcher behavior tests');
+  } else console.log('PASS: exact, mismatched, incomplete and ambiguous portal identity cases');
+}
+
+
 
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 const homepage = fs.readFileSync('index.html', 'utf8');
