@@ -243,7 +243,7 @@ async function markPortalQueueLinked(uid) {
 // the Firebase email identity first; Firestore rules then authorize this staff
 // session to inspect private client records and approve a unique exact match.
 async function autoLinkExactPortalRequests() {
-    if (!isFullAccess() || !Array.isArray(clientsData) || !clientsData.length) return;
+    if (!isFullAccess() || !Array.isArray(clientsData)) return;
     let verifiedQueue;
     try { verifiedQueue = await getVerifiedPortalQueue(); }
     catch (error) { console.warn('Verified portal queue unavailable:', error.message); return; }
@@ -260,28 +260,50 @@ async function autoLinkExactPortalRequests() {
             String(request.email || '').trim().toLowerCase() !== email ||
             normalizePhone(account.phone) !== phone ||
             normalizeText(account.name) !== normalizeText(verified.name)) continue;
+
         const match = findExactPortalClientMatch({ name: verified.name, email, phone: verified.phone });
-        if (match.reason !== 'exact' || !match.client || !match.client.id) continue;
+        // Exact existing client records are reused. Ambiguous matches are never guessed.
+        if (match.reason === 'ambiguous') continue;
         autoPortalLinkInFlight.add(verified.uid);
         try {
             const allAccounts = await db.collection('clientAccounts').get();
+            let client = match.client;
+            if (!client) {
+                // Fresh-system path: verified signup creates its own client record.
+                // This write runs in the authenticated admin dashboard, under existing Firestore rules.
+                const createdAt = getDateTime();
+                const clientRef = await db.collection('clients').add({
+                    name: verified.name,
+                    email,
+                    phone: verified.phone,
+                    status: 'Active',
+                    createdAt,
+                    source: 'verified-client-portal-registration',
+                    portalUid: verified.uid
+                });
+                client = { id: clientRef.id, name: verified.name, email, phone: verified.phone };
+                clientsData.push(client);
+                await logActivity('Created Client From Verified Portal Registration',
+                    (verified.name || email) + ' · ' + clientRef.id);
+            }
             const alreadyLinked = allAccounts.docs.some(doc => {
                 if (doc.id === verified.uid) return false;
                 const data = doc.data() || {};
-                return data.approved === true && data.clientId === match.client.id;
+                return data.approved === true && data.clientId === client.id;
             });
             if (alreadyLinked) continue;
             const reviewedAt = getDateTime();
             await db.collection('clientAccounts').doc(verified.uid).update({
-                approved: true, clientId: match.client.id, approvedAt: reviewedAt,
-                approvedBy: currentUserEmail, autoLinked: true, autoLinkedBy: 'verified-unique-exact-match'
+                approved: true, clientId: client.id, approvedAt: reviewedAt,
+                approvedBy: currentUserEmail, autoLinked: true,
+                autoLinkedBy: match.client ? 'verified-existing-client-match' : 'verified-new-client-registration'
             });
             await db.collection('portalRequests').doc(verified.uid).update({
-                status: 'approved', clientId: match.client.id, reviewedAt,
+                status: 'approved', clientId: client.id, reviewedAt,
                 reviewedBy: currentUserEmail, autoLinked: true
             });
             await logActivity('Automatically Linked Verified Client Portal',
-                (verified.name || email) + ' → Client: ' + (match.client.name || match.client.id));
+                (verified.name || email) + ' → Client: ' + (client.name || client.id));
             await markPortalQueueLinked(verified.uid);
         } catch (error) {
             console.error('Automatic portal linking failed for ' + verified.uid, error);
