@@ -1,1253 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
-    <title>Kuria Karatu · Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <style>
-        /* ── reset & base ── */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-        }
-        body {
-            background: #f2f6fc;
-            padding: 1.5rem;
-            color: #0b1f33;
-        }
-        .container {
-            max-width: 1440px;
-            margin: 0 auto;
-        }
-        .flex-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.2rem;
-        }
-        h1 {
-            font-weight: 600;
-            font-size: 1.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        h1 i {
-            color: #1a5fb0;
-        }
-        .sub {
-            color: #3d5a78;
-            margin-bottom: 1.8rem;
-            border-left: 4px solid #2a7de1;
-            padding-left: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.7rem;
-            align-items: center;
-        }
-        .btn {
-            background: white;
-            border: 1px solid #d0dcec;
-            padding: 0.5rem 1.1rem;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        }
-        .btn-primary {
-            background: #1a5fb0;
-            border-color: #1a5fb0;
-            color: white;
-        }
-        .btn-primary i {
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #134a8a;
-        }
-        .btn-outline {
-            background: transparent;
-            border-color: #b8cae0;
-        }
-        .btn-danger {
-            color: #b13e3e;
-            border-color: #f5d0d0;
-        }
-        .btn-danger:hover {
-            background: #fce8e8;
-        }
-        .btn-success {
-            color: #0f6e3a;
-            border-color: #b2e0c2;
-        }
-        .btn-success:hover {
-            background: #e1f7e7;
-        }
-        .btn-download {
-            background: #1d3b5c;
-            border-color: #1d3b5c;
-            color: white;
-        }
-        .btn-download i {
-            color: white;
-        }
-        .btn-download:hover {
-            background: #0f2a44;
-        }
-        .btn-sm {
-            padding: 0.25rem 0.8rem;
-            font-size: 0.8rem;
-        }
-        .badge-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 4px;
-        }
-        .badge-dot.online {
-            background: #1fad5a;
-        }
-        .badge-dot.offline {
-            background: #b0b8c5;
-        }
-
-        /* ── overview cards ── */
-        .overview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1.2rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 24px;
-            padding: 1.2rem 1.2rem 0.9rem;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.02);
-            border: 1px solid #e6ecf5;
-            position: relative;
-        }
-        .stat-card .label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: #4d6a8a;
-        }
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-        .stat-card .trend {
-            font-size: 0.7rem;
-            margin-top: 0.2rem;
-            color: #3d5a78;
-        }
-        .stat-card .trend i {
-            margin-right: 2px;
-        }
-        .stat-card .trend.up {
-            color: #0f6e3a;
-        }
-        .stat-card .trend.down {
-            color: #b13e3e;
-        }
-
-        /* ── practice grid ── */
-        .practice-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 0.5rem;
-        }
-        .card {
-            background: white;
-            border-radius: 24px;
-            padding: 1.5rem;
-            border: 1px solid #e6ecf5;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-            transition: 0.15s;
-        }
-        .card:hover {
-            border-color: #c8d6e8;
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.8rem;
-            flex-wrap: wrap;
-        }
-        .practice-title {
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-        .badge {
-            font-size: 0.65rem;
-            font-weight: 600;
-            padding: 0.25rem 0.9rem;
-            border-radius: 30px;
-            background: #eef2f8;
-            color: #1f3a57;
-            border: 1px solid transparent;
-        }
-        .badge.on-track {
-            background: #e1f7e7;
-            color: #0f6e3a;
-            border-color: #b2e0c2;
-        }
-        .badge.at-risk {
-            background: #fff1e0;
-            color: #b45a1c;
-            border-color: #fadcb9;
-        }
-        .badge.behind {
-            background: #fce8e8;
-            color: #b13e3e;
-            border-color: #f5cbcb;
-        }
-        .badge.exceeded {
-            background: #e1edff;
-            color: #1a5bb5;
-            border-color: #b6cef5;
-        }
-
-        .metric-group {
-            margin: 0.4rem 0;
-        }
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-        }
-        .metric-row .label {
-            color: #3f5a78;
-        }
-        .metric-row .val {
-            font-weight: 600;
-        }
-        .progress {
-            background: #e9eef5;
-            height: 5px;
-            border-radius: 12px;
-            margin: 0.2rem 0 0.4rem;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 5px;
-            border-radius: 12px;
-            background: #2a7de1;
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-        .progress-fill.exceeded {
-            background: #1fad5a;
-        }
-        .progress-fill.at-risk {
-            background: #d97c2b;
-        }
-        .progress-fill.behind {
-            background: #c73b3b;
-        }
-
-        .card-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.8rem;
-            justify-content: flex-end;
-            border-top: 1px solid #ecf0f6;
-            padding-top: 0.8rem;
-            flex-wrap: wrap;
-        }
-
-        /* ── alert banner ── */
-        .alert-banner {
-            background: #fef6e6;
-            border-left: 6px solid #d97c2b;
-            padding: 0.7rem 1.2rem;
-            border-radius: 16px;
-            margin: 1.2rem 0 1.2rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        .alert-banner i {
-            color: #b45a1c;
-            font-size: 1.2rem;
-        }
-        .alert-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem 1rem;
-        }
-        .alert-item {
-            background: white;
-            padding: 0.2rem 1rem;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
-        }
-
-        /* ── toast container ── */
-        #toastContainer {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 380px;
-            width: 100%;
-            pointer-events: none;
-        }
-        .toast {
-            pointer-events: auto;
-            background: #1f2a3e;
-            color: white;
-            padding: 0.9rem 1.2rem;
-            border-radius: 16px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            animation: slideUp 0.3s ease forwards;
-            font-size: 0.9rem;
-            border-left: 5px solid #2a7de1;
-        }
-        .toast.success {
-            border-left-color: #1fad5a;
-        }
-        .toast.error {
-            border-left-color: #c73b3b;
-        }
-        .toast.warning {
-            border-left-color: #d97c2b;
-        }
-        .toast.info {
-            border-left-color: #2a7de1;
-        }
-        .toast i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-        .toast .toast-close {
-            margin-left: auto;
-            cursor: pointer;
-            opacity: 0.6;
-            font-size: 1rem;
-            background: none;
-            border: none;
-            color: white;
-        }
-        .toast .toast-close:hover {
-            opacity: 1;
-        }
-        @keyframes slideUp {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .toast.removing {
-            animation: slideDown 0.25s ease forwards;
-        }
-        @keyframes slideDown {
-            0% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-        }
-
-        /* ── notification bell ── */
-        .bell-wrap {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-        }
-        .bell-wrap .bell-btn {
-            background: transparent;
-            border: none;
-            font-size: 1.4rem;
-            cursor: pointer;
-            color: #1f3a57;
-            padding: 4px 8px;
-            border-radius: 30px;
-            transition: 0.15s;
-            position: relative;
-        }
-        .bell-wrap .bell-btn:hover {
-            background: #e6ecf5;
-        }
-        .bell-wrap .badge-count {
-            position: absolute;
-            top: -4px;
-            right: 0px;
-            background: #c73b3b;
-            color: white;
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 30px;
-            min-width: 18px;
-            text-align: center;
-            line-height: 1.2;
-        }
-        .notification-panel {
-            position: absolute;
-            top: 44px;
-            right: 0;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
-            width: 340px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 0.8rem 0;
-            border: 1px solid #e6ecf5;
-            display: none;
-            z-index: 100;
-        }
-        .notification-panel.open {
-            display: block;
-        }
-        .notification-panel .notif-item {
-            padding: 0.6rem 1.2rem;
-            border-bottom: 1px solid #f0f4fa;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.6rem;
-        }
-        .notification-panel .notif-item:last-child {
-            border-bottom: none;
-        }
-        .notification-panel .notif-item i {
-            margin-top: 2px;
-            color: #2a7de1;
-            width: 18px;
-        }
-        .notification-panel .notif-item .time {
-            font-size: 0.65rem;
-            color: #7a8fa8;
-            margin-left: auto;
-            white-space: nowrap;
-        }
-        .notification-panel .empty {
-            padding: 1.5rem;
-            text-align: center;
-            color: #7a8fa8;
-        }
-
-        /* ── modal ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(2px);
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-        .modal {
-            background: white;
-            max-width: 520px;
-            width: 92%;
-            border-radius: 32px;
-            padding: 2rem;
-            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal h2 {
-            margin-bottom: 1.2rem;
-            font-weight: 600;
-        }
-        .modal label {
-            font-weight: 500;
-            font-size: 0.9rem;
-            display: block;
-            margin-top: 0.8rem;
-        }
-        .modal input,
-        .modal select {
-            width: 100%;
-            padding: 0.6rem 0.8rem;
-            border-radius: 12px;
-            border: 1px solid #d5deec;
-            margin-top: 0.2rem;
-            font-size: 0.95rem;
-        }
-        .modal .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.8rem;
-        }
-        .modal .current-box {
-            margin-top: 0.5rem;
-            background: #f5f8fe;
-            padding: 0.8rem;
-            border-radius: 16px;
-        }
-        .modal .current-box .grid-2 {
-            margin-top: 0.4rem;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 0.8rem;
-            justify-content: flex-end;
-            margin-top: 1.8rem;
-        }
-
-        /* ── status indicator ── */
-        .status-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 4px;
-        }
-        .status-dot.online {
-            background: #1fad5a;
-        }
-        .status-dot.syncing {
-            background: #d97c2b;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.3;
-            }
-        }
-
-        /* ── responsive ── */
-        @media (max-width: 600px) {
-            body {
-                padding: 1rem;
-            }
-            .modal {
-                padding: 1.5rem;
-            }
-            .modal .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            .notification-panel {
-                width: 290px;
-                right: -40px;
-            }
-        }
-    </style>
-<link rel="stylesheet" href="/ecosystem-refresh.css?v=20261115" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f172a">
+<title>Practice Tracker | Kuria Karatu & Company Advocates</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="/practice-areas.js"></script>
+<style>
+:root{font-family:Inter,system-ui,Segoe UI,sans-serif;color:#152238;background:#f3f6fb;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;min-height:100vh}button,input{font:inherit}
+.top{background:#0f2340;color:#fff;padding:18px max(20px,calc((100% - 1180px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-weight:750;letter-spacing:.2px}.brand small{display:block;color:#b8c8da;font-weight:400;margin-top:3px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:0;border-radius:10px;padding:10px 14px;background:#e9eff7;color:#18304d;cursor:pointer;font-weight:650}.btn.primary{background:#1766b1;color:white}.btn.ghost{background:#ffffff18;color:white;border:1px solid #ffffff35}
+main{max-width:1180px;margin:30px auto;padding:0 18px}.intro{display:flex;justify-content:space-between;align-items:end;gap:15px;flex-wrap:wrap;margin-bottom:22px}
+h1{font-size:clamp(1.6rem,3vw,2.2rem);margin:0 0 7px}.muted{color:#64748b}.notice{background:#eaf3ff;border:1px solid #c8ddf6;padding:12px 15px;border-radius:12px;margin:18px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.card{background:white;border:1px solid #e0e8f1;border-radius:17px;padding:18px;box-shadow:0 6px 20px #19375a0a}
+.card h3{margin:0 0 14px;font-size:1.05rem}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#f5f8fc;border-radius:10px;padding:10px}.metric small{display:block;color:#64748b;margin-bottom:4px}.metric strong{font-size:1.15rem}
+.bar{height:7px;background:#e7edf5;border-radius:20px;overflow:hidden;margin:12px 0 5px}.bar span{display:block;height:100%;background:#1c76c8}
+.empty{background:#fff;border:1px dashed #bdcddd;border-radius:16px;padding:28px;text-align:center;color:#52657d;grid-column:1/-1}
+.overlay{position:fixed;inset:0;background:#0b1728d9;display:grid;place-items:center;padding:18px;z-index:5}
+.panel{width:min(430px,100%);background:white;border-radius:18px;padding:26px;box-shadow:0 24px 80px #0004}.panel h2{margin:0 0 8px}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:.88rem;font-weight:650}.field input{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:11px}.error{color:#b42318;min-height:1.3em;font-size:.9rem}
+.modal{position:fixed;inset:0;background:#0b172899;display:none;place-items:center;padding:18px;z-index:4}.modal.open{display:grid}.modal .panel{width:min(480px,100%)}
+footer{max-width:1180px;margin:28px auto;padding:0 18px 30px;color:#718096;font-size:.82rem}
+@media(max-width:540px){.top{padding:16px}.actions{width:100%}.actions .btn{flex:1}main{margin:22px auto}}
+</style>
 </head>
 <body>
-
-    <div class="container" id="app">
-        <!-- header -->
-        <div class="flex-row">
-            <h1><i class="fas fa-scale-balanced"></i> Kuria Karatu</h1>
-            <div class="toolbar">
-                <span class="status-dot online" id="statusDot" title="Firebase connection"></span>
-                <span style="font-size:0.8rem;color:#3d5a78;margin-right:4px;" id="syncStatus">Live</span>
-
-                <div class="bell-wrap">
-                    <button class="bell-btn" id="bellBtn" title="Notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge-count" id="notifBadge" style="display:none;">0</span>
-                    </button>
-                    <div class="notification-panel" id="notifPanel">
-                        <div class="empty">No notifications yet</div>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary" id="addPracticeBtn"><i class="fas fa-plus-circle"></i> New</button>
-                <button class="btn btn-download" onclick="window.location.href='https://www.kuriakaratuadvocates.com/tracker.apk'"><i class="fas fa-download"></i> APK</button>
-            </div>
-        </div>
-
-        <div class="sub">
-            <i class="fas fa-flag-checkered" style="margin-right:0.4rem;"></i>
-            Real‑time · auto alerts 2w before month‑end &amp; daily after ·
-            <strong>KES</strong>
-            <span style="margin-left:auto;font-size:0.75rem;color:#6a8aaa;" id="lastSync">synced</span>
-        </div>
-
-        <!-- alert banner -->
-        <div id="alertBanner" class="alert-banner">
-            <i class="fas fa-bell"></i>
-            <span id="alertText">Loading alerts…</span>
-        </div>
-
-        <!-- overview -->
-        <div class="overview-grid" id="overviewGrid"></div>
-
-        <!-- practice cards -->
-        <div class="practice-grid" id="practiceGrid"></div>
-    </div>
-
-    <!-- ─── MODAL ─── -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <h2 id="modalTitle">Practice</h2>
-            <form id="modalForm">
-                <input type="hidden" id="editId" />
-                <label>Practice name</label>
-                <input type="text" id="pName" placeholder="e.g. Criminal" required />
-
-                <div class="grid-2">
-                    <div><label>Revenue target (KES)</label><input type="number" id="pRevenue" placeholder="0" min="0" step="1" /></div>
-                    <div><label>Cases Won target</label><input type="number" id="pWon" placeholder="0" min="0" step="1" /></div>
-                    <div><label>Cases Filed target</label><input type="number" id="pFiled" placeholder="0" min="0" step="1" /></div>
-                    <div><label>Active Cases target</label><input type="number" id="pActive" placeholder="0" min="0" step="1" /></div>
-                </div>
-
-                <div class="current-box">
-                    <span style="font-weight:500;font-size:0.9rem;"><i class="fas fa-edit"></i> Current values</span>
-                    <div class="grid-2">
-                        <input type="number" id="cRevenue" placeholder="revenue (KES)" min="0" step="1" />
-                        <input type="number" id="cWon" placeholder="won" min="0" step="1" />
-                        <input type="number" id="cFiled" placeholder="filed" min="0" step="1" />
-                        <input type="number" id="cActive" placeholder="active" min="0" step="1" />
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" id="modalCancel">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="modalSave"><i class="fas fa-save"></i> Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ─── TOAST CONTAINER ─── -->
-    <div id="toastContainer"></div>
-
-    <!-- ─── FIREBASE MODULES ─── -->
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js",
-                "firebase/analytics": "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js"
-            }
-        }
-    </script>
-
-    <script type="module">
-        // ─── IMPORTS ───
-        import { initializeApp } from 'firebase/app';
-        import {
-            getFirestore,
-            collection,
-            doc,
-            onSnapshot,
-            addDoc,
-            updateDoc,
-            deleteDoc,
-            query,
-            serverTimestamp,
-            writeBatch,
-            getDocs
-        } from 'firebase/firestore';
-        import { getAnalytics, logEvent } from 'firebase/analytics';
-
-        // ─── CONFIG ───
-        const firebaseConfig = {
-            apiKey: "AIzaSyD9v8E-ylZJdjrCRhxvU--HdZxu_0gvKWQ",
-            authDomain: "kuriatrack.firebaseapp.com",
-            projectId: "kuriatrack",
-            storageBucket: "kuriatrack.firebasestorage.app",
-            messagingSenderId: "1010901949997",
-            appId: "1:1010901949997:web:bf79e73f6d00dc503062a4",
-            measurementId: "G-SB7XB7RX05"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const analytics = getAnalytics(app);
-
-        // ─── COLLECTIONS ───
-        const PRACTICES_COLL = 'practices';
-        const EVENTS_COLL = 'events';
-
-        // ─── STATE ───
-        let practices = [];
-        let notifications = [];
-        let notifIdCounter = 0;
-        let isInitialLoad = true;
-
-        // ─── DOM REFS ───
-        const $ = (sel) => document.querySelector(sel);
-        const $$ = (sel) => document.querySelectorAll(sel);
-
-        const overviewGrid = $('#overviewGrid');
-        const practiceGrid = $('#practiceGrid');
-        const alertBanner = $('#alertBanner');
-        const alertText = $('#alertText');
-        const modalOverlay = $('#modalOverlay');
-        const modalForm = $('#modalForm');
-        const modalTitle = $('#modalTitle');
-        const editId = $('#editId');
-        const pName = $('#pName');
-        const pRevenue = $('#pRevenue');
-        const pWon = $('#pWon');
-        const pFiled = $('#pFiled');
-        const pActive = $('#pActive');
-        const cRevenue = $('#cRevenue');
-        const cWon = $('#cWon');
-        const cFiled = $('#cFiled');
-        const cActive = $('#cActive');
-        const toastContainer = $('#toastContainer');
-        const bellBtn = $('#bellBtn');
-        const notifPanel = $('#notifPanel');
-        const notifBadge = $('#notifBadge');
-        const statusDot = $('#statusDot');
-        const syncStatus = $('#syncStatus');
-        const lastSync = $('#lastSync');
-
-        // ─── TOAST SYSTEM ───
-        function showToast(message, type = 'info', duration = 4000) {
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                warning: 'fa-triangle-exclamation',
-                info: 'fa-circle-info'
-            };
-            const colors = {
-                success: '#1fad5a',
-                error: '#c73b3b',
-                warning: '#d97c2b',
-                info: '#2a7de1'
-            };
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fas ${icons[type] || icons.info}" style="color:${colors[type] || colors.info};"></i>
-                <span>${message}</span>
-                <button class="toast-close"><i class="fas fa-times"></i></button>
-            `;
-            toastContainer.appendChild(toast);
-            const close = () => {
-                toast.classList.add('removing');
-                setTimeout(() => toast.remove(), 300);
-            };
-            toast.querySelector('.toast-close').addEventListener('click', close);
-            setTimeout(close, duration);
-            return toast;
-        }
-
-        // ─── NOTIFICATION PANEL ───
-        function addNotification(message, type = 'info') {
-            const entry = { id: ++notifIdCounter, message, type, time: new Date(), seen: false };
-            notifications.unshift(entry);
-            if (notifications.length > 50) notifications.pop();
-            renderNotificationPanel();
-            updateBadge();
-            showToast(message, type, 3500);
-            logEvent(analytics, 'notification_shown', { message, type });
-        }
-
-        function renderNotificationPanel() {
-            if (notifications.length === 0) {
-                notifPanel.innerHTML = '<div class="empty">✨ No notifications</div>';
-                return;
-            }
-            notifPanel.innerHTML = notifications.map(n => `
-                <div class="notif-item">
-                    <i class="fas ${n.type === 'success' ? 'fa-check-circle' : n.type === 'error' ? 'fa-exclamation-circle' : n.type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i>
-                    <span>${n.message}</span>
-                    <span class="time">${n.time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
-                </div>
-            `).join('');
-        }
-
-        function updateBadge() {
-            const unreadCount = notifications.filter(n => !n.seen).length;
-            if (unreadCount > 0) {
-                notifBadge.style.display = 'inline';
-                notifBadge.textContent = unreadCount;
-            } else {
-                notifBadge.style.display = 'none';
-            }
-        }
-
-        bellBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            notifPanel.classList.toggle('open');
-            notifications.forEach(n => n.seen = true);
-            updateBadge();
-        });
-        document.addEventListener('click', () => notifPanel.classList.remove('open'));
-
-        // ─── FIRESTORE HELPERS ───
-        function practiceToDoc(p) {
-            return {
-                name: p.name,
-                targets: p.targets || { revenue: 0, casesWon: 0, casesFiled: 0, activeCases: 0 },
-                current: p.current || { revenue: 0, casesWon: 0, casesFiled: 0, activeCases: 0 },
-                updatedAt: serverTimestamp()
-            };
-        }
-
-        function docToPractice(id, data) {
-            const t = data.targets || {};
-            const c = data.current || {};
-            return {
-                id,
-                name: data.name || 'Unnamed',
-                targets: {
-                    revenue: t.revenue || 0,
-                    casesWon: t.casesWon || 0,
-                    casesFiled: t.casesFiled || 0,
-                    activeCases: t.activeCases || 0
-                },
-                current: {
-                    revenue: c.revenue || 0,
-                    casesWon: c.casesWon || 0,
-                    casesFiled: c.casesFiled || 0,
-                    activeCases: c.activeCases || 0
-                }
-            };
-        }
-
-        // ─── LOG EVENT ───
-        async function logUserEvent(action, payload = {}) {
-            try {
-                await addDoc(collection(db, EVENTS_COLL), {
-                    action,
-                    payload,
-                    timestamp: serverTimestamp(),
-                    userAgent: navigator.userAgent,
-                    screen: `${window.innerWidth}x${window.innerHeight}`
-                });
-            } catch (e) { /* silent */ }
-            logEvent(analytics, action, payload);
-        }
-
-        // ─── CRUD ───
-        async function addPractice(practice) {
-            try {
-                const docRef = await addDoc(collection(db, PRACTICES_COLL), {
-                    ...practiceToDoc(practice),
-                    createdAt: serverTimestamp()
-                });
-                await logUserEvent('practice_added', { id: docRef.id, name: practice.name });
-                addNotification(`📁 Practice "${practice.name}" created`, 'success');
-                return docRef.id;
-            } catch (e) {
-                showToast('❌ Failed to add: ' + e.message, 'error');
-                throw e;
-            }
-        }
-
-        async function updatePractice(id, practice) {
-            try {
-                await updateDoc(doc(db, PRACTICES_COLL, id), practiceToDoc(practice));
-                await logUserEvent('practice_updated', { id, name: practice.name });
-                addNotification(`✏️ Practice "${practice.name}" updated`, 'info');
-            } catch (e) {
-                showToast('❌ Failed to update: ' + e.message, 'error');
-                throw e;
-            }
-        }
-
-        async function deletePractice(id) {
-            try {
-                const p = practices.find(p => p.id === id);
-                await deleteDoc(doc(db, PRACTICES_COLL, id));
-                await logUserEvent('practice_deleted', { id, name: p?.name });
-                if (p) addNotification(`🗑️ Practice "${p.name}" deleted`, 'warning');
-            } catch (e) {
-                showToast('❌ Failed to delete: ' + e.message, 'error');
-                throw e;
-            }
-        }
-
-        // ─── SEED SAMPLE PRACTICES ───
-        const SAMPLE_PRACTICES = [
-            { name: 'Criminal Defense', targets: { revenue: 480000, casesWon: 40, casesFiled: 55, activeCases: 28 }, current: { revenue: 412000, casesWon: 33, casesFiled: 48, activeCases: 24 } },
-            { name: 'Civil Litigation', targets: { revenue: 620000, casesWon: 50, casesFiled: 68, activeCases: 35 }, current: { revenue: 598000, casesWon: 47, casesFiled: 62, activeCases: 32 } },
-            { name: 'Family Law', targets: { revenue: 350000, casesWon: 28, casesFiled: 38, activeCases: 20 }, current: { revenue: 302000, casesWon: 22, casesFiled: 33, activeCases: 17 } },
-            { name: 'Corporate Law', targets: { revenue: 950000, casesWon: 65, casesFiled: 82, activeCases: 45 }, current: { revenue: 910000, casesWon: 60, casesFiled: 76, activeCases: 42 } },
-            { name: 'Employment Law', targets: { revenue: 280000, casesWon: 22, casesFiled: 30, activeCases: 16 }, current: { revenue: 245000, casesWon: 18, casesFiled: 26, activeCases: 13 } },
-            { name: 'Real Estate', targets: { revenue: 530000, casesWon: 38, casesFiled: 50, activeCases: 27 }, current: { revenue: 485000, casesWon: 34, casesFiled: 45, activeCases: 24 } },
-            { name: 'Intellectual Property', targets: { revenue: 410000, casesWon: 30, casesFiled: 42, activeCases: 22 }, current: { revenue: 378000, casesWon: 27, casesFiled: 38, activeCases: 19 } },
-            { name: 'Personal Injury', targets: { revenue: 720000, casesWon: 55, casesFiled: 70, activeCases: 40 }, current: { revenue: 685000, casesWon: 50, casesFiled: 65, activeCases: 37 } },
-            { name: 'Immigration', targets: { revenue: 260000, casesWon: 20, casesFiled: 28, activeCases: 14 }, current: { revenue: 218000, casesWon: 16, casesFiled: 23, activeCases: 11 } },
-            { name: 'Tax Law', targets: { revenue: 390000, casesWon: 25, casesFiled: 35, activeCases: 18 }, current: { revenue: 352000, casesWon: 21, casesFiled: 31, activeCases: 16 } }
-        ];
-
-        async function seedPracticesIfEmpty() {
-            const q = query(collection(db, PRACTICES_COLL));
-            const snapshot = await getDocs(q);
-            if (snapshot.empty) {
-                const batch = writeBatch(db);
-                for (const p of SAMPLE_PRACTICES) {
-                    const ref = doc(collection(db, PRACTICES_COLL));
-                    batch.set(ref, {
-                        ...practiceToDoc(p),
-                        createdAt: serverTimestamp()
-                    });
-                }
-                await batch.commit();
-                addNotification('🌱 Seeded 10 sample practices', 'success');
-                await logUserEvent('seeded_sample_practices', { count: SAMPLE_PRACTICES.length });
-            } else {
-                addNotification('📊 Loaded existing practices from Firebase', 'info');
-            }
-        }
-
-        // ─── REFACTORED REAL‑TIME LISTENER ───
-        function listenPractices() {
-            const q = query(collection(db, PRACTICES_COLL));
-
-            onSnapshot(q, async (snapshot) => {
-                // 1) Build state from all current docs (no incremental push bugs)
-                const updatedPractices = snapshot.docs.map(docSnap =>
-                    docToPractice(docSnap.id, docSnap.data())
-                );
-
-                // 2) Handle initial load & seeding
-                if (isInitialLoad) {
-                    isInitialLoad = false;
-                    if (updatedPractices.length === 0) {
-                        await seedPracticesIfEmpty();
-                        // Return – next snapshot will contain seeded data and set practices
-                        return;
-                    }
-                    addNotification('🔗 Connected to Firebase · real‑time sync active', 'success');
-                } else {
-                    // 3) Notify about changes (using docChanges for granularity)
-                    snapshot.docChanges().forEach(change => {
-                        const p = docToPractice(change.doc.id, change.doc.data());
-                        if (change.type === 'added') addNotification(`📥 "${p.name}" added remotely`, 'info');
-                        if (change.type === 'modified') addNotification(`🔄 "${p.name}" updated remotely`, 'info');
-                        if (change.type === 'removed') addNotification(`🗑️ "${p.name}" removed remotely`, 'warning');
-                    });
-                }
-
-                practices = updatedPractices;
-                render();
-                renderAlerts();
-                updateSyncStatus();
-            }, (error) => {
-                statusDot.className = 'status-dot offline';
-                syncStatus.textContent = 'Offline';
-                showToast('⚠️ Firebase connection lost — changes will be cached', 'error');
-                console.error('Firestore error:', error);
-            });
-        }
-
-        function updateSyncStatus() {
-            statusDot.className = 'status-dot online';
-            syncStatus.textContent = 'Live';
-            lastSync.textContent = new Date().toLocaleTimeString();
-        }
-
-        // ─── HELPERS ───
-        function pct(achieved, target) {
-            if (!target || target === 0) return 0;
-            let r = (achieved / target) * 100;
-            return Math.min(100, Math.max(0, r));
-        }
-
-        function getStatus(p) {
-            const keys = ['revenue', 'casesWon', 'casesFiled', 'activeCases'];
-            let sum = 0,
-                count = 0;
-            for (const k of keys) {
-                const t = p.targets[k],
-                    c = p.current[k];
-                if (t > 0) { sum += c / t;
-                    count++; }
-            }
-            if (count === 0) return { label: 'On Track', cls: 'on-track' };
-            const avg = sum / count;
-            if (avg >= 1.05) return { label: 'Exceeded', cls: 'exceeded' };
-            if (avg >= 0.90) return { label: 'On Track', cls: 'on-track' };
-            if (avg >= 0.70) return { label: 'At Risk', cls: 'at-risk' };
-            return { label: 'Behind', cls: 'behind' };
-        }
-
-        function computeFirm() {
-            const totals = { revenue: 0, casesWon: 0, casesFiled: 0, activeCases: 0 };
-            const targets = { revenue: 0, casesWon: 0, casesFiled: 0, activeCases: 0 };
-            for (const p of practices) {
-                for (const k of ['revenue', 'casesWon', 'casesFiled', 'activeCases']) {
-                    totals[k] += p.current[k] || 0;
-                    targets[k] += p.targets[k] || 0;
-                }
-            }
-            const ach = {};
-            for (const k of ['revenue', 'casesWon', 'casesFiled', 'activeCases']) {
-                ach[k] = targets[k] ? (totals[k] / targets[k]) * 100 : 0;
-            }
-            return { totals, targets, ach };
-        }
-
-        // ─── ALERTS ───
-        function generateAlerts() {
-            const now = new Date();
-            const year = now.getFullYear(),
-                month = now.getMonth();
-            const lastDay = new Date(year, month + 1, 0).getDate();
-            const day = now.getDate();
-            const daysUntilEnd = lastDay - day;
-            const isLate = daysUntilEnd < 14;
-            const isUrgent = daysUntilEnd < 7;
-
-            const alertMessages = [];
-            for (const p of practices) {
-                const keys = ['revenue', 'casesWon', 'casesFiled', 'activeCases'];
-                const lowMetrics = [];
-                for (const k of keys) {
-                    const t = p.targets[k],
-                        c = p.current[k];
-                    if (t > 0 && (c / t) < 0.60) lowMetrics.push(k);
-                }
-                if (lowMetrics.length > 0) {
-                    let priority = 'pending';
-                    if (isUrgent) priority = 'URGENT (daily)';
-                    else if (isLate) priority = 'LATE (2 weeks)';
-                    alertMessages.push({
-                        practice: p.name,
-                        metrics: lowMetrics.join(', '),
-                        priority,
-                        daysUntilEnd
-                    });
-                }
-            }
-            alertMessages.sort((a, b) => {
-                const order = { 'URGENT (daily)': 0, 'LATE (2 weeks)': 1, 'pending': 2 };
-                return (order[a.priority] || 2) - (order[b.priority] || 2);
-            });
-            return alertMessages;
-        }
-
-        function renderAlerts() {
-            const alerts = generateAlerts();
-            if (alerts.length === 0) {
-                alertText.innerHTML = '<i class="fas fa-check-circle" style="color:#0f6e3a;"></i> All targets on track · no pending alerts';
-                alertBanner.style.borderLeftColor = '#0f6e3a';
-                return;
-            }
-            const html = alerts.map(a =>
-                `<span class="alert-item"><i class="fas fa-exclamation-triangle" style="color:#b45a1c;"></i> ${a.practice} (${a.metrics}) ${a.priority}</span>`
-            ).join('');
-            alertText.innerHTML = html;
-            alertBanner.style.borderLeftColor = '#b45a1c';
-        }
-
-        // ─── RENDER ───
-        function render() {
-            // overview
-            const firm = computeFirm();
-            const overviewData = [
-                { label: 'Revenue (KES)', value: firm.totals.revenue.toLocaleString(), pct: firm.ach.revenue },
-                { label: 'Cases Won', value: firm.totals.casesWon, pct: firm.ach.casesWon },
-                { label: 'Cases Filed', value: firm.totals.casesFiled, pct: firm.ach.casesFiled },
-                { label: 'Active Cases', value: firm.totals.activeCases, pct: firm.ach.activeCases }
-            ];
-            overviewGrid.innerHTML = overviewData.map(d => `
-                <div class="stat-card">
-                    <div class="label">${d.label}</div>
-                    <div class="value">${d.value}</div>
-                    <div class="trend ${d.pct >= 90 ? 'up' : d.pct < 60 ? 'down' : ''}">
-                        ${d.pct.toFixed(0)}% of target
-                        ${d.pct >= 100 ? ' 🎯' : ''}
-                    </div>
-                </div>
-            `).join('');
-
-            // practice cards
-            if (practices.length === 0) {
-                practiceGrid.innerHTML = `
-                    <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:#6a8aaa;background:white;border-radius:32px;border:1px dashed #d0dcec;">
-                        <i class="fas fa-plus-circle" style="font-size:2.4rem;display:block;margin-bottom:0.8rem;color:#b8cae0;"></i>
-                        No practices yet — click <strong>New</strong> to add one.
-                    </div>
-                `;
-                return;
-            }
-
-            practiceGrid.innerHTML = practices.map(p => {
-                const status = getStatus(p);
-                const keys = ['revenue', 'casesWon', 'casesFiled', 'activeCases'];
-                const labels = { revenue: 'Revenue (KES)', casesWon: 'Won', casesFiled: 'Filed', activeCases: 'Active' };
-                const icons = { revenue: 'fa-dollar-sign', casesWon: 'fa-trophy', casesFiled: 'fa-file', activeCases: 'fa-users' };
-                let metricsHtml = '';
-                for (const k of keys) {
-                    const t = p.targets[k],
-                        c = p.current[k];
-                    const percent = pct(c, t);
-                    let fillClass = percent >= 100 ? 'exceeded' : (percent >= 70 ? '' : (percent >= 40 ? 'at-risk' : 'behind'));
-                    const valStr = k === 'revenue' ? `${c.toLocaleString()}` : c;
-                    const targetStr = k === 'revenue' ? `${t.toLocaleString()}` : t;
-                    metricsHtml += `
-                        <div class="metric-group">
-                            <div class="metric-row">
-                                <span class="label"><i class="fas ${icons[k]}" style="width:18px;"></i> ${labels[k]}</span>
-                                <span class="val">${valStr} / ${targetStr}</span>
-                            </div>
-                            <div class="progress"><div class="progress-fill ${fillClass}" style="width:${percent}%;"></div></div>
-                        </div>
-                    `;
-                }
-                return `
-                    <div class="card" data-id="${p.id}">
-                        <div class="card-header">
-                            <span class="practice-title">${p.name}</span>
-                            <span class="badge ${status.cls}"><span class="badge-dot" style="background:${status.cls === 'on-track' ? '#1fad5a' : status.cls === 'exceeded' ? '#1a5bb5' : status.cls === 'at-risk' ? '#d97c2b' : '#c73b3b'};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;"></span> ${status.label}</span>
-                        </div>
-                        ${metricsHtml}
-                        <div class="card-actions">
-                            <button class="btn btn-outline btn-sm editBtn" data-id="${p.id}"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="btn btn-danger btn-sm deleteBtn" data-id="${p.id}"><i class="fas fa-trash"></i> Delete</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // attach events
-            document.querySelectorAll('.editBtn').forEach(b => {
-                b.addEventListener('click', () => openModal(b.dataset.id));
-            });
-            document.querySelectorAll('.deleteBtn').forEach(b => {
-                b.addEventListener('click', async () => {
-                    const id = b.dataset.id;
-                    const p = practices.find(p => p.id === id);
-                    if (confirm(`Delete "${p?.name || 'this practice'}"?`)) {
-                        try {
-                            await deletePractice(id);
-                            practices = practices.filter(p => p.id !== id);
-                            render();
-                            renderAlerts();
-                        } catch (e) { /* already handled */ }
-                    }
-                });
-            });
-        }
-
-        // ─── MODAL ───
-        function openModal(id = null) {
-            modalOverlay.classList.add('active');
-            if (id) {
-                const p = practices.find(p => p.id === id);
-                if (!p) return;
-                modalTitle.textContent = 'Edit practice';
-                editId.value = p.id;
-                pName.value = p.name;
-                pRevenue.value = p.targets.revenue || 0;
-                pWon.value = p.targets.casesWon || 0;
-                pFiled.value = p.targets.casesFiled || 0;
-                pActive.value = p.targets.activeCases || 0;
-                cRevenue.value = p.current.revenue || 0;
-                cWon.value = p.current.casesWon || 0;
-                cFiled.value = p.current.casesFiled || 0;
-                cActive.value = p.current.activeCases || 0;
-            } else {
-                modalTitle.textContent = 'Add new practice';
-                editId.value = '';
-                pName.value = '';
-                pRevenue.value = pWon.value = pFiled.value = pActive.value = '';
-                cRevenue.value = cWon.value = cFiled.value = cActive.value = '';
-            }
-        }
-
-        function closeModal() {
-            modalOverlay.classList.remove('active');
-        }
-
-        // Helper to clamp number inputs to non-negative
-        function clampNonNegative(val) {
-            return Math.max(0, parseFloat(val) || 0);
-        }
-
-        modalForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = editId.value;
-            const name = pName.value.trim();
-            if (!name) { showToast('Practice name is required', 'error'); return; }
-
-            // Sanitize inputs: clamp to non-negative
-            const targets = {
-                revenue: clampNonNegative(pRevenue.value),
-                casesWon: clampNonNegative(pWon.value),
-                casesFiled: clampNonNegative(pFiled.value),
-                activeCases: clampNonNegative(pActive.value)
-            };
-            const current = {
-                revenue: clampNonNegative(cRevenue.value),
-                casesWon: clampNonNegative(cWon.value),
-                casesFiled: clampNonNegative(cFiled.value),
-                activeCases: clampNonNegative(cActive.value)
-            };
-            const practice = { name, targets, current };
-
-            try {
-                if (id) {
-                    await updatePractice(id, practice);
-                    const idx = practices.findIndex(p => p.id === id);
-                    if (idx !== -1) practices[idx] = { ...practices[idx], ...practice };
-                } else {
-                    await addPractice(practice);
-                }
-                closeModal();
-            } catch (e) { /* handled in crud */ }
-        });
-
-        document.getElementById('modalCancel').addEventListener('click', closeModal);
-        document.getElementById('addPracticeBtn').addEventListener('click', () => openModal(null));
-        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
-
-        // ─── KEYBOARD SHORTCUT ───
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-
-        // ─── INIT ───
-        listenPractices();
-
-        // startup notification
-        setTimeout(() => {
-            addNotification('🚀 Dashboard ready — all data real‑time', 'success');
-        }, 800);
-
-        logEvent(analytics, 'page_view', { page: 'tracker' });
-
-        console.log('🔷 Kuria Karatu Tracker · Firebase real‑time enabled (bugs fixed)');
-    </script>
+<div id="loginOverlay" class="overlay">
+ <form id="loginForm" class="panel">
+  <h2>Staff sign in</h2><p class="muted">Kuria Karatu practice management</p>
+  <div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username" required></div>
+  <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+  <div id="loginError" class="error" role="alert"></div>
+  <button id="loginButton" class="btn primary" type="submit" style="width:100%">Sign in</button>
+ </form>
+</div>
+<header class="top">
+ <div class="brand"><i class="fa-solid fa-scale-balanced"></i> Kuria Karatu & Company Advocates<small>Practice performance tracker · shared firm catalogue</small></div>
+ <div class="actions"><span id="userLabel"></span><button class="btn ghost" id="changePasswordBtn" type="button">Change password</button><button class="btn ghost" id="logoutBtn" type="button">Sign out</button></div>
+</header>
+<main id="app" hidden>
+ <section class="intro"><div><h1>Practice areas</h1><div class="muted">The list below is loaded from the same shared catalogue used by the main management system.</div></div><button class="btn primary" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Refresh</button></section>
+ <div class="notice"><i class="fa-solid fa-link"></i> Practice names are centrally managed. Add, rename or remove practice areas in the main system; this tracker does not maintain a separate list.</div>
+ <section id="practiceGrid" class="grid" aria-live="polite"></section>
+</main>
+<div id="editModal" class="modal">
+ <form id="editForm" class="panel">
+  <h2 id="editTitle">Update metrics</h2><p class="muted">Only performance figures can be edited here. Practice-area names are controlled by the main system.</p>
+  <input id="editPracticeId" type="hidden">
+  <div class="field"><label for="targetRevenue">Revenue target (KES)</label><input id="targetRevenue" type="number" min="0" step="1" required></div>
+  <div class="field"><label for="actualRevenue">Actual revenue (KES)</label><input id="actualRevenue" type="number" min="0" step="1" required></div>
+  <div class="field"><label for="targetCases">Target active matters</label><input id="targetCases" type="number" min="0" step="1" required></div>
+  <div class="field"><label for="actualCases">Actual active matters</label><input id="actualCases" type="number" min="0" step="1" required></div>
+  <div id="editError" class="error" role="alert"></div>
+  <div class="actions"><button class="btn" type="button" id="cancelEdit">Cancel</button><button class="btn primary" type="submit">Save metrics</button></div>
+ </form>
+</div>
+<div id="passwordModal" class="modal">
+ <form id="passwordForm" class="panel">
+  <h2>Change password</h2>
+  <div class="field"><label for="currentPassword">Current password</label><input id="currentPassword" type="password" autocomplete="current-password" required></div>
+  <div class="field"><label for="newPassword">New password</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+  <div class="field"><label for="confirmPassword">Confirm new password</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+  <div id="passwordError" class="error" role="alert"></div>
+  <div class="actions"><button class="btn" type="button" id="cancelPassword">Cancel</button><button class="btn primary" type="submit">Update password</button></div>
+ </form>
+</div>
+<footer>Access restricted to authorised administrators and developers. Practice-area catalogue is shared with the main system.</footer>
+<script>
+(function(){
+'use strict';
+const firebaseConfig={apiKey:"AIzaSyAv35HANTesz9EqroXt3QaHpYvZwk2fa3",authDomain:"kuriakaratu-b5c90.firebaseapp.com",databaseURL:"https://kuriakaratu-b5c90-default-rtdb.firebaseio.com",projectId:"kuriakaratu-b5c90",storageBucket:"kuriakaratu-b5c90.firebasestorage.app",messagingSenderId:"14852374326",appId:"1:14852374326:web:b171bd36719d8700953d97"};
+if(!Array.isArray(window.KK_PRACTICE_AREAS)||!window.KK_PRACTICE_AREAS.length){document.getElementById('loginError').textContent='The shared practice catalogue could not be loaded.';return;}
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),db=firebase.firestore(),$=id=>document.getElementById(id);
+const names=window.KK_PRACTICE_AREAS;
+let metrics={};
+const metricsRef=()=>db.collection('settings').doc('practiceTracker');
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const money=n=>'KES '+Number(n||0).toLocaleString('en-KE');
+function showError(id,msg){$(id).textContent=msg||'';}
+function openModal(id){$(id).classList.add('open');}
+function closeModal(id){$(id).classList.remove('open');}
+function render(){
+ const grid=$('practiceGrid');
+ grid.innerHTML='';
+ names.forEach(name=>{
+  const id=slug(name),m=metrics[id]||{},target=Number(m.targetRevenue||0),actual=Number(m.actualRevenue||0),targetCases=Number(m.targetCases||0),actualCases=Number(m.actualCases||0);
+  const pct=target?Math.min(100,Math.round(actual/target*100)):0;
+  const card=document.createElement('article');card.className='card';
+  const h=document.createElement('h3');h.textContent=name;card.appendChild(h);
+  const block=document.createElement('div');block.className='metrics';
+  [[ 'Revenue target',money(target)],['Actual revenue',money(actual)],['Matter target',targetCases],['Active matters',actualCases]].forEach(([label,value])=>{const item=document.createElement('div');item.className='metric';const small=document.createElement('small');small.textContent=label;const strong=document.createElement('strong');strong.textContent=value;item.append(small,strong);block.appendChild(item);});
+  card.appendChild(block);const bar=document.createElement('div');bar.className='bar';const fill=document.createElement('span');fill.style.width=pct+'%';bar.appendChild(fill);card.appendChild(bar);
+  const note=document.createElement('small');note.className='muted';note.textContent=target?pct+'% of revenue target':'No revenue target set';card.appendChild(note);
+  const button=document.createElement('button');button.type='button';button.className='btn';button.style.marginTop='14px';button.textContent='Edit metrics';button.addEventListener('click',()=>edit(name,id));card.appendChild(button);grid.appendChild(card);
+ });
+}
+function edit(name,id){const m=metrics[id]||{};$('editTitle').textContent='Update · '+name;$('editPracticeId').value=id;$('targetRevenue').value=m.targetRevenue||0;$('actualRevenue').value=m.actualRevenue||0;$('targetCases').value=m.targetCases||0;$('actualCases').value=m.actualCases||0;showError('editError','');openModal('editModal');}
+async function loadMetrics(){const snap=await metricsRef().get();metrics=snap.exists&&snap.data().metrics&&typeof snap.data().metrics==='object'?snap.data().metrics:{};render();}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('loginButton');btn.disabled=true;showError('loginError','');try{await auth.signInWithEmailAndPassword($('email').value.trim(),$('password').value); }catch(err){showError('loginError',err.message||'Sign in failed.');}finally{btn.disabled=false;}});
+auth.onAuthStateChanged(async user=>{
+ if(!user){$('loginOverlay').style.display='grid';$('app').hidden=true;return;}
+ try{
+  const profile=await db.collection('users').doc(user.uid).get();
+  if(!profile.exists||!['admin','developer'].includes(profile.data().role)){await auth.signOut();showError('loginError','This tracker is restricted to authorised administrators and developers.');return;}
+  $('loginOverlay').style.display='none';$('app').hidden=false;$('userLabel').textContent=user.email||'Signed in';await loadMetrics();
+ }catch(err){await auth.signOut();$('loginOverlay').style.display='grid';showError('loginError',err.message||'Could not verify access.');}
+});
+$('editForm').addEventListener('submit',async e=>{
+ e.preventDefault();const id=$('editPracticeId').value;
+ const values={targetRevenue:Number($('targetRevenue').value),actualRevenue:Number($('actualRevenue').value),targetCases:Number($('targetCases').value),actualCases:Number($('actualCases').value)};
+ try{metrics[id]=values;await metricsRef().set({metrics,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});closeModal('editModal');render();showError('editError','');}catch(err){showError('editError',err.message||'Could not save metrics.');}
+});
+$('refreshBtn').addEventListener('click',()=>loadMetrics().catch(err=>alert(err.message)));
+$('cancelEdit').addEventListener('click',()=>closeModal('editModal'));
+$('changePasswordBtn').addEventListener('click',()=>openModal('passwordModal'));
+$('cancelPassword').addEventListener('click',()=>closeModal('passwordModal'));
+$('passwordForm').addEventListener('submit',async e=>{
+ e.preventDefault();showError('passwordError','');
+ const current=$('currentPassword').value,next=$('newPassword').value,confirm=$('confirmPassword').value,user=auth.currentUser;
+ if(next!==confirm){showError('passwordError','The new passwords do not match.');return;}
+ if(next.length<8){showError('passwordError','Use at least 8 characters.');return;}
+ try{const credential=firebase.auth.EmailAuthProvider.credential(user.email,current);await user.reauthenticateWithCredential(credential);await user.updatePassword(next);$('passwordForm').reset();closeModal('passwordModal');alert('Password updated successfully.');}
+ catch(err){showError('passwordError',err.message||'Could not update password.');}
+});
+$('logoutBtn').addEventListener('click',()=>auth.signOut());
+})();
+</script>
 </body>
 </html>
