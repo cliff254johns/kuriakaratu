@@ -203,7 +203,7 @@ function collectHtml(dir) {
     return entry.isFile() && full.endsWith('.html') ? [full] : [];
   });
 }
-const seoPages = collectHtml('.').filter(file => !/^(admin|admin-v2|client|finance|generator|track|offline)\.html$/.test(file) && !file.startsWith('google'));
+const seoPages = collectHtml('.').filter(file => !/^(admin|admin-v2|client|finance|generator|track|offline|cms-admin|cms-setup)\.html$/.test(file) && !file.startsWith('google'));
 for (const file of seoPages) {
   const html = fs.readFileSync(file, 'utf8');
   if (!/<title>[^<]{5,}<\/title>/i.test(html) || !/<meta\s+name=["']description["']\s+content=["'][^"']{40,}/i.test(html) || !/<link\s+rel=["']canonical["']/i.test(html)) {
