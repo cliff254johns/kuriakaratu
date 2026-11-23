@@ -46,7 +46,7 @@ if (!admin.includes('function findExactPortalClientMatch')
     || !admin.includes('normalizeText(client && client.name) === name')
     || !admin.includes("String(client && client.email || '').trim().toLowerCase() === email")
     || !admin.includes('normalizePhone(client && client.phone) === phone')
-    || /let matchedClient = clientsData\\.find\\(c => \\(c\\.email/.test(admin)) {
+    || admin.includes('let matchedClient = clientsData.find(c => (c.email')) {
   failures++;
   console.error('FAIL: portal suggestions must require one exact name, email and phone match');
 } else console.log('PASS: portal suggestions require an exact name, email and normalized phone match');
