@@ -374,7 +374,7 @@ tbody tr:hover{background:var(--slate-50);}
 
     <form id="signupForm" style="display:none;">
       <div class="auth-info" style="display:block;margin-bottom:1rem;">
-        <strong>Portal access is reviewed by the firm.</strong> Creating an account does not automatically link you to a client file. An authorised staff member must verify and approve your request.
+        <strong>Verify your email to continue.</strong> After verification, your registration is securely queued. An authorised firm administrator must have the main dashboard open for the system to create your client record and link your portal automatically.
       </div>
       <div class="form-group">
         <label>Full Name *</label>
@@ -386,7 +386,7 @@ tbody tr:hover{background:var(--slate-50);}
       </div>
       <div class="form-group">
         <label>Phone</label>
-        <input type="tel" id="signupPhone" placeholder="+254 712 345 678">
+        <input type="tel" id="signupPhone" placeholder="+254 712 345 678" autocomplete="tel" required minlength="7" maxlength="20">
       </div>
       <div class="form-group">
         <label>Password *</label>
@@ -405,9 +405,10 @@ tbody tr:hover{background:var(--slate-50);}
   <div class="box">
     <div class="icon"><i class="fas fa-hourglass-half fa-spin" style="animation-duration:3s;"></i></div>
     <h2>Account Pending Approval</h2>
-    <p>Your account has been created and is awaiting approval from our advocates. You'll be granted access as soon as your case file is linked.</p>
-    <p style="margin-top:.75rem;font-size:.8rem;">You can safely close this page — you'll be redirected automatically once approved.</p>
+    <p>Your account has been created. Verify your email address, then sign in again so the firm can securely match your details to an existing client record.</p>
+    <p style="margin-top:.75rem;font-size:.8rem;">A unique exact match is linked automatically while an authorised firm administrator is online. Ambiguous matches require staff review.</p>
     <div class="actions">
+      <button class="btn btn-outline btn-sm" onclick="resendClientVerification()"><i class="fas fa-envelope"></i> Resend verification</button>
       <button class="btn btn-outline btn-sm" onclick="checkApproval()"><i class="fas fa-sync"></i> Check Again</button>
       <button class="btn btn-outline btn-sm" onclick="portalLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
@@ -1044,9 +1045,10 @@ document.getElementById('signupForm').addEventListener('submit', async function(
       reviewedAt: null, reviewedBy: null, source: 'client-signup'
     };
     await db.collection('portalRequests').doc(uid).set(requestData);
+    await cred.user.sendEmailVerification();
 
-    setLoadingStep(2, 'Awaiting firm approval...');
-    infoEl.textContent = 'Your account request has been submitted and is awaiting firm approval. Portal access is not active until an authorised staff member links your account to the correct client record.';
+    setLoadingStep(2, 'Verify your email address...');
+    infoEl.textContent = 'We sent a verification link to ' + email + '. Verify your email, then sign in again. After verification, your request is securely queued. Your client record and portal access are created automatically when an authorised firm administrator has the main dashboard open.';
     infoEl.style.display = 'block';
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
@@ -1089,6 +1091,12 @@ auth.onAuthStateChanged(async user => {
   }
 });
 
+async function resendClientVerification() {
+  if (!auth.currentUser) { showToast('Sign in first.', 'warning'); return; }
+  try { await auth.currentUser.sendEmailVerification(); showToast('Verification email sent. Check your inbox and spam folder.', 'info', 9000); }
+  catch (error) { showToast('Could not send verification email: ' + error.message, 'error', 9000); }
+}
+
 /* ================================================================
    ROUTE USER
    ================================================================ */
@@ -1128,6 +1136,31 @@ async function routeUser(user) {
     }
 
     const account = accountDoc.data();
+    try { await user.reload(); } catch (reloadError) { console.warn('Could not refresh email verification state:', reloadError); }
+    if (!user.emailVerified) {
+      hideLoading();
+      showPendingScreen();
+      const heading = document.querySelector('#pendingScreen h2');
+      const paragraphs = document.querySelectorAll('#pendingScreen .box p');
+      if (heading) heading.textContent = 'Verify Your Email Address';
+      if (paragraphs[0]) paragraphs[0].textContent = 'We sent a verification link to ' + (user.email || 'your email address') + '. Verify it to activate automatic client registration and portal access.';
+      if (paragraphs[1]) paragraphs[1].textContent = 'After verifying, sign out and sign in again. Your verified request will be processed automatically while an authorised firm administrator has the main dashboard open.';
+      currentClientId = null;
+      routeInProgress = false;
+      return;
+    }
+    if (!account.approved && account.status !== 'rejected') {
+      try {
+        const idToken = await user.getIdToken(true);
+        const queued = await fetch('https://kuriakaratu-cms-api.cliff254johns.workers.dev/api/portal/verified', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: 'Bearer ' + idToken },
+          body: JSON.stringify({ name: account.name || '', phone: account.phone || '' })
+        });
+        const queueResult = await queued.json();
+        if (!queued.ok) console.warn('Verified portal request was not queued:', queueResult.error);
+      } catch (queueError) { console.warn('Could not queue verified portal request:', queueError); }
+    }
     currentClientId = account.clientId || null;
 
     if (account.approved && account.clientId) {
@@ -2660,6 +2693,7 @@ if (am) am.addEventListener('click', function(e) { if (e.target === this) closeA
 window.switchAuthTab = switchAuthTab;
 window.checkApproval = checkApproval;
 window.portalLogout = portalLogout;
+window.resendClientVerification = resendClientVerification;
 window.switchTab = switchTab;
 window.scrollToTop = scrollToTop;
 window.downloadClientDoc = downloadClientDoc;

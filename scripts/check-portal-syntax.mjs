@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const files = ['admin.js', 'admin-v2.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js'];
+const files = ['admin.js', 'admin-v2.js', 'practice-areas.js', 'generator.js', 'sw.js', 'assets/homepage-experience.js', 'assets/site-enhancements.js', 'assets/public-navigation.js', 'assets/practice-navigation.js', 'assets/seo-meta.js', 'assets/conference-papers.js', 'assets/public-cms.js'];
 let failures = 0;
 for (const file of files) {
   try {
@@ -13,7 +13,7 @@ for (const file of files) {
   }
 }
 
-for (const file of ['index.html', 'client.html', 'finance.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html']) {
+for (const file of ['index.html', 'client.html', 'finance.html', 'track.html', 'blog/index.html', 'newsletter/index.html', 'newsletter/2026-12/index.html', 'papers/index.html', 'practices/index.html', 'insights/index.html', 'cms-admin.html']) {
   const html = fs.readFileSync(file, 'utf8');
   const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   let checked = 0;
@@ -41,6 +41,77 @@ if (/matchedClient|auto-match-|signupCaseRef/.test(client)) {
   failures++;
   console.error('FAIL: client self-linking or case-reference matching remains');
 } else console.log('PASS: no public client auto-linking identifiers');
+
+if (!client.includes('id="signupPhone" placeholder="+254 712 345 678" autocomplete="tel" required')) {
+  failures++;
+  console.error('FAIL: client portal registration must require a phone number for identity matching');
+} else console.log('PASS: client portal registration requires a phone number');
+
+if (!admin.includes("source: 'verified-client-portal-registration'")
+    || !admin.includes("autoLinkedBy: match.client ? 'verified-existing-client-match' : 'verified-new-client-registration'")
+    || !admin.includes("db.collection('clients').add({")) {
+  failures++;
+  console.error('FAIL: verified new portal registrations must create and link a client record automatically');
+} else console.log('PASS: verified new portal registrations create and link a client record automatically');
+
+if (!admin.includes('function findExactPortalClientMatch')
+    || !admin.includes('normalizeText(client && client.name) === name')
+    || !admin.includes("String(client && client.email || '').trim().toLowerCase() === email")
+    || !admin.includes('normalizePhone(client && client.phone) === phone')
+    || admin.includes('let matchedClient = clientsData.find(c => (c.email')) {
+  failures++;
+  console.error('FAIL: portal suggestions must require one exact name, email and phone match');
+} else console.log('PASS: portal suggestions require an exact name, email and normalized phone match');
+
+if (!admin.includes('Administrator approval is still required.')
+    || !admin.includes("if (!isFullAccess()) { showToast('Permission denied.', 'warning'); return; }")) {
+  failures++;
+  console.error('FAIL: portal account linking must remain behind authorised administrator approval');
+} else console.log('PASS: portal linking remains an explicit administrator action');
+
+const matchStart = admin.indexOf('function findExactPortalClientMatch(');
+const matchEnd = admin.indexOf('\n}\n', matchStart);
+const matchFunction = matchStart >= 0 && matchEnd >= 0 ? admin.slice(matchStart, matchEnd + 2) : '';
+if (!matchFunction) {
+  failures++;
+  console.error('FAIL: exact portal identity matcher could not be extracted for behavior tests');
+} else {
+  const normalizePortalName = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const normalizePortalPhone = value => {
+    if (!value) return '';
+    let clean = String(value).replace(/\s/g, '').replace(/^\+/, '');
+    if (clean.startsWith('0')) clean = clean.substring(1);
+    if (!clean.startsWith('254')) clean = '254' + clean;
+    return clean;
+  };
+  const matcher = vm.runInNewContext('(' + matchFunction + ')', {
+    normalizeText: normalizePortalName,
+    normalizePhone: normalizePortalPhone,
+    clientsData: []
+  });
+  const clientFixture = { id: 'client-1', name: 'Jane Doe', email: 'jane@example.com', phone: '+254 712 345 678' };
+  const exact = matcher({ name: ' Jane Doe ', email: 'JANE@example.com', phone: '0712345678' }, [clientFixture]);
+  const mismatch = matcher({ name: 'Jane Doe', email: 'jane@example.com', phone: '0712345679' }, [clientFixture]);
+  const incomplete = matcher({ name: 'Jane Doe', email: 'jane@example.com', phone: '' }, [clientFixture]);
+  const ambiguous = matcher({ name: 'Jane Doe', email: 'jane@example.com', phone: '0712345678' }, [clientFixture, { ...clientFixture, id: 'client-2' }]);
+  if (exact.reason !== 'exact' || exact.client?.id !== 'client-1'
+      || mismatch.reason !== 'none' || incomplete.reason !== 'incomplete'
+      || ambiguous.reason !== 'ambiguous' || ambiguous.client !== null) {
+    failures++;
+    console.error('FAIL: exact portal identity matcher behavior tests');
+  } else console.log('PASS: exact, mismatched, incomplete and ambiguous portal identity cases');
+}
+
+
+
+const cmsWorkerSource = fs.readFileSync('cloudflare/cms-api/src/index.js', 'utf8');
+try {
+  new vm.Script(cmsWorkerSource.replace(/^export default /m, 'const worker = '), { filename: 'cloudflare/cms-api/src/index.js' });
+  console.log('PASS JavaScript module syntax: Cloudflare CMS Worker');
+} catch (error) {
+  failures++;
+  console.error('FAIL Cloudflare CMS Worker syntax:', error.message);
+}
 
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 const homepage = fs.readFileSync('index.html', 'utf8');
@@ -148,7 +219,7 @@ function collectHtml(dir) {
     return entry.isFile() && full.endsWith('.html') ? [full] : [];
   });
 }
-const seoPages = collectHtml('.').filter(file => !/^(admin|admin-v2|client|finance|generator|track|offline)\.html$/.test(file) && !file.startsWith('google'));
+const seoPages = collectHtml('.').filter(file => !/^(admin|admin-v2|client|finance|generator|track|offline|cms-admin|cms-setup)\.html$/.test(file) && !file.startsWith('google'));
 for (const file of seoPages) {
   const html = fs.readFileSync(file, 'utf8');
   if (!/<title>[^<]{5,}<\/title>/i.test(html) || !/<meta\s+name=["']description["']\s+content=["'][^"']{40,}/i.test(html) || !/<link\s+rel=["']canonical["']/i.test(html)) {
@@ -182,6 +253,74 @@ if (!sitemap.includes('/papers/') || !fs.readFileSync('robots.txt', 'utf8').incl
   failures++;
   console.error('FAIL: conference papers library is missing from sitemap or robots rules');
 } else console.log('PASS: conference papers library is discoverable to search engines');
+
+
+const sharedPractices = fs.readFileSync('practice-areas.js', 'utf8');
+const tracker = fs.readFileSync('track.html', 'utf8');
+const adminHtml = fs.readFileSync('admin.html', 'utf8');
+const adminJs = fs.readFileSync('admin.js', 'utf8');
+const expectedPracticeAreas = ['ELCs', 'Criminal', 'Succession', 'Civil', 'Tribunal', 'Divorce', 'Conveyancing', 'Running Down', 'Children', 'Employment', 'Kadhi'];
+const categoryList = sharedPractices.match(/root\.KK_PRACTICE_AREAS\s*=\s*Object\.freeze\(\[([\s\S]*?)\]\)/);
+const actualPracticeAreas = categoryList ? [...categoryList[1].matchAll(/'([^']+)'/g)].map(match => match[1]) : [];
+if (JSON.stringify(actualPracticeAreas) !== JSON.stringify(expectedPracticeAreas)) {
+  failures++;
+  console.error('FAIL: shared practice catalogue does not exactly match the main management system');
+} else console.log('PASS: one shared practice catalogue contains the exact 11 main-system practice areas');
+if (!adminHtml.includes('<script src="practice-areas.js"></script>') || adminHtml.indexOf('<script src="practice-areas.js"></script>') > adminHtml.indexOf('<script src="admin.js"></script>') || !adminJs.includes('const PRACTICE_AREAS = window.KK_PRACTICE_AREAS;')) {
+  failures++;
+  console.error('FAIL: admin system is not loading the shared practice catalogue before admin.js');
+} else console.log('PASS: main management system consumes the shared practice catalogue');
+if (!tracker.includes('projectId:"kuriakaratu-b5c90"') || tracker.includes('kuriatrack') || tracker.includes('G-SB7XB7RX05')) {
+  failures++;
+  console.error('FAIL: tracker is not fully switched to the firm Firebase project');
+} else console.log('PASS: tracker uses the same Firebase project as the main system');
+const trackerCatalogueScript = tracker.indexOf('<script src="/practice-areas.js"></script>');
+const trackerApplicationScript = tracker.indexOf('<script>', trackerCatalogueScript + 1);
+if (trackerCatalogueScript < 0 || trackerApplicationScript < 0 || trackerCatalogueScript > trackerApplicationScript) {
+  failures++;
+  console.error('FAIL: tracker must load the shared practice catalogue before its application code');
+} else console.log('PASS: tracker loads the shared practice catalogue before application code');
+
+if (!tracker.includes('window.KK_PRACTICE_AREAS') || !tracker.includes("db.collection('settings').doc('practiceTracker')") || !tracker.includes("auth.signInWithEmailAndPassword") || !tracker.includes("profile.data().role")) {
+  failures++;
+  console.error('FAIL: tracker must use shared practice names, protected Firebase login and the authorised tracker settings document');
+} else console.log('PASS: tracker uses shared categories, authenticated access and the existing protected settings document');
+if (/SAMPLE_PRACTICES|seedPracticesIfEmpty|addPractice\(|deletePractice\(|PRACTICES_COLL\s*=\s*['"]practices/.test(tracker)) {
+  failures++;
+  console.error('FAIL: legacy sample practice seeding or independent practice CRUD remains in the tracker');
+} else console.log('PASS: legacy tracker practice records and sample seeding have been removed from the application');
+
+
+if (!adminHtml.includes('id="changePasswordBtn"') || !adminHtml.includes('id="changeOwnPasswordForm"') || !adminJs.includes('reauthenticateWithCredential') || !adminJs.includes('updatePassword(next)')) {
+  failures++;
+  console.error('FAIL: admin self-service password change must reauthenticate and update the Firebase Auth password');
+} else console.log('PASS: admin can securely change their password after reauthentication');
+const financePasswordPage = fs.readFileSync('finance.html', 'utf8');
+if (!financePasswordPage.includes('id="changePasswordBtn"') || !financePasswordPage.includes('id="changePasswordForm"') || !financePasswordPage.includes('reauthenticateWithCredential') || !financePasswordPage.includes('updatePassword(next)')) {
+  failures++;
+  console.error('FAIL: finance self-service password change must reauthenticate and update the Firebase Auth password');
+} else console.log('PASS: finance users can securely change their password after reauthentication');
+if (!client.includes('reauthenticateWithCredential') || !client.includes('updatePassword(newPwd)') || !tracker.includes('reauthenticateWithCredential') || !tracker.includes('updatePassword(next)')) {
+  failures++;
+  console.error('FAIL: client portal and practice tracker password-change flows are incomplete');
+} else console.log('PASS: client portal and practice tracker include reauthenticated password changes');
+
+const staffAdminHtml = fs.readFileSync('admin.html', 'utf8');
+if (!adminJs.includes("firebase.initializeApp(firebaseConfig, 'kk-user-provisioning')")
+    || !adminJs.includes('provisioningAuth.createUserWithEmailAndPassword')
+    || !adminJs.includes('await provisioningAuth.signOut()')) {
+  failures++;
+  console.error('FAIL: staff provisioning must use a secondary Auth instance and preserve the administrator session');
+} else console.log('PASS: staff provisioning uses a secondary Auth instance without replacing the administrator session');
+if (adminJs.includes('auth.currentUser.updatePassword(password)')) {
+  failures++;
+  console.error('FAIL: administrator must not change another staff member password through the current session');
+} else console.log('PASS: staff password changes do not modify the administrator current session');
+if (!staffAdminHtml.includes('id="editUserSendReset"')
+    || !staffAdminHtml.includes('<option value="finance">Finance (Finance Portal)</option>')) {
+  failures++;
+  console.error('FAIL: staff administration must support finance role and secure password-reset requests');
+} else console.log('PASS: staff administration supports the finance role and password-reset emails');
 
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');

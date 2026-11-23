@@ -259,13 +259,8 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
     <div class="login-sub">Kuria Karatu &amp; Company Advocates</div>
     <form id="loginForm">
       <div class="form-group">
-        <label><i class="fas fa-user"></i> Select User</label>
-        <select id="loginEmailSelect" required>
-          <option value="">— Select a user —</option>
-          <option value="admin@kuriakaratu.com">admin@kuriakaratu.com</option>
-          <option value="developer@kuriakaratu.com">developer@kuriakaratu.com</option>
-          <option value="clerk@kuriakaratu.com">clerk@kuriakaratu.com</option>
-        </select>
+        <label><i class="fas fa-user"></i> Staff email</label>
+        <input type="email" id="loginEmailSelect" placeholder="Enter your assigned staff email" required autocomplete="username">
       </div>
       <div class="form-group">
         <label><i class="fas fa-lock"></i> Password</label>
@@ -286,6 +281,7 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
     <div class="user-pill">
       <span class="avatar" id="userAvatar">A</span>
       <span id="userNameDisplay">Admin</span>
+      <button class="logout-btn" id="changePasswordBtn" title="Change password"><i class="fas fa-key"></i></button>
       <button class="logout-btn" id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
@@ -693,6 +689,18 @@ td{padding:0.4rem 0.3rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;w
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
+
+
+<div id="changePasswordModal" style="display:none;position:fixed;inset:0;background:#0b1728cc;z-index:9999;place-items:center;padding:18px;">
+ <form id="changePasswordForm" style="background:#fff;color:#1e293b;width:min(440px,100%);padding:24px;border-radius:16px;box-shadow:0 20px 60px #0004;">
+  <h2 style="margin:0 0 8px;">Change your password</h2><p style="color:#64748b;margin:0 0 18px;">Confirm your current password before setting a new one.</p>
+  <div class="form-group"><label for="financeCurrentPassword">Current password</label><input id="financeCurrentPassword" type="password" autocomplete="current-password" required></div>
+  <div class="form-group"><label for="financeNewPassword">New password (minimum 8 characters)</label><input id="financeNewPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+  <div class="form-group"><label for="financeConfirmPassword">Confirm new password</label><input id="financeConfirmPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+  <div id="financePasswordError" class="login-error" role="alert"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;"><button type="button" class="btn" id="cancelFinancePassword">Cancel</button><button type="submit" class="btn" style="background:#2563eb;color:#fff;">Update password</button></div>
+ </form>
+</div>
 
 <script>
 /* ============================================================
@@ -2243,23 +2251,63 @@ document.addEventListener('DOMContentLoaded', function(){
   setupLogin();
   setupLogout();
   if (fbOK && auth) {
-    auth.onAuthStateChanged(function(user){
-      if (user && !currentUserEmail) {
-        var email = user.email;
-        var role = 'clerk';
-        var hc = HARDCODED.find(function(u){ return u.email === email; });
-        if (hc) role = hc.role;
-        db.collection('users').doc(user.uid).get().then(function(doc){
-          if (doc.exists && doc.data().role) role = doc.data().role;
-        }).catch(function(){}).finally(function(){
-          showApp(email, role);
-        });
+    auth.onAuthStateChanged(async function(user){
+      if (!user) {
+        currentUserEmail = '';
+        currentUserRole = 'clerk';
+        $('appHeader').style.display = 'none';
+        $('appContent').style.display = 'none';
+        $('appNav').style.display = 'none';
+        $('loginOverlay').classList.remove('hidden');
+        return;
+      }
+      if (currentUserEmail === user.email) return;
+      try {
+        if (!user.email) throw new Error('This account has no verified staff email.');
+        var profile = await db.collection('users').doc(user.uid).get();
+        if (!profile.exists || !['admin','developer','finance'].includes(profile.data().role)) {
+          throw new Error('This account has not been provisioned with an authorised finance role.');
+        }
+        showApp(user.email, profile.data().role);
+      } catch (error) {
+        console.error('Finance session validation failed:', error);
+        $('loginError').textContent = error.message || 'This account is not authorised.';
+        await auth.signOut().catch(function(){});
       }
     });
   }
 });
 
 console.log('✅ KK Finance loaded. Firebase:', fbOK);
+
+/* Self-service password change for authenticated finance staff. */
+document.addEventListener('DOMContentLoaded', function(){
+  var button=document.getElementById('changePasswordBtn');
+  var modal=document.getElementById('changePasswordModal');
+  var form=document.getElementById('changePasswordForm');
+  var error=document.getElementById('financePasswordError');
+  function close(){modal.style.display='none';form.reset();error.textContent='';}
+  if(!button||!modal||!form)return;
+  button.addEventListener('click',function(){modal.style.display='grid';});
+  document.getElementById('cancelFinancePassword').addEventListener('click',close);
+  modal.addEventListener('click',function(e){if(e.target===modal)close();});
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();error.textContent='';
+    var current=document.getElementById('financeCurrentPassword').value;
+    var next=document.getElementById('financeNewPassword').value;
+    var confirm=document.getElementById('financeConfirmPassword').value;
+    var user=auth&&auth.currentUser;
+    if(next.length<8){error.textContent='Use at least 8 characters.';return;}
+    if(next!==confirm){error.textContent='The new passwords do not match.';return;}
+    if(!user||!user.email){error.textContent='Please sign in again before changing your password.';return;}
+    try{
+      var credential=firebase.auth.EmailAuthProvider.credential(user.email,current);
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(next);
+      close();showToast('Your password has been updated.','info');
+    }catch(err){error.textContent=err.code==='auth/wrong-password'||err.code==='auth/invalid-credential'?'Your current password is incorrect.':(err.message||'Could not update your password.');}
+  });
+});
 </script>
 </body>
 </html>

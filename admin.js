@@ -62,6 +62,11 @@ window.addEventListener('appinstalled', () => {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    // Provision staff accounts with a secondary Firebase Auth instance so the
+    // administrator's active session is never replaced by the new account.
+    const provisioningApp = firebase.apps.find(app => app.name === 'kk-user-provisioning')
+        || firebase.initializeApp(firebaseConfig, 'kk-user-provisioning');
+    const provisioningAuth = provisioningApp.auth();
 
     db.enablePersistence({ synchronizeTabs: true }).catch(err => {
         if (err.code === 'failed-precondition') console.warn('Persistence failed: multiple tabs open');
@@ -209,6 +214,110 @@ function updatePortalBadge() {
     else badge.style.display = 'none';
 }
 
+const autoPortalLinkInFlight = new Set();
+const PORTAL_LINK_API = 'https://kuriakaratu-cms-api.cliff254johns.workers.dev';
+
+async function getVerifiedPortalQueue() {
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error('Sign in again to process verified portal requests.');
+    const token = await user.getIdToken();
+    const response = await fetch(PORTAL_LINK_API + '/api/admin/portal-queue', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not retrieve verified portal requests.');
+    return data.items || [];
+}
+
+async function markPortalQueueLinked(uid) {
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error('Admin session expired.');
+    const token = await user.getIdToken();
+    const response = await fetch(PORTAL_LINK_API + '/api/admin/portal-queue/' + encodeURIComponent(uid) + '/complete', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!response.ok) throw new Error('Could not close verified portal queue item.');
+}
+
+// Runs only in the signed-in firm admin/developer dashboard. Cloudflare verifies
+// the Firebase email identity first; Firestore rules then authorize this staff
+// session to inspect private client records and approve a unique exact match.
+async function autoLinkExactPortalRequests() {
+    if (!isFullAccess() || !Array.isArray(clientsData)) return;
+    let verifiedQueue;
+    try { verifiedQueue = await getVerifiedPortalQueue(); }
+    catch (error) { console.warn('Verified portal queue unavailable:', error.message); return; }
+    const requestsByUid = new Map(portalRequestsData.map(r => [r.uid, r]));
+    const pending = verifiedQueue.filter(q => q.status === 'pending' && requestsByUid.has(q.uid));
+    for (const verified of pending) {
+        if (autoPortalLinkInFlight.has(verified.uid)) continue;
+        const request = requestsByUid.get(verified.uid);
+        const account = portalAccountsData.find(a => a.uid === verified.uid);
+        if (!request || !account || request.status === 'rejected' || account.approved === true) continue;
+        const email = String(verified.email || '').trim().toLowerCase();
+        const phone = normalizePhone(verified.phone);
+        if (String(account.email || '').trim().toLowerCase() !== email ||
+            String(request.email || '').trim().toLowerCase() !== email ||
+            normalizePhone(account.phone) !== phone ||
+            normalizeText(account.name) !== normalizeText(verified.name)) continue;
+
+        const match = findExactPortalClientMatch({ name: verified.name, email, phone: verified.phone });
+        // Exact existing client records are reused. Ambiguous matches are never guessed.
+        if (match.reason === 'ambiguous') continue;
+        autoPortalLinkInFlight.add(verified.uid);
+        try {
+            const allAccounts = await db.collection('clientAccounts').get();
+            let client = match.client;
+            if (!client) {
+                // Fresh-system path: verified signup creates its own client record.
+                // This write runs in the authenticated admin dashboard, under existing Firestore rules.
+                const createdAt = getDateTime();
+                const clientRef = await db.collection('clients').add({
+                    name: verified.name,
+                    email,
+                    phone: verified.phone,
+                    status: 'Active',
+                    createdAt,
+                    source: 'verified-client-portal-registration',
+                    portalUid: verified.uid
+                });
+                client = { id: clientRef.id, name: verified.name, email, phone: verified.phone };
+                clientsData.push(client);
+                await logActivity('Created Client From Verified Portal Registration',
+                    (verified.name || email) + ' · ' + clientRef.id);
+            }
+            const alreadyLinked = allAccounts.docs.some(doc => {
+                if (doc.id === verified.uid) return false;
+                const data = doc.data() || {};
+                return data.approved === true && data.clientId === client.id;
+            });
+            if (alreadyLinked) continue;
+            const reviewedAt = getDateTime();
+            await db.collection('clientAccounts').doc(verified.uid).update({
+                approved: true, clientId: client.id, approvedAt: reviewedAt,
+                approvedBy: currentUserEmail, autoLinked: true,
+                autoLinkedBy: match.client ? 'verified-existing-client-match' : 'verified-new-client-registration'
+            });
+            await db.collection('portalRequests').doc(verified.uid).update({
+                status: 'approved', clientId: client.id, reviewedAt,
+                reviewedBy: currentUserEmail, autoLinked: true
+            });
+            await logActivity('Automatically Linked Verified Client Portal',
+                (verified.name || email) + ' → Client: ' + (client.name || client.id));
+            await markPortalQueueLinked(verified.uid);
+        } catch (error) {
+            console.error('Automatic portal linking failed for ' + verified.uid, error);
+        } finally {
+            autoPortalLinkInFlight.delete(verified.uid);
+        }
+    }
+}
+
+// Poll the verified Cloudflare queue while the authenticated firm dashboard is open.
+if (typeof window !== 'undefined' && !window.__portalLinkQueueTimer) {
+    window.__portalLinkQueueTimer = setInterval(() => { autoLinkExactPortalRequests(); }, 30000);
+}
+
 function listenPortalRequests() {
     if (portalRequestsUnsub) portalRequestsUnsub();
     portalRequestsUnsub = db.collection('portalRequests').onSnapshot(snap => {
@@ -216,6 +325,7 @@ function listenPortalRequests() {
         snap.forEach(doc => { const d = doc.data(); d.uid = doc.id; portalRequestsData.push(d); });
         if (currentPage === 'portal') renderPortalRequests();
         updatePortalBadge();
+        autoLinkExactPortalRequests();
     });
 }
 
@@ -225,6 +335,7 @@ function listenPortalAccounts() {
         portalAccountsData = [];
         snap.forEach(doc => { const d = doc.data(); d.uid = doc.id; portalAccountsData.push(d); });
         if (currentPage === 'portal') renderPortalAccounts();
+        autoLinkExactPortalRequests();
     });
 }
 
@@ -234,12 +345,26 @@ async function loadPortalRequests() {
     renderPortalAccounts();
 }
 
+function findExactPortalClientMatch(request, clients = clientsData) {
+    const name = normalizeText(request && request.name);
+    const email = String(request && request.email || '').trim().toLowerCase();
+    const phone = normalizePhone(request && request.phone);
+    if (!name || !email || !phone) return { client: null, reason: 'incomplete' };
+    const matches = clients.filter(client =>
+        normalizeText(client && client.name) === name
+        && String(client && client.email || '').trim().toLowerCase() === email
+        && normalizePhone(client && client.phone) === phone
+    );
+    if (matches.length === 1) return { client: matches[0], reason: 'exact' };
+    return { client: null, reason: matches.length > 1 ? 'ambiguous' : 'none' };
+}
+
 function openApprovePortalModal(uid) {
     if (!isFullAccess()) { showToast('Only admins and developers can approve.', 'warning'); return; }
     const req = portalRequestsData.find(r => r.uid === uid);
     if (!req) { showToast('Request not found.', 'error'); return; }
-    let matchedClient = clientsData.find(c => (c.email || '').toLowerCase() === (req.email || '').toLowerCase());
-    if (!matchedClient && req.phone) matchedClient = clientsData.find(c => (c.phone || '').replace(/\s/g, '') === req.phone.replace(/\s/g, ''));
+    const portalMatch = findExactPortalClientMatch(req);
+    const matchedClient = portalMatch.client;
     const existing = document.getElementById('approvePortalModal');
     if (existing) existing.remove();
     const modal = document.createElement('div');
@@ -267,7 +392,7 @@ function openApprovePortalModal(uid) {
                     <option value="">— Select a client —</option>
                     ${clientsData.map(c => `<option value="${c.id}" ${matchedClient && matchedClient.id === c.id ? 'selected' : ''}>${c.name} ${c.email ? '• ' + c.email : ''} ${c.phone ? '• ' + c.phone : ''}</option>`).join('')}
                 </select>
-                ${matchedClient ? `<div class="fs-small" style="color:#22c55e;margin-top:0.3rem;"><i class="fas fa-check-circle"></i> Auto-matched to <strong>${matchedClient.name}</strong></div>` : ''}
+                ${portalMatch.reason === 'exact' ? '<div class="fs-small" style="color:#22c55e;margin-top:0.3rem;"><i class="fas fa-check-circle"></i> Exact name, email and phone match. Administrator approval is still required.</div>' : portalMatch.reason === 'ambiguous' ? '<div class="fs-small" style="color:#b45309;margin-top:0.3rem;">More than one exact match found. Review manually; no client is preselected.</div>' : portalMatch.reason === 'incomplete' ? '<div class="fs-small" style="color:#b45309;margin-top:0.3rem;">Name, email and phone are all required for an exact match. Review manually.</div>' : ''}
             </div>
             <div class="form-group">
                 <label style="display:flex;align-items:center;gap:0.4rem;">
@@ -298,6 +423,16 @@ function openApprovePortalModal(uid) {
 
 async function confirmApprovePortal(uid) {
     if (!isFullAccess()) { showToast('Permission denied.', 'warning'); return; }
+    try {
+        const verified = await getVerifiedPortalQueue();
+        if (!verified.some(item => item.uid === uid)) {
+            showToast('The client must verify their email address and sign in before portal approval.', 'warning');
+            return;
+        }
+    } catch (verificationError) {
+        showToast('Could not verify the client email status: ' + verificationError.message, 'error');
+        return;
+    }
     const req = portalRequestsData.find(r => r.uid === uid);
     if (!req) { showToast('Request not found.', 'error'); return; }
     const createNewEl = $('approveCreateNewClient');
@@ -330,6 +465,7 @@ async function confirmApprovePortal(uid) {
         await db.collection('clientAccounts').doc(uid).update({ approved: true, clientId: clientId, approvedAt: getDateTime(), approvedBy: currentUserEmail });
         await db.collection('portalRequests').doc(uid).update({ status: 'approved', clientId: clientId, reviewedAt: getDateTime(), reviewedBy: currentUserEmail });
         await logActivity('Approved Portal Access', `${req.name || req.email} → Client: ${clientName}`);
+        await markPortalQueueLinked(uid);
         showToast(`Portal access approved for ${req.name || req.email}.`, 'info');
         closeModal('approvePortalModal');
     } catch (e) { showToast('Failed to approve: ' + e.message, 'error'); }
@@ -677,8 +813,10 @@ let taskReminderInterval = null;
 let feeReminderInterval = null;
 let reminderInterval = null;
 
-const PRACTICE_AREAS = ['ELCs', 'Criminal', 'Succession', 'Civil', 'Tribunal',
-    'Divorce', 'Conveyancing', 'Running Down', 'Children', 'Employment', 'Kadhi'];
+const PRACTICE_AREAS = window.KK_PRACTICE_AREAS;
+if (!Array.isArray(PRACTICE_AREAS) || !PRACTICE_AREAS.length) {
+    throw new Error('Shared practice-area catalogue failed to load.');
+}
     // Default document sections tree (used only if Firestore empty)
 const DEFAULT_DOC_SECTIONS = [
     { name: 'Agreements', subSections: [] },
@@ -1983,25 +2121,41 @@ function renderUsers() {
 }
 
 async function createUser(email, password, role) {
+    let createdUser = null;
     try {
-        const userCred = await auth.createUserWithEmailAndPassword(email, password);
-        await db.collection('users').doc(userCred.user.uid).set({ email: email, role: role, createdAt: getDateTime(), lastLogin: getDateTime() });
+        const userCred = await provisioningAuth.createUserWithEmailAndPassword(email, password);
+        createdUser = userCred.user;
+        await db.collection('users').doc(createdUser.uid).set({
+            email: email, role: role, createdAt: getDateTime(), lastLogin: getDateTime()
+        });
+        await createdUser.sendEmailVerification().catch(err => console.warn('Staff verification email was not sent:', err));
         await logActivity('Created User', email);
-        showToast(`User ${email} created successfully!`, 'info');
+        showToast(`User ${email} created. A verification email was requested.`, 'success');
         return true;
-    } catch (e) { showToast(e.message, 'error'); return false; }
+    } catch (e) {
+        if (createdUser) {
+            await db.collection('users').doc(createdUser.uid).delete().catch(() => {});
+            await createdUser.delete().catch(() => {});
+        }
+        showToast(e.message, 'error');
+        return false;
+    } finally {
+        await provisioningAuth.signOut().catch(() => {});
+    }
 }
 
-async function updateUserRole(uid, role, password) {
+async function updateUserRole(uid, role, sendReset) {
     try {
-        const updates = { role: role };
-        if (password && password.length >= 6) {
-            await auth.currentUser.updatePassword(password);
-            await logActivity('Changed Password', `User: ${uid}`);
-        }
-        await db.collection('users').doc(uid).update(updates);
+        const target = usersData.find(user => user.id === uid);
+        if (!target || !target.email) throw new Error('Could not find the selected staff email.');
+        await db.collection('users').doc(uid).update({ role: role });
         await logActivity('Updated User Role', `User: ${uid} -> ${role}`);
-        showToast('User updated successfully!', 'info');
+        if (sendReset) {
+            await auth.sendPasswordResetEmail(target.email);
+            showToast('Role updated. A password-reset email was sent to the staff member.', 'success');
+        } else {
+            showToast('User role updated successfully.', 'success');
+        }
         return true;
     } catch (e) { showToast(e.message, 'error'); return false; }
 }
@@ -2266,7 +2420,7 @@ function editUser(uid) {
     document.getElementById('editUserId').value = uid;
     document.getElementById('editUserEmail').value = user.email;
     document.getElementById('editUserRole').value = user.role || 'clerk';
-    document.getElementById('editUserPassword').value = '';
+    document.getElementById('editUserSendReset').checked = false;
     openModal('editUserModal');
 }
 
@@ -2274,8 +2428,8 @@ document.getElementById('editUserForm').addEventListener('submit', async functio
     e.preventDefault();
     const uid = document.getElementById('editUserId').value;
     const role = document.getElementById('editUserRole').value;
-    const password = document.getElementById('editUserPassword').value;
-    await updateUserRole(uid, role, password);
+    const sendReset = document.getElementById('editUserSendReset').checked;
+    await updateUserRole(uid, role, sendReset);
     closeModal('editUserModal');
 });
 
@@ -2984,6 +3138,7 @@ function listenClients() {
         if (currentPage === 'payments') renderPayments();
         if (currentPage === 'fees') renderFees();
         checkFeeReminders();
+        autoLinkExactPortalRequests();
     });
 }
 
@@ -6040,5 +6195,42 @@ loadCompanyLogoFromFirestore();
 setTimeout(() => { if (currentUser && isFullAccess()) { updateAccidentSummary(); } }, 1500);
 
 console.log('Kuria Karatu & Company Advocates System Loaded');
+
+/* Self-service password change for the signed-in staff member. */
+(function bindOwnPasswordChange() {
+    const button = document.getElementById('changePasswordBtn');
+    const modal = document.getElementById('changeOwnPasswordModal');
+    const form = document.getElementById('changeOwnPasswordForm');
+    const error = document.getElementById('ownPasswordError');
+    const close = () => { if (modal) modal.style.display = 'none'; if (form) form.reset(); if (error) error.textContent = ''; };
+    if (button && modal && form) {
+        button.addEventListener('click', () => { modal.style.display = 'flex'; });
+        document.getElementById('closeOwnPasswordModal')?.addEventListener('click', close);
+        document.getElementById('cancelOwnPassword')?.addEventListener('click', close);
+        modal.addEventListener('click', event => { if (event.target === modal) close(); });
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (error) error.textContent = '';
+            const current = document.getElementById('ownCurrentPassword').value;
+            const next = document.getElementById('ownNewPassword').value;
+            const confirm = document.getElementById('ownConfirmPassword').value;
+            const user = auth.currentUser || currentUser;
+            if (next.length < 8) { if (error) error.textContent = 'Use at least 8 characters.'; return; }
+            if (next !== confirm) { if (error) error.textContent = 'The new passwords do not match.'; return; }
+            if (!user || !user.email) { if (error) error.textContent = 'Please sign in again before changing your password.'; return; }
+            try {
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+                await user.reauthenticateWithCredential(credential);
+                await user.updatePassword(next);
+                await logActivity('Changed Own Password', 'Signed-in user updated their password');
+                close();
+                showToast('Your password has been updated.', 'success');
+            } catch (err) {
+                if (error) error.textContent = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+                    ? 'Your current password is incorrect.' : (err.message || 'Could not update your password.');
+            }
+        });
+    }
+})();
 })();      
    
