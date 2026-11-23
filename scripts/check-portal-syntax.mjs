@@ -42,6 +42,22 @@ if (/matchedClient|auto-match-|signupCaseRef/.test(client)) {
   console.error('FAIL: client self-linking or case-reference matching remains');
 } else console.log('PASS: no public client auto-linking identifiers');
 
+if (!admin.includes('function findExactPortalClientMatch')
+    || !admin.includes('normalizeText(client && client.name) === name')
+    || !admin.includes("String(client && client.email || '').trim().toLowerCase() === email")
+    || !admin.includes('normalizePhone(client && client.phone) === phone')
+    || /let matchedClient = clientsData\\.find\\(c => \\(c\\.email/.test(admin)) {
+  failures++;
+  console.error('FAIL: portal suggestions must require one exact name, email and phone match');
+} else console.log('PASS: portal suggestions require an exact name, email and normalized phone match');
+
+if (!admin.includes('Administrator approval is still required.')
+    || !admin.includes("if (!isFullAccess()) { showToast('Permission denied.', 'warning'); return; }")) {
+  failures++;
+  console.error('FAIL: portal account linking must remain behind authorised administrator approval');
+} else console.log('PASS: portal linking remains an explicit administrator action');
+
+
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 const homepage = fs.readFileSync('index.html', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
