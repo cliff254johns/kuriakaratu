@@ -30,6 +30,7 @@ async function authorize(request, allowedRoles = ['cms_admin','public_admin']) {
 }
 function cleanText(value, max) { return String(value ?? '').trim().slice(0, max); }
 function validSlug(value) { return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value); }
+function validPublicUrl(value) { if (!value) return true; try { return ['https:','http:'].includes(new URL(value).protocol); } catch { return false; } }
 
 export default {
   async fetch(request, env) {
@@ -102,6 +103,7 @@ export default {
       const title = cleanText(body.title, 180);
       const slug = cleanText(body.slug, 180).toLowerCase();
       if (!ALLOWED_TYPES.has(type) || !title || !validSlug(slug)) return json({ error: 'Provide a valid type, title and URL slug.' }, 400, origin);
+      if (!validPublicUrl(body.image_url) || !validPublicUrl(body.document_url)) return json({ error: 'Image and document URLs must use HTTP or HTTPS.' }, 400, origin);
       const now = new Date().toISOString();
       const status = body.status === 'published' ? 'published' : 'draft';
       try {
@@ -116,6 +118,7 @@ export default {
       const id = match[1], body = await request.json(), now = new Date().toISOString();
       const type = cleanText(body.type,40), title = cleanText(body.title,180), slug = cleanText(body.slug,180).toLowerCase();
       if (!ALLOWED_TYPES.has(type) || !title || !validSlug(slug)) return json({ error: 'Invalid content fields.' }, 400, origin);
+      if (!validPublicUrl(body.image_url) || !validPublicUrl(body.document_url)) return json({ error: 'Image and document URLs must use HTTP or HTTPS.' }, 400, origin);
       const status = ['draft','published','archived'].includes(body.status) ? body.status : 'draft';
       const existing = await env.CMS_DB.prepare('SELECT published_at FROM cms_content WHERE id = ?').bind(id).first();
       if (!existing) return json({ error: 'Content not found.' }, 404, origin);
