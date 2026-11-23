@@ -3061,6 +3061,7 @@ function listenClients() {
         if (currentPage === 'payments') renderPayments();
         if (currentPage === 'fees') renderFees();
         checkFeeReminders();
+        autoLinkExactPortalRequests();
     });
 }
 
