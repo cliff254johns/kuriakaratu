@@ -134,6 +134,7 @@
             <button class="nav-item" data-page="ai" data-filter="" data-subfilter=""><i class="fas fa-robot"></i><span>AI Tools</span></button>
             <button class="nav-item" data-page="integrations" data-filter="" data-subfilter=""><i class="fas fa-plug"></i><span>Integration</span></button>
             <button class="nav-item" data-page="reports" data-filter="" data-subfilter=""><i class="fas fa-chart-line"></i><span>Reports</span></button>
+            <button class="nav-item admin-only" data-page="websiteCMS" data-filter="" data-subfilter=""><i class="fas fa-globe"></i><span>Website CMS</span></button>
             <button class="nav-item" data-page="settings" data-filter="" data-subfilter=""><i class="fas fa-cog"></i><span>Settings</span></button>
             <button class="nav-item admin-only" data-page="users" data-filter="" data-subfilter=""><i class="fas fa-user-shield"></i><span>Users</span></button>
             <button class="nav-item admin-only" data-page="portal" data-filter="" data-subfilter=""><i class="fas fa-user-check"></i><span>Portal Requests</span><span class="badge red" id="portalRequestsBadge" style="display:none;margin-left:auto;">0</span></button>
@@ -687,6 +688,25 @@
                     <div class="chart-box"><h4>Cases by Practice Area</h4><canvas id="reportsChart2" height="150"></canvas></div>
                 </div>
                 <div class="table-wrap"><h3><i class="fas fa-file-alt"></i> Monthly Summary</h3><div style="overflow-x:auto;"><table><tr><th>Month</th><th>New Cases</th><th>Closed Cases</th><th>Revenue (KES)</th><th>Billable Hours</th></tr><tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">No data yet.</td></tr></table></div></div>
+            </div>
+
+            <div id="page-websiteCMS" class="page">
+                <div class="table-wrap">
+                    <h3><i class="fas fa-globe"></i> Public Website Content Management</h3>
+                    <p class="text-muted">Manage the public website from this main administration system. Your existing signed-in administrator session is shared with the publishing workspace.</p>
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:0 0 12px;">
+                        <a class="btn btn-outline" href="/cms-admin.html" target="_blank" rel="noopener">Open CMS in a new tab</a>
+                        <span class="text-muted">The embedded workspace below is the primary access point.</span>
+                    </div>
+                    <iframe
+                        id="websiteCmsFrame"
+                        title="Public Website Content Management"
+                        src="/cms-admin.html"
+                        loading="lazy"
+                        referrerpolicy="same-origin"
+                        style="display:block;width:100%;height:calc(100vh - 230px);min-height:680px;border:1px solid #dbe2ea;border-radius:10px;background:#f3f5f8;"
+                    ></iframe>
+                </div>
             </div>
 
             <div id="page-settings" class="page">
