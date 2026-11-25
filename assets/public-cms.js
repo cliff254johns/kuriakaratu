@@ -39,7 +39,7 @@ async function init(){
    const media=isTeam?items.filter(i=>i.type==='team'&&i.status==='published'):items.filter(i=>i.type==='media'&&i.status==='published'&&(isVideos?!!videoId(i.document_url||''):!videoId(i.document_url||'')));
    const h=document.querySelector('[data-cms-heading]');if(h)h.textContent=isTeam?'Meet the team':isGallery?'Gallery':'Videos';
    const fallback=root.querySelector('[data-gallery-fallback]');
-   if(media.length){if(fallback)fallback.remove();const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
+   if(media.length){const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
    else if(!fallback){root.append(el('p','cms-empty',isTeam?'Team profiles will be updated here.':isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
    return;
   }
