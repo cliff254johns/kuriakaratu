@@ -322,6 +322,14 @@ if (!adminJs.includes("firebase.initializeApp(firebaseConfig, 'kk-user-provision
   failures++;
   console.error('FAIL: staff provisioning must use a secondary Auth instance and preserve the administrator session');
 } else console.log('PASS: staff provisioning uses a secondary Auth instance without replacing the administrator session');
+if (!adminJs.includes('crypto.getRandomValues(new Uint8Array(32))')
+    || !adminJs.includes('auth.sendPasswordResetEmail(email)')
+    || !adminJs.includes("onboardingMethod: 'email-password-reset'")
+    || adminJs.includes('newUserPassword')
+    || !adminHtml.includes('must choose a personal password before their first sign-in')) {
+  failures++;
+  console.error('FAIL: new staff accounts must use an undisclosed cryptographic bootstrap password and an email password-setup flow');
+} else console.log('PASS: new staff accounts receive an undisclosed random bootstrap password and password-setup email before first sign-in');
 if (adminJs.includes('auth.currentUser.updatePassword(password)')) {
   failures++;
   console.error('FAIL: administrator must not change another staff member password through the current session');

@@ -2120,21 +2120,38 @@ function renderUsers() {
     }).join('');
 }
 
-async function createUser(email, password, role) {
+async function createUser(email, role) {
     let createdUser = null;
+    let profileCreated = false;
+    // The account receives a cryptographically random, undisclosed bootstrap
+    // password. The user must set a password through the emailed reset link
+    // before they can know credentials and sign in for the first time.
+    const bootstrapPassword = Array.from(
+        crypto.getRandomValues(new Uint8Array(32)),
+        byte => byte.toString(16).padStart(2, '0')
+    ).join('');
     try {
-        const userCred = await provisioningAuth.createUserWithEmailAndPassword(email, password);
+        const userCred = await provisioningAuth.createUserWithEmailAndPassword(email, bootstrapPassword);
         createdUser = userCred.user;
         await db.collection('users').doc(createdUser.uid).set({
-            email: email, role: role, createdAt: getDateTime(), lastLogin: getDateTime()
+            email: email, role: role, createdAt: getDateTime(), lastLogin: null,
+            onboardingMethod: 'email-password-reset'
         });
+        profileCreated = true;
         await createdUser.sendEmailVerification().catch(err => console.warn('Staff verification email was not sent:', err));
-        await logActivity('Created User', email);
-        showToast(`User ${email} created. A verification email was requested.`, 'success');
+        await provisioningAuth.signOut().catch(() => {});
+        try {
+            await auth.sendPasswordResetEmail(email);
+            await logActivity('Created User — First-login password reset issued', email);
+            showToast(`User ${email} created. Verification and password-setup emails were requested. The user must set their own password before first sign-in.`, 'success');
+        } catch (resetError) {
+            console.error('Staff account created but password setup email failed:', resetError);
+            showToast(`Account created, but the password-setup email failed: ${resetError.message}. Open Edit User and send a password-reset email before giving the user access.`, 'error');
+        }
         return true;
     } catch (e) {
         if (createdUser) {
-            await db.collection('users').doc(createdUser.uid).delete().catch(() => {});
+            if (profileCreated) await db.collection('users').doc(createdUser.uid).delete().catch(() => {});
             await createdUser.delete().catch(() => {});
         }
         showToast(e.message, 'error');
@@ -2397,7 +2414,6 @@ document.getElementById('folderCategory').addEventListener('change', function() 
 document.getElementById('addUserBtn').addEventListener('click', function() {
     if (!isAdminOrDeveloper()) { showToast('Only admins and developers can manage users.', 'warning'); return; }
     document.getElementById('newUserEmail').value = '';
-    document.getElementById('newUserPassword').value = '';
     document.getElementById('newUserRole').value = 'clerk';
     openModal('addUserModal');
 });
@@ -2405,10 +2421,9 @@ document.getElementById('addUserBtn').addEventListener('click', function() {
 document.getElementById('addUserForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('newUserEmail').value.trim();
-    const password = document.getElementById('newUserPassword').value;
     const role = document.getElementById('newUserRole').value;
-    if (!email || !password) { showToast('Please fill all fields.', 'warning'); return; }
-    await createUser(email, password, role);
+    if (!email || !role) { showToast('Please provide an email address and role.', 'warning'); return; }
+    await createUser(email, role);
     closeModal('addUserModal');
     this.reset();
 });
