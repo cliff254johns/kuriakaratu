@@ -529,6 +529,10 @@
       background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&h=1080&fit=crop&crop=entropy&auto=format&q=80');
       opacity: 0.6;
     }
+    /* CMS-managed hero backgrounds take priority only when an image is published. */
+    #home[data-slide="0"]::before { background-image: var(--cms-hero-image-0, url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1280&h=720&fit=crop&crop=entropy&auto=format&q=70')); }
+    #home[data-slide="1"]::before { background-image: var(--cms-hero-image-1, url('https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1920&h=1080&fit=crop&crop=entropy&auto=format&q=80')); }
+    #home[data-slide="2"]::before { background-image: var(--cms-hero-image-2, url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&h=1080&fit=crop&crop=entropy&auto=format&q=80')); }
     /* Dark overlay for readability */
     .hero::after {
       content: '';
