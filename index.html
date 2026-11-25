@@ -3300,16 +3300,19 @@
           <span class="brand-sub">Advocates</span>
         </div>
       </div>
-      <ul class="nav-links" id="navLinks">
-        <li><a href="#about">About</a></li>
-        <li><a href="#values">Values</a></li>
-        <li><a href="#practices">Practices</a></li><li><a href="practices/index.html">All Services</a></li><li><a href="insights/index.html">Legal Knowledge</a></li><li><a href="blog/">Blog</a></li><li><a href="newsletter/">Newsletter</a></li><li><a href="papers/">Conference Papers</a></li>
-        <li><a href="#team">Team</a></li>
-        <li><a href="#gallery">Gallery</a></li>
-        <li><a href="#videos">Videos</a></li>
-        <li><a href="#insights">Insights</a></li>
-        <li><a href="consultation.html" class="btn-nav">Request Consultation</a></li>
-      </ul>
+      <nav class="nav-links" id="navLinks" aria-label="Main navigation">
+        <div class="nav-group"><details><summary>Our Firm <span aria-hidden="true">⌄</span></summary><div class="nav-dropdown">
+          <a href="#about">About the Firm</a><a href="#values">Our Values</a><a href="#team">Our Team</a><a href="#gallery">Photo Gallery</a><a href="gallery.html">View Full Gallery</a><a href="#videos">Videos</a><a href="videos.html">All Videos</a>
+        </div></details></div>
+        <div class="nav-group"><details><summary>Legal Services <span aria-hidden="true">⌄</span></summary><div class="nav-dropdown">
+          <a href="#practices">Featured Practice Areas</a><a href="practices/index.html">All 26 Practice Areas</a><a href="consultation.html">How We Work</a>
+        </div></details></div>
+        <div class="nav-group"><details><summary>Knowledge Centre <span aria-hidden="true">⌄</span></summary><div class="nav-dropdown">
+          <a href="#insights">Featured Legal Guides</a><a href="insights/index.html">Legal Knowledge Library</a><a href="blog/">Firm Blog</a><a href="newsletter/">Monthly Newsletter</a><a href="papers/">Conference Papers</a>
+        </div></details></div>
+        <a class="nav-direct" href="consultation.html">Consultation</a>
+        <a href="contact.html" class="btn-nav">Contact the Firm</a>
+      </nav>
       <button class="hamburger" id="hamburger" type="button" aria-controls="navLinks" aria-expanded="false" onclick="toggleMenu()" aria-label="Toggle navigation menu">
         <span></span><span></span><span></span>
       </button>
