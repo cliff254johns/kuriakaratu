@@ -14,13 +14,13 @@ function renderItem(item){
  card.append(el('h3','',item.title||''));
  if(item.summary)card.append(el('p','cms-summary',item.summary));
  if(item.body)card.append(el('p','cms-body',item.body));
- if(item.document_url&&!vid){const a=el('a','cms-link','Open media / document');a.href=item.document_url;a.target='_blank';a.rel='noopener noreferrer';card.append(a)}
+ if(item.type==='practice'&&item.slug){const a=el('a','cms-link','Explore practice area');a.href=(path.includes('/practices/')?'':'practices/')+encodeURIComponent(item.slug)+'.html';card.append(a)}else if(item.document_url&&!vid){const a=el('a','cms-link','Open media / document');a.href=item.document_url;a.target='_blank';a.rel='noopener noreferrer';card.append(a)}
  return card;
 }
 function targetFor(type){
  if(isGallery||isVideos)return null;
  if(path==='/'||path.endsWith('/index.html')&&!path.includes('/practices/')&&!path.includes('/insights/')&&!path.includes('/papers/')&&!path.includes('/newsletter/')){
-  return ({practice:document.querySelector('#practices .practice-grid'),team:document.querySelector('#team .team-grid'),media:document.querySelector('#gallery .gallery-grid'),insight:document.querySelector('#insights .insight-grid'),home_banner:document.querySelector('#home .hero-content')})[type]||null;
+  return ({practice:document.querySelector('#practices .practice-grid'),team:document.querySelector('#team .team-grid'),media:null,insight:document.querySelector('#insights .insight-grid'),home_banner:document.querySelector('#home .hero-content')})[type]||null;
  }
  if(type==='practice')return document.querySelector('main .grid');
  if(type==='insight')return document.querySelector('main .insight-grid,main .grid');
