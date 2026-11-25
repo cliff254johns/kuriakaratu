@@ -3283,6 +3283,7 @@
 <link rel="preconnect" href="https://images.unsplash.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" href="/ecosystem-refresh.css?v=20261115" />
 <link rel="stylesheet" href="/assets/homepage-experience.css?v=20261120" />
+<link rel="stylesheet" href="/assets/navigation-gallery.css?v=20261125" />
 </head>
 
 <body>
@@ -3304,6 +3305,7 @@
         <li><a href="#values">Values</a></li>
         <li><a href="#practices">Practices</a></li><li><a href="practices/index.html">All Services</a></li><li><a href="insights/index.html">Legal Knowledge</a></li><li><a href="blog/">Blog</a></li><li><a href="newsletter/">Newsletter</a></li><li><a href="papers/">Conference Papers</a></li>
         <li><a href="#team">Team</a></li>
+        <li><a href="#gallery">Gallery</a></li>
         <li><a href="#videos">Videos</a></li>
         <li><a href="#insights">Insights</a></li>
         <li><a href="consultation.html" class="btn-nav">Request Consultation</a></li>
@@ -3877,6 +3879,35 @@
   
 
     <!-- ===== VIDEO SECTION — EMBEDDED PLAYABLE VIDEOS ===== -->
+  <section id="gallery" class="section-padding bg-light gallery-section" aria-labelledby="gallery-title">
+    <div class="container">
+      <div class="text-center animate-on-scroll">
+        <span class="section-tag">Gallery</span>
+        <h2 id="gallery-title">Legal Practice in Focus</h2>
+        <p class="section-subtitle">A visual introduction to the areas of work that shape our practice.</p>
+        <p class="gallery-disclaimer">Illustrative legal imagery. Official firm, office and event photographs can be added as they become available.</p>
+      </div>
+      <div class="gallery-grid">
+        <button class="gallery-item" type="button" data-caption="Legal research" data-description="Legal research and careful review of documents support clear, informed advice." aria-label="View illustrative image: Legal research">
+          <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=900&amp;h=650&amp;fit=crop&amp;auto=format&amp;q=80" alt="Scales of justice representing legal research" loading="lazy" decoding="async">
+          <span class="gallery-overlay">Legal research</span>
+        </button>
+        <button class="gallery-item" type="button" data-caption="Client service" data-description="Clear communication and thoughtful preparation are important throughout a legal matter." aria-label="View illustrative image: Client service">
+          <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=900&amp;h=650&amp;fit=crop&amp;auto=format&amp;q=80" alt="Business professionals meeting" loading="lazy" decoding="async">
+          <span class="gallery-overlay">Client service</span>
+        </button>
+        <button class="gallery-item" type="button" data-caption="Property and transactions" data-description="Property and commercial transactions require careful documentation and due diligence." aria-label="View illustrative image: Property and transactions">
+          <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&amp;h=650&amp;fit=crop&amp;auto=format&amp;q=80" alt="Modern property exterior" loading="lazy" decoding="async">
+          <span class="gallery-overlay">Property &amp; transactions</span>
+        </button>
+        <button class="gallery-item" type="button" data-caption="Advocacy and justice" data-description="The justice system and principled advocacy are central to legal practice." aria-label="View illustrative image: Advocacy and justice">
+          <img src="https://images.unsplash.com/photo-1505664194779-8beaceb93744?w=900&amp;h=650&amp;fit=crop&amp;auto=format&amp;q=80" alt="Law books and legal reference materials" loading="lazy" decoding="async">
+          <span class="gallery-overlay">Advocacy &amp; justice</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <section id="videos" class="video-section">
     <div class="container">
       <div class="text-center">
@@ -4175,7 +4206,7 @@
   </div>
 
   <!-- ===== MOBILE APP BOTTOM NAVIGATION ===== -->
-  <nav class="mobile-app-nav" id="mobileAppNav" aria-label="Mobile navigation"><a href="#home" class="app-nav-item active" data-section="home"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a><a href="#practices" class="app-nav-item" data-section="practices"><i class="fas fa-briefcase" aria-hidden="true"></i><span>Practices</span></a><a href="#insights" class="app-nav-item" data-section="insights"><i class="fas fa-book-open" aria-hidden="true"></i><span>Insights</span></a><a href="#contact" class="app-nav-item" data-section="contact"><i class="fas fa-envelope" aria-hidden="true"></i><span>Contact</span></a></nav>
+  <nav class="mobile-app-nav" id="mobileAppNav" aria-label="Mobile navigation"><a href="#home" class="app-nav-item active" data-section="home"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a><a href="#practices" class="app-nav-item" data-section="practices"><i class="fas fa-briefcase" aria-hidden="true"></i><span>Practices</span></a><a href="#gallery" class="app-nav-item" data-section="gallery"><i class="fas fa-images" aria-hidden="true"></i><span>Gallery</span></a><a href="#insights" class="app-nav-item" data-section="insights"><i class="fas fa-book-open" aria-hidden="true"></i><span>Insights</span></a><a href="#contact" class="app-nav-item" data-section="contact"><i class="fas fa-envelope" aria-hidden="true"></i><span>Contact</span></a></nav>
 
   <!-- ============================================================ -->
   <!-- ===== JAVASCRIPT ===== -->
@@ -4259,7 +4290,9 @@
     function toggleMenu() {
       const menu = document.getElementById('navLinks');
       const button = document.getElementById('hamburger');
-      const open = menu.classList.toggle('active');
+      if (!menu || !button) return;
+      const open = button.getAttribute('aria-expanded') !== 'true';
+      menu.classList.toggle('active', open);
       button.setAttribute('aria-expanded', String(open));
     }
     document.querySelectorAll('#navLinks a').forEach(function(link) {
@@ -4268,11 +4301,24 @@
         document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
       });
     });
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        document.getElementById('navLinks')?.classList.remove('active');
+        document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('click', function(event) {
+      const header = document.getElementById('mainHeader');
+      if (header && !header.contains(event.target)) {
+        document.getElementById('navLinks')?.classList.remove('active');
+        document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
+      }
+    });
 
     // ===== MOBILE APP NAV — ACTIVE STATE TRACKING =====
     (function() {
       const appNavItems = document.querySelectorAll('.mobile-app-nav .app-nav-item[data-section]');
-      const sections = ['home', 'practices', 'insights', 'contact'];
+      const sections = ['home', 'practices', 'gallery', 'insights', 'contact'];
       const observerOptions = {
         root: null,
         rootMargin: '-40% 0px -50% 0px',
