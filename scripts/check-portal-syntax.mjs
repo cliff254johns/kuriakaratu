@@ -161,10 +161,15 @@ if (!homepage.includes('id="readingProgressFill"') || !homepage.includes('id="sh
   failures++;
   console.error('FAIL: homepage reading progress or native sharing controls are missing');
 } else console.log('PASS: reading progress and native sharing controls are present');
-if (!homepage.includes("const sections = ['home', 'practices', 'insights', 'contact']")) {
+if (!homepage.includes("const sections = ['home', 'practices', 'gallery', 'insights', 'contact']")) {
   failures++;
   console.error('FAIL: mobile navigation active-section targets are inconsistent');
 } else console.log('PASS: mobile navigation uses the correct section targets');
+if (!homepage.includes('<section id="gallery"') || (homepage.match(/class="gallery-item"/g) || []).length !== 4
+    || !homepage.includes('href="#gallery"') || !homepage.includes('/assets/navigation-gallery.css')) {
+  failures++;
+  console.error('FAIL: homepage gallery section, navigation or responsive stylesheet is incomplete');
+} else console.log('PASS: responsive gallery section and navigation are present');
 const consultation = fs.readFileSync('consultation.html', 'utf8');
 const enquiryScript = fs.readFileSync('assets/site-enhancements.js', 'utf8');
 if (!consultation.includes('id="summaryCount"') || !enquiryScript.includes("value('contact')") || !enquiryScript.includes("value('date')") || !enquiryScript.includes("value('time')")) {
