@@ -3,7 +3,7 @@
 const API='https://kuriakaratu-cms-api.cliff254johns.workers.dev';
 const path=location.pathname;
 const isGallery=/\/gallery\.html$/.test(path),isVideos=/\/videos\.html$/.test(path);
-const pageTypes=()=>isGallery||isVideos?[['media',isGallery?'Gallery':'Videos']]:path.includes('/practices/')?[['practice','Practice areas']]:path.includes('/insights/')?[['insight','Insights']]:path.includes('/papers/')?[['conference_paper','Conference papers']]:path.includes('/newsletter/')?[['newsletter','Newsletters']]:[['home_banner','Latest updates'],['practice','Practice areas'],['team','Our team'],['insight','Insights'],['conference_paper','Conference papers'],['newsletter','Newsletters'],['page','More information'],['media','Media gallery']];
+const pageTypes=()=>isTeam?[['team','Our team']]:isGallery||isVideos?[['media',isGallery?'Gallery':'Videos']]:path.includes('/practices/')?[['practice','Practice areas']]:path.includes('/insights/')?[['insight','Insights']]:path.includes('/papers/')?[['conference_paper','Conference papers']]:path.includes('/newsletter/')?[['newsletter','Newsletters']]:[['home_banner','Latest updates'],['practice','Practice areas'],['team','Our team'],['insight','Insights'],['conference_paper','Conference papers'],['newsletter','Newsletters'],['page','More information'],['media','Media gallery']];
 const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n};
 function videoId(value){try{const u=new URL(value);if(u.hostname==='youtu.be')return u.pathname.slice(1);if(u.hostname.includes('youtube.com'))return u.searchParams.get('v')||u.pathname.split('/').filter(Boolean).pop();}catch{}return null}
 function renderItem(item){
@@ -40,7 +40,7 @@ async function init(){
    const h=document.querySelector('[data-cms-heading]');if(h)h.textContent=isGallery?'Gallery':'Videos';
    const fallback=root.querySelector('[data-gallery-fallback]');
    if(media.length){if(fallback)fallback.remove();const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
-   else if(!fallback){root.append(el('p','cms-empty',isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
+   else if(!fallback){root.append(el('p','cms-empty',isTeam?'Team profiles will be updated here.':isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
    return;
   }
   const visible=pageTypes().map(x=>x[0]);
