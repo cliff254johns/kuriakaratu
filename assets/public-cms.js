@@ -46,9 +46,13 @@ async function init(){
   const seo=items.find(i=>visible.includes(i.type)&&(i.seo_title||i.seo_description));
   if(seo){if(seo.seo_title)document.title=seo.seo_title;const meta=document.querySelector('meta[name="description"]');if(meta&&seo.seo_description)meta.content=seo.seo_description}
   const home=path==='/'||path.endsWith('/index.html')&&!/\/(practices|insights|papers|newsletter)\//.test(path);
-  const types=home?['practice','team','media','insight']:visible;
+  const types=home?['home_banner','practice','team','media','insight','page']:visible;
+  const pageSlots={'home-about':'#about','home-values':'#values','home-practices':'#practices','home-approach':'#approach','home-team':'#team','home-gallery':'#gallery','home-videos':'#videos','home-insights':'#insights'};
+  const pageItems=items.filter(i=>i.type==='page'&&i.status==='published');
+  pageItems.forEach(item=>{const selector=pageSlots[item.slug];if(!selector)return;const section=document.querySelector(selector);if(!section)return;const heading=section.querySelector('h1,h2,h3');if(heading&&item.title)heading.textContent=item.title;const copy=section.querySelector('.section-subtitle,p');if(copy&&item.summary)copy.textContent=item.summary;if(item.body){let body=section.querySelector('.cms-managed-copy');if(!body){body=el('p','cms-managed-copy');const container=section.querySelector('.container')||section;container.append(body)}body.textContent=item.body}if(item.image_url)section.style.backgroundImage='linear-gradient(rgba(10,26,47,.78),rgba(10,26,47,.78)),url("'+item.image_url.replace(/["\\\\]/g,'')+'")';});
   types.forEach(type=>{
    const group=items.filter(i=>i.type===type&&i.status==='published');if(!group.length)return;
+   if(type==='page')return;
    const target=targetFor(type);
    if(target){group.forEach(i=>target.append(renderItem(i)));return}
    if(home)return;
