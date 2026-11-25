@@ -360,7 +360,7 @@ if (!homePage.includes('Our Firm') || !homePage.includes('Legal Services') || !h
 if (!homePage.includes('href="gallery.html">View the full gallery')
     || !homePage.includes('href="videos.html">Explore all videos')
     || !homePage.includes('href="practices/index.html">Explore all 26 practice areas')
-    || !fs.existsSync('gallery.html') || !fs.existsSync('videos.html')) {
+    || !homePage.includes('href="team.html">Meet the full team')\n    || !fs.existsSync('gallery.html') || !fs.existsSync('videos.html') || !fs.existsSync('team.html')) {
   failures++;
   console.error('FAIL: featured collections must link to their full gallery, videos and practice-area pages');
 } else console.log('PASS: gallery, videos and practice areas include working full-collection destinations');
@@ -373,7 +373,7 @@ if (!publicCms.includes('youtube-nocookie.com/embed/')
   failures++;
   console.error('FAIL: public CMS must render managed images/videos in matching sections and provide content reordering controls');
 } else console.log('PASS: CMS media is routed by section and administrators can reorder published content');
-for (const page of ['gallery.html','videos.html']) {
+for (const page of ['gallery.html','videos.html','team.html']) {
   const html = fs.readFileSync(page, 'utf8');
   if (!html.includes('practice-navigation.js') || !html.includes('public-cms.js') || !html.includes('data-public-cms')) {
     failures++;
