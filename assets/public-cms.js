@@ -1,1 +1,60 @@
-(function(){const API='https://kuriakaratu-cms-api.cliff254johns.workers.dev';const allTypes=[['home_banner','Latest updates'],['practice','Practice areas'],['team','Our team'],['insight','Insights'],['conference_paper','Conference papers'],['newsletter','Newsletters'],['page','More information'],['media','Media gallery']];function pageTypes(){const p=location.pathname;if(p.startsWith('/practices/'))return [['practice','Practice areas']];if(p.startsWith('/insights/'))return [['insight','Insights']];if(p.startsWith('/papers/'))return [['conference_paper','Conference papers']];if(p.startsWith('/newsletter/'))return [['newsletter','Newsletters']];return allTypes;}function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n}async function init(){try{const r=await fetch(API+'/api/content');if(!r.ok)return;const data=await r.json();const items=data.items||[];if(!items.length)return;const visibleTypes=pageTypes().map(x=>x[0]);const seo=items.find(x=>visibleTypes.includes(x.type)&&(x.seo_title||x.seo_description));if(seo){if(seo.seo_title)document.title=seo.seo_title;const meta=document.querySelector('meta[name="description"]');if(meta&&seo.seo_description)meta.setAttribute('content',seo.seo_description)}let root=document.querySelector('[data-public-cms]');if(!root){root=el('section','public-cms-content');root.dataset.publicCms='';const footer=document.querySelector('footer');if(footer&&footer.parentNode)footer.parentNode.insertBefore(root,footer);else document.body.append(root)}pageTypes().forEach(([type,label])=>{const group=items.filter(x=>x.type===type);if(!group.length)return;const section=el('section','cms-section');const h=el('h2','',label);section.append(h);const grid=el('div','cms-grid');group.forEach(item=>{const card=el('article','cms-card');if(item.image_url){const img=el('img','cms-image');img.src=item.image_url;img.alt=item.title;img.loading='lazy';card.append(img)}card.append(el('h3','',item.title));if(item.summary)card.append(el('p','',item.summary));if(item.body){const body=el('p','cms-body',item.body);card.append(body)}if(item.document_url){const a=el('a','cms-link','Read / download');a.href=item.document_url;a.target='_blank';a.rel='noopener noreferrer';card.append(a)}grid.append(card)});section.append(grid);root.append(section)})}catch(e){console.warn('Public CMS content unavailable',e)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();
+(function(){
+'use strict';
+const API='https://kuriakaratu-cms-api.cliff254johns.workers.dev';
+const path=location.pathname;
+const isGallery=/\/gallery\.html$/.test(path),isVideos=/\/videos\.html$/.test(path);
+const pageTypes=()=>isGallery||isVideos?[['media',isGallery?'Gallery':'Videos']]:path.includes('/practices/')?[['practice','Practice areas']]:path.includes('/insights/')?[['insight','Insights']]:path.includes('/papers/')?[['conference_paper','Conference papers']]:path.includes('/newsletter/')?[['newsletter','Newsletters']]:[['home_banner','Latest updates'],['practice','Practice areas'],['team','Our team'],['insight','Insights'],['conference_paper','Conference papers'],['newsletter','Newsletters'],['page','More information'],['media','Media gallery']];
+const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n};
+function videoId(value){try{const u=new URL(value);if(u.hostname==='youtu.be')return u.pathname.slice(1);if(u.hostname.includes('youtube.com'))return u.searchParams.get('v')||u.pathname.split('/').filter(Boolean).pop();}catch{}return null}
+function renderItem(item){
+ const card=el('article','cms-card');card.dataset.contentId=item.id||'';
+ const vid=videoId(item.document_url||'');
+ if(item.image_url){const img=el('img','cms-image');img.src=item.image_url;img.alt=item.title||'Website image';img.loading='lazy';img.decoding='async';card.append(img)}
+ if(vid){const wrap=el('div','cms-video');const frame=el('iframe');frame.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(vid);frame.title=item.title||'Kuria Karatu video';frame.loading='lazy';frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';frame.referrerPolicy='strict-origin-when-cross-origin';frame.allowFullscreen=true;wrap.append(frame);card.append(wrap)}
+ card.append(el('h3','',item.title||''));
+ if(item.summary)card.append(el('p','cms-summary',item.summary));
+ if(item.body)card.append(el('p','cms-body',item.body));
+ if(item.document_url&&!vid){const a=el('a','cms-link','Open media / document');a.href=item.document_url;a.target='_blank';a.rel='noopener noreferrer';card.append(a)}
+ return card;
+}
+function targetFor(type){
+ if(isGallery||isVideos)return null;
+ if(path==='/'||path.endsWith('/index.html')&&!path.includes('/practices/')&&!path.includes('/insights/')&&!path.includes('/papers/')&&!path.includes('/newsletter/')){
+  return ({practice:document.querySelector('#practices .practice-grid'),team:document.querySelector('#team .team-grid'),media:document.querySelector('#gallery .gallery-grid'),insight:document.querySelector('#insights .insight-grid'),home_banner:document.querySelector('#home .hero-content')})[type]||null;
+ }
+ if(type==='practice')return document.querySelector('main .grid');
+ if(type==='insight')return document.querySelector('main .insight-grid,main .grid');
+ return null;
+}
+function makeSection(title,items){
+ const root=el('section','cms-section');root.append(el('h2','',title));const grid=el('div','cms-grid');items.forEach(i=>grid.append(renderItem(i)));root.append(grid);return root;
+}
+async function init(){
+ try{
+  const response=await fetch(API+'/api/content',{headers:{accept:'application/json'}});
+  if(!response.ok)return;
+  const data=await response.json();const items=(data.items||[]).slice().sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0)||String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
+  const root=document.querySelector('[data-public-cms]')||(()=>{const n=el('div','public-cms-content');n.dataset.publicCms='';const main=document.querySelector('main');if(main)main.append(n);else document.body.append(n);return n})();
+  if(isGallery||isVideos){
+   const media=items.filter(i=>i.type==='media'&&i.status==='published'&&(isVideos?!!videoId(i.document_url||''):!videoId(i.document_url||'')));
+   const h=document.querySelector('[data-cms-heading]');if(h)h.textContent=isGallery?'Gallery':'Videos';
+   if(!media.length){root.append(el('p','cms-empty',isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
+   else{const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
+   return;
+  }
+  const visible=pageTypes().map(x=>x[0]);
+  const seo=items.find(i=>visible.includes(i.type)&&(i.seo_title||i.seo_description));
+  if(seo){if(seo.seo_title)document.title=seo.seo_title;const meta=document.querySelector('meta[name="description"]');if(meta&&seo.seo_description)meta.content=seo.seo_description}
+  const home=path==='/'||path.endsWith('/index.html')&&!/\/(practices|insights|papers|newsletter)\//.test(path);
+  const types=home?['practice','team','media','insight']:visible;
+  types.forEach(type=>{
+   const group=items.filter(i=>i.type===type&&i.status==='published');if(!group.length)return;
+   const target=targetFor(type);
+   if(target){group.forEach(i=>target.append(renderItem(i)));return}
+   if(home)return;
+   const section=makeSection(({practice:'Practice areas',insight:'Insights',conference_paper:'Conference papers',newsletter:'Newsletters',team:'Our team',media:'Media gallery',page:'More information'}[type]||type),group);root.append(section);
+  });
+ }catch(e){console.warn('Public CMS content unavailable',e)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
