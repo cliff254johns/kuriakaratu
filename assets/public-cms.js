@@ -38,8 +38,9 @@ async function init(){
   if(isGallery||isVideos){
    const media=items.filter(i=>i.type==='media'&&i.status==='published'&&(isVideos?!!videoId(i.document_url||''):!videoId(i.document_url||'')));
    const h=document.querySelector('[data-cms-heading]');if(h)h.textContent=isGallery?'Gallery':'Videos';
-   if(!media.length){root.append(el('p','cms-empty',isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
-   else{const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
+   const fallback=root.querySelector('[data-gallery-fallback]');
+   if(media.length){if(fallback)fallback.remove();const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
+   else if(!fallback){root.append(el('p','cms-empty',isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
    return;
   }
   const visible=pageTypes().map(x=>x[0]);
