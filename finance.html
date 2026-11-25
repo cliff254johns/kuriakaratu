@@ -794,6 +794,7 @@ function handleLogin(email, password){
     var timeout = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('TIMEOUT')); }, 10000); });
     Promise.race([auth.signInWithEmailAndPassword(email, password), timeout])
       .then(async function(cred){
+        await cred.user.reload();
         const snap = await db.collection('users').doc(cred.user.uid).get();
         if (!snap.exists) {
           await auth.signOut();
@@ -801,6 +802,11 @@ function handleLogin(email, password){
           return;
         }
         const role = snap.data().role;
+        if (snap.data().onboardingMethod === 'email-password-reset' && cred.user.emailVerified !== true) {
+          await auth.signOut();
+          resolve({ ok:false, msg:'Verify your staff email address before signing in. Use the verification link sent to your inbox.' });
+          return;
+        }
         if (!['admin','developer','finance'].includes(role)) {
           await auth.signOut();
           resolve({ ok:false, msg:'This account does not have an authorised staff role.' });
@@ -2263,8 +2269,12 @@ document.addEventListener('DOMContentLoaded', function(){
       }
       if (currentUserEmail === user.email) return;
       try {
+        await user.reload();
         if (!user.email) throw new Error('This account has no verified staff email.');
         var profile = await db.collection('users').doc(user.uid).get();
+        if (profile.exists && profile.data().onboardingMethod === 'email-password-reset' && user.emailVerified !== true) {
+          throw new Error('Verify your staff email address before signing in. Use the verification link sent to your inbox.');
+        }
         if (!profile.exists || !['admin','developer','finance'].includes(profile.data().role)) {
           throw new Error('This account has not been provisioned with an authorised finance role.');
         }
