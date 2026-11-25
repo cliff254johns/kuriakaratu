@@ -4236,13 +4236,13 @@ function navigate(page, filter, subfilter) {
         'payments': 'Payments & Receipts', 'fees': 'Client Fees & Installments',
         'accidentClients': 'Accident Clients', 'activity': 'Activity Log', 'users': 'User Management',
         'portal': 'Portal Requests', 'ai': 'AI Tools', 'integrations': 'Integration',
-        'reports': 'Reports', 'settings': 'Settings'
+        'reports': 'Reports', 'websiteCMS': 'Website CMS', 'settings': 'Settings'
     };
     document.getElementById('pageTitle').textContent = titleMap[page] || page;
     currentPage = page;
     currentFilter = filter || '';
     currentSubfilter = subfilter || '';
-    if ((page === 'users' || page === 'activity' || page === 'targets' || page === 'fees' || page === 'payments' || page === 'settings' || page === 'portal' || page === 'accidentClients') && !isFullAccess()) {
+    if ((page === 'users' || page === 'activity' || page === 'targets' || page === 'fees' || page === 'payments' || page === 'settings' || page === 'portal' || page === 'accidentClients' || page === 'websiteCMS') && !isFullAccess()) {
         showToast('This page is restricted.', 'warning');
         setTimeout(() => {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
