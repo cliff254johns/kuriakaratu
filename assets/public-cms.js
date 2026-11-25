@@ -2,7 +2,7 @@
 'use strict';
 const API='https://kuriakaratu-cms-api.cliff254johns.workers.dev';
 const path=location.pathname;
-const isGallery=/\/gallery\.html$/.test(path),isVideos=/\/videos\.html$/.test(path);
+const isGallery=/\/gallery\.html$/.test(path),isVideos=/\/videos\.html$/.test(path),isTeam=/\/team\.html$/.test(path);
 const pageTypes=()=>isTeam?[['team','Our team']]:isGallery||isVideos?[['media',isGallery?'Gallery':'Videos']]:path.includes('/practices/')?[['practice','Practice areas']]:path.includes('/insights/')?[['insight','Insights']]:path.includes('/papers/')?[['conference_paper','Conference papers']]:path.includes('/newsletter/')?[['newsletter','Newsletters']]:[['home_banner','Latest updates'],['practice','Practice areas'],['team','Our team'],['insight','Insights'],['conference_paper','Conference papers'],['newsletter','Newsletters'],['page','More information'],['media','Media gallery']];
 const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n};
 function videoId(value){try{const u=new URL(value);if(u.hostname==='youtu.be')return u.pathname.slice(1);if(u.hostname.includes('youtube.com'))return u.searchParams.get('v')||u.pathname.split('/').filter(Boolean).pop();}catch{}return null}
@@ -35,9 +35,9 @@ async function init(){
   if(!response.ok)return;
   const data=await response.json();const items=(data.items||[]).slice().sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0)||String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
   const root=document.querySelector('[data-public-cms]')||(()=>{const n=el('div','public-cms-content');n.dataset.publicCms='';const main=document.querySelector('main');if(main)main.append(n);else document.body.append(n);return n})();
-  if(isGallery||isVideos){
-   const media=items.filter(i=>i.type==='media'&&i.status==='published'&&(isVideos?!!videoId(i.document_url||''):!videoId(i.document_url||'')));
-   const h=document.querySelector('[data-cms-heading]');if(h)h.textContent=isGallery?'Gallery':'Videos';
+  if(isGallery||isVideos||isTeam){
+   const media=isTeam?items.filter(i=>i.type==='team'&&i.status==='published'):items.filter(i=>i.type==='media'&&i.status==='published'&&(isVideos?!!videoId(i.document_url||''):!videoId(i.document_url||'')));
+   const h=document.querySelector('[data-cms-heading]');if(h)h.textContent=isTeam?'Meet the team':isGallery?'Gallery':'Videos';
    const fallback=root.querySelector('[data-gallery-fallback]');
    if(media.length){if(fallback)fallback.remove();const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
    else if(!fallback){root.append(el('p','cms-empty',isTeam?'Team profiles will be updated here.':isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
