@@ -56,7 +56,12 @@ async function init(){
    if(type==='page')return;
    if(home&&type==='media'){const images=group.filter(i=>!videoId(i.document_url||''));const videos=group.filter(i=>!!videoId(i.document_url||''));const gallery=document.querySelector('#gallery .gallery-grid');const videoGrid=document.querySelector('#videos .video-grid');if(gallery&&images.length){gallery.replaceChildren();gallery.classList.add('cms-grid');images.forEach(i=>gallery.append(renderItem(i)))}if(videoGrid&&videos.length){videoGrid.replaceChildren();videoGrid.classList.add('cms-grid');videos.forEach(i=>videoGrid.append(renderItem(i)))}return}
    const target=targetFor(type);
-   if(target){group.forEach(i=>target.append(renderItem(i)));return}
+   if(target){
+    // Published CMS collections replace homepage sample cards rather than duplicating them.
+    // The hero content is intentionally preserved because it contains the primary page introduction.
+    if(home&&['practice','team','insight'].includes(type))target.replaceChildren();
+    group.forEach(i=>target.append(renderItem(i)));return
+   }
    if(home)return;
    const section=makeSection(({practice:'Practice areas',insight:'Insights',conference_paper:'Conference papers',newsletter:'Newsletters',team:'Our team',media:'Media gallery',page:'More information'}[type]||type),group);root.append(section);
   });
