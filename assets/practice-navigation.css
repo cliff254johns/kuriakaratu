@@ -63,3 +63,32 @@ body{padding-top:76px}
 .kk-whatsapp-icon svg{display:block}.kk-whatsapp-label{white-space:nowrap}
 @media(max-width:650px){.kk-whatsapp-float{right:15px;bottom:18px;min-height:58px;padding:6px;border-radius:50%}.kk-whatsapp-icon{width:46px;height:46px;flex-basis:46px}.kk-whatsapp-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}}
 @media(prefers-reduced-motion:reduce){.kk-whatsapp-float{transition:none!important}}
+
+/* Consistent grouped desktop navigation and touch-first dropdowns on all public pages. */
+#mainHeader.kk-practice-header .nav-container{max-width:1440px;gap:clamp(12px,2vw,28px)}
+.kk-practice-header .logo{flex:0 1 auto;min-width:220px}
+.kk-practice-header .nav-links{display:flex!important;align-items:center;justify-content:flex-end;gap:clamp(12px,1.35vw,22px);flex:1 1 auto;min-width:0}
+.kk-practice-header .nav-group{position:relative}
+.kk-practice-header .nav-group details{position:relative}
+.kk-practice-header .nav-group summary{display:flex;align-items:center;gap:8px;min-height:44px;color:#fff;font:650 .86rem/1.2 Inter,Arial,sans-serif;white-space:nowrap;cursor:pointer;list-style:none}
+.kk-practice-header .nav-group summary::-webkit-details-marker{display:none}
+.kk-practice-header .nav-group summary span{color:#e2c486;transition:transform .2s ease}
+.kk-practice-header .nav-group details[open] summary span{transform:rotate(180deg)}
+.kk-practice-header .nav-dropdown{position:absolute;top:calc(100% + 8px);left:0;z-index:4000;display:grid;gap:3px;min-width:245px;padding:10px;background:#102a43;border:1px solid rgba(195,154,69,.35);border-top:3px solid #c39a45;border-radius:0 0 10px 10px;box-shadow:0 18px 44px rgba(0,0,0,.28)}
+.kk-practice-header .nav-dropdown a{display:flex;align-items:center;min-height:42px;padding:9px 12px;color:#f7f8fa;text-decoration:none;font-size:.85rem;white-space:nowrap;border-radius:5px}
+.kk-practice-header .nav-dropdown a:hover,.kk-practice-header .nav-dropdown a:focus-visible{background:rgba(255,255,255,.1);color:#f0d9aa}
+.kk-practice-header .nav-links .nav-cta{list-style:none}
+.kk-practice-header .hamburger{display:none}
+@media(min-width:981px) and (max-width:1250px){.kk-practice-header .nav-container{gap:10px}.kk-practice-header .logo{min-width:185px}.kk-practice-header .logo img{max-width:52px}.kk-practice-header .brand-name{font-size:.91rem}.kk-practice-header .nav-links{gap:10px}.kk-practice-header .nav-group summary{font-size:.78rem}.kk-practice-header .nav-links .btn-nav{padding:9px 11px;font-size:.7rem}}
+@media(max-width:980px){
+ body{padding-top:70px}
+ #mainHeader.kk-practice-header,.kk-practice-header .nav-container{height:70px}
+ .kk-practice-header .hamburger{display:block}
+ .kk-practice-header .nav-links{display:none!important;position:absolute;top:70px;left:0;right:0;max-height:calc(100dvh - 70px);overflow:auto;padding:14px 18px 22px;background:rgba(10,26,47,.99);border-top:2px solid #c39a45;box-shadow:0 16px 28px rgba(0,0,0,.28);flex-direction:column;align-items:stretch;gap:4px}
+ .kk-practice-header .nav-links.is-open{display:flex!important}
+ .kk-practice-header .nav-group,.kk-practice-header .nav-group details{width:100%}
+ .kk-practice-header .nav-group summary{min-height:46px;padding:8px 10px}
+ .kk-practice-header .nav-dropdown{position:static;min-width:0;margin:0 0 8px 8px;padding:5px;background:rgba(255,255,255,.045);border:0;border-left:2px solid #c39a45;border-radius:0;box-shadow:none}
+ .kk-practice-header .nav-dropdown a{white-space:normal}
+ .kk-practice-header .nav-links .nav-cta .btn-nav{display:flex;justify-content:center;margin-top:8px}
+}
