@@ -54,6 +54,7 @@ async function init(){
   types.forEach(type=>{
    const group=items.filter(i=>i.type===type&&i.status==='published');if(!group.length)return;
    if(type==='page')return;
+   if(home&&type==='media'){const images=group.filter(i=>!videoId(i.document_url||''));const videos=group.filter(i=>!!videoId(i.document_url||''));const gallery=document.querySelector('#gallery .gallery-grid');const videoGrid=document.querySelector('#videos .video-grid');if(gallery)images.forEach(i=>gallery.append(renderItem(i)));if(videoGrid)videos.forEach(i=>videoGrid.append(renderItem(i)));return}
    const target=targetFor(type);
    if(target){group.forEach(i=>target.append(renderItem(i)));return}
    if(home)return;
