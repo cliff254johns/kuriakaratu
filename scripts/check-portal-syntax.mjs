@@ -305,6 +305,11 @@ if (!financePasswordPage.includes('id="changePasswordBtn"') || !financePasswordP
   failures++;
   console.error('FAIL: finance self-service password change must reauthenticate and update the Firebase Auth password');
 } else console.log('PASS: finance users can securely change their password after reauthentication');
+if (!financePasswordPage.includes("if (!['admin','developer','finance'].includes(role))")
+    || !financePasswordPage.includes("!['admin','developer','finance'].includes(profile.data().role)")) {
+  failures++;
+  console.error('FAIL: finance sign-in and authenticated-session role allowlists must match');
+} else console.log('PASS: finance login and session checks consistently allow finance staff');
 if (!client.includes('reauthenticateWithCredential') || !client.includes('updatePassword(newPwd)') || !tracker.includes('reauthenticateWithCredential') || !tracker.includes('updatePassword(next)')) {
   failures++;
   console.error('FAIL: client portal and practice tracker password-change flows are incomplete');
