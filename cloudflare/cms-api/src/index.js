@@ -31,13 +31,25 @@ async function authorize(request, allowedRoles = ['admin','developer','cms_admin
 function cleanText(value, max) { return String(value ?? '').trim().slice(0, max); }
 function validSlug(value) { return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value); }
 function validPublicUrl(value) { if (!value) return true; try { return ['https:','http:'].includes(new URL(value).protocol); } catch { return false; } }
+const MAX_INLINE_IMAGE_CHARS = 1_200_000;
+function cleanImage(value) {
+  const image = String(value ?? '').trim();
+  if (!image) return '';
+  if (image.startsWith('data:')) {
+    if (image.length > MAX_INLINE_IMAGE_CHARS) throw new Error('Image is too large. Please use a compressed image under 900 KB.');
+    if (!/^data:image\/(?:webp|jpeg|png);base64,[A-Za-z0-9+/]+={0,2}$/.test(image)) throw new Error('Upload a valid WebP, JPEG or PNG image.');
+    return image;
+  }
+  if (!validPublicUrl(image)) throw new Error('Image must be an HTTPS/HTTP URL or a supported Base64 image.');
+  return image.slice(0, 2000);
+}
 
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('origin') || '*';
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: { 'access-control-allow-origin': origin, 'access-control-allow-headers': 'authorization,content-type', 'access-control-allow-methods': 'GET,POST,PUT,DELETE,OPTIONS', 'access-control-max-age': '86400', 'vary': 'Origin' } });
     const url = new URL(request.url);
-    if (url.pathname === '/api/health') return json({ ok: true, service: 'kuriakaratu-public-cms', storage: 'cloudflare-d1' }, 200, origin);
+    if (url.pathname === '/api/health') return json({ ok: true, service: 'kuriakaratu-public-cms', storage: 'cloudflare-d1-inline-base64' }, 200, origin);
     if (url.pathname === '/api/content' && request.method === 'GET') {
       const type = url.searchParams.get('type');
       if (type && !ALLOWED_TYPES.has(type)) return json({ error: 'Invalid content type' }, 400, origin);
@@ -103,12 +115,14 @@ export default {
       const title = cleanText(body.title, 180);
       const slug = cleanText(body.slug, 180).toLowerCase();
       if (!ALLOWED_TYPES.has(type) || !title || !validSlug(slug)) return json({ error: 'Provide a valid type, title and URL slug.' }, 400, origin);
-      if (!validPublicUrl(body.image_url) || !validPublicUrl(body.document_url)) return json({ error: 'Image and document URLs must use HTTP or HTTPS.' }, 400, origin);
+      let imageUrl;
+      try { imageUrl = cleanImage(body.image_url); } catch (e) { return json({ error: e.message }, 400, origin); }
+      if (!validPublicUrl(body.document_url)) return json({ error: 'Document URLs must use HTTP or HTTPS.' }, 400, origin);
       const now = new Date().toISOString();
       const status = body.status === 'published' ? 'published' : 'draft';
       try {
         await env.CMS_DB.prepare('INSERT INTO cms_content (id,type,title,slug,summary,body,image_url,document_url,status,sort_order,seo_title,seo_description,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
-          .bind(id,type,title,slug,cleanText(body.summary,1000),cleanText(body.body,30000),cleanText(body.image_url,2000),cleanText(body.document_url,2000),status,Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 0,cleanText(body.seo_title,180),cleanText(body.seo_description,320),now,now,status === 'published' ? now : null).run();
+          .bind(id,type,title,slug,cleanText(body.summary,1000),cleanText(body.body,30000),imageUrl,cleanText(body.document_url,2000),status,Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 0,cleanText(body.seo_title,180),cleanText(body.seo_description,320),now,now,status === 'published' ? now : null).run();
       } catch (e) { return json({ error: 'Could not save content. Check that the URL slug is unique.' }, 409, origin); }
       await env.CMS_DB.prepare('INSERT INTO cms_audit (id,actor_uid,action,content_id,created_at) VALUES (?,?,?,?,?)').bind(crypto.randomUUID(),actor.uid,'create',id,now).run();
       return json({ ok: true, id }, 201, origin);
@@ -118,13 +132,15 @@ export default {
       const id = match[1], body = await request.json(), now = new Date().toISOString();
       const type = cleanText(body.type,40), title = cleanText(body.title,180), slug = cleanText(body.slug,180).toLowerCase();
       if (!ALLOWED_TYPES.has(type) || !title || !validSlug(slug)) return json({ error: 'Invalid content fields.' }, 400, origin);
-      if (!validPublicUrl(body.image_url) || !validPublicUrl(body.document_url)) return json({ error: 'Image and document URLs must use HTTP or HTTPS.' }, 400, origin);
+      let imageUrl;
+      try { imageUrl = cleanImage(body.image_url); } catch (e) { return json({ error: e.message }, 400, origin); }
+      if (!validPublicUrl(body.document_url)) return json({ error: 'Document URLs must use HTTP or HTTPS.' }, 400, origin);
       const status = ['draft','published','archived'].includes(body.status) ? body.status : 'draft';
       const existing = await env.CMS_DB.prepare('SELECT published_at FROM cms_content WHERE id = ?').bind(id).first();
       if (!existing) return json({ error: 'Content not found.' }, 404, origin);
       try {
         await env.CMS_DB.prepare('UPDATE cms_content SET type=?,title=?,slug=?,summary=?,body=?,image_url=?,document_url=?,status=?,sort_order=?,seo_title=?,seo_description=?,updated_at=?,published_at=? WHERE id=?')
-          .bind(type,title,slug,cleanText(body.summary,1000),cleanText(body.body,30000),cleanText(body.image_url,2000),cleanText(body.document_url,2000),status,Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 0,cleanText(body.seo_title,180),cleanText(body.seo_description,320),now,status === 'published' ? (existing.published_at || now) : null,id).run();
+          .bind(type,title,slug,cleanText(body.summary,1000),cleanText(body.body,30000),imageUrl,cleanText(body.document_url,2000),status,Number.isFinite(Number(body.sort_order)) ? Number(body.sort_order) : 0,cleanText(body.seo_title,180),cleanText(body.seo_description,320),now,status === 'published' ? (existing.published_at || now) : null,id).run();
       } catch { return json({ error: 'Could not update content. Check that the URL slug is unique.' }, 409, origin); }
       await env.CMS_DB.prepare('INSERT INTO cms_audit (id,actor_uid,action,content_id,created_at) VALUES (?,?,?,?,?)').bind(crypto.randomUUID(),actor.uid,'update',id,now).run();
       return json({ ok: true, id }, 200, origin);
