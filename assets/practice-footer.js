@@ -14,12 +14,14 @@
  const existing=document.querySelectorAll('footer');
  existing.forEach(el=>el.remove());
  document.body.appendChild(footer);
- const whatsapp=document.createElement('a');
- whatsapp.className='kk-whatsapp-float';
- whatsapp.href='https://wa.me/254725799752?text='+encodeURIComponent('Hello, I would like to make an initial legal enquiry.');
- whatsapp.target='_blank';
- whatsapp.rel='noopener noreferrer';
- whatsapp.setAttribute('aria-label','Start an initial enquiry on WhatsApp');
- whatsapp.innerHTML='<i class="fab fa-whatsapp" aria-hidden="true"></i><span>WhatsApp</span>';
- document.body.appendChild(whatsapp);
+ if(!document.querySelector('.kk-whatsapp-float')){
+  const whatsapp=document.createElement('a');
+  whatsapp.className='kk-whatsapp-float';
+  whatsapp.href='https://wa.me/254725799752?text='+encodeURIComponent('Hello, I would like to make an initial legal enquiry.');
+  whatsapp.target='_blank';
+  whatsapp.rel='noopener noreferrer';
+  whatsapp.setAttribute('aria-label','Start an initial enquiry on WhatsApp');
+  whatsapp.innerHTML='<i class="fab fa-whatsapp" aria-hidden="true"></i><span>WhatsApp</span>';
+  document.body.appendChild(whatsapp);
+ }
 })();

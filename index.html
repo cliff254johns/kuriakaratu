@@ -3283,7 +3283,7 @@
 <link rel="preconnect" href="https://images.unsplash.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" href="/ecosystem-refresh.css?v=20261115" />
 <link rel="stylesheet" href="/assets/homepage-experience.css?v=20261120" />
-<link rel="stylesheet" href="/assets/navigation-gallery.css?v=20261125" />
+<link rel="stylesheet" href="/assets/navigation-gallery.css?v=20261125a" />
 </head>
 
 <body>
@@ -3300,16 +3300,19 @@
           <span class="brand-sub">Advocates</span>
         </div>
       </div>
-      <ul class="nav-links" id="navLinks">
-        <li><a href="#about">About</a></li>
-        <li><a href="#values">Values</a></li>
-        <li><a href="#practices">Practices</a></li><li><a href="practices/index.html">All Services</a></li><li><a href="insights/index.html">Legal Knowledge</a></li><li><a href="blog/">Blog</a></li><li><a href="newsletter/">Newsletter</a></li><li><a href="papers/">Conference Papers</a></li>
-        <li><a href="#team">Team</a></li>
-        <li><a href="#gallery">Gallery</a></li>
-        <li><a href="#videos">Videos</a></li>
-        <li><a href="#insights">Insights</a></li>
-        <li><a href="consultation.html" class="btn-nav">Request Consultation</a></li>
-      </ul>
+      <nav class="nav-links" id="navLinks" aria-label="Main navigation">
+        <div class="nav-group"><details><summary>Our Firm <span aria-hidden="true">⌄</span></summary><div class="nav-dropdown">
+          <a href="#about">About the Firm</a><a href="#values">Our Values</a><a href="#team">Our Team</a><a href="team.html">Meet the full team</a><a href="#gallery">Photo Gallery</a><a href="gallery.html">View Full Gallery</a><a href="#videos">Videos</a><a href="videos.html">All Videos</a>
+        </div></details></div>
+        <div class="nav-group"><details><summary>Legal Services <span aria-hidden="true">⌄</span></summary><div class="nav-dropdown">
+          <a href="#practices">Featured Practice Areas</a><a href="practices/index.html">All 26 Practice Areas</a><a href="consultation.html">How We Work</a>
+        </div></details></div>
+        <div class="nav-group"><details><summary>Knowledge Centre <span aria-hidden="true">⌄</span></summary><div class="nav-dropdown">
+          <a href="#insights">Featured Legal Guides</a><a href="insights/index.html">Legal Knowledge Library</a><a href="blog/">Firm Blog</a><a href="newsletter/">Monthly Newsletter</a><a href="papers/">Conference Papers</a>
+        </div></details></div>
+        <a class="nav-direct" href="consultation.html">Consultation</a>
+        <a href="consultation.html" class="btn-nav">Contact the Firm</a>
+      </nav>
       <button class="hamburger" id="hamburger" type="button" aria-controls="navLinks" aria-expanded="false" onclick="toggleMenu()" aria-label="Toggle navigation menu">
         <span></span><span></span><span></span>
       </button>
@@ -3833,6 +3836,7 @@
         </div>
 
       </div>
+      <div class="section-more"><a href="practices/index.html">Explore all 26 practice areas <span aria-hidden="true">→</span></a></div>
     </div>
   </section>
 
@@ -3869,6 +3873,7 @@
           <div class="info"><h3>Brian Munene</h3><span class="role">Legal Researcher</span></div>
         </div>
       </div>
+      <div class="section-more"><a href="team.html">Meet the full team <span aria-hidden="true">→</span></a></div>
     </div>
   </section>
 
@@ -3905,6 +3910,7 @@
           <span class="gallery-overlay">Advocacy &amp; justice</span>
         </button>
       </div>
+      <div class="gallery-more"><a href="gallery.html">View the full gallery <span aria-hidden="true">→</span></a></div>
     </div>
   </section>
 
@@ -4050,6 +4056,7 @@
           <i class="fab fa-youtube"></i> Subscribe on YouTube
         </a>
       </div>
+      <div class="section-more"><a href="videos.html">Explore all videos <span aria-hidden="true">→</span></a></div>
     </div>
   </section>
 
@@ -4627,8 +4634,8 @@
 <script>(function(){const routes={"Land and Property Law":"land-and-property-law.html","Climate Change, Carbon Markets and Environmental Law":"climate-carbon-environmental-law.html","Legal Audit and Compliance":"legal-audit-and-compliance.html","Data Protection and Privacy Law":"data-protection-and-privacy-law.html","Legislative Drafting":"legislative-drafting.html","Civil Litigation and Dispute Resolution":"civil-litigation-and-dispute-resolution.html","Corporate and Commercial":"corporate-and-commercial-law.html","Banking, Finance, Insurance and Personal Injury Claims":"banking-finance-insurance-personal-injury.html","Fintech and Digital Finance Law":"fintech-and-digital-finance-law.html","Public Law":"public-law.html","Employment Law":"employment-law.html","Family, Succession and Personal Affairs":"family-succession-and-personal-affairs.html","Artificial Intelligence, Intellectual Property and Technology Law":"ai-intellectual-property-technology-law.html","Cyber Security and Cyber Crime Law":"cyber-security-and-cyber-crime-law.html","Natural Resources, Renewable Energy and Mining Law":"natural-resources-renewable-energy-mining-law.html","Infrastructure and Construction Law":"infrastructure-and-construction-law.html","Digital Assets and Crypto Currency Regulation":"digital-assets-and-cryptocurrency-regulation.html","Public Procurement and Government Contracts":"public-procurement-and-government-contracts.html","Health Care and Medical Law":"healthcare-and-medical-law.html","Immigration, Cross Border and Global Mobility Law":"immigration-cross-border-global-mobility.html","Financing and Investment Law":"financing-and-investment-law.html","Consumer Protection and Digital Commerce":"consumer-protection-and-digital-commerce.html","Transport and Logistics":"transport-and-logistics-law.html","Sport, Media and Entertainment":"sport-media-and-entertainment-law.html","Mediation, Arbitration and Alternative Dispute Resolution":"mediation-arbitration-adr.html","Criminal Law Practice":"criminal-law-practice.html"};document.querySelectorAll(".practice-card[data-practice-title]").forEach(card=>{const title=card.getAttribute("data-practice-title"),route=routes[title],body=card.querySelector(".practice-body");if(!route||!body)return;const row=document.createElement("div");row.className="practice-actions";const wa=document.createElement("a");wa.className="practice-action practice-action--whatsapp";wa.href="https://wa.me/254725799752?text="+encodeURIComponent("Hello Kuria Karatu & Company Advocates, I would like to enquire about "+title+".");wa.target="_blank";wa.rel="noopener noreferrer";wa.innerHTML='<i class="fab fa-whatsapp" aria-hidden="true"></i><span>WhatsApp enquiry</span>';wa.setAttribute("aria-label","Enquire about "+title+" on WhatsApp");wa.addEventListener("click",e=>e.stopPropagation());const explore=document.createElement("a");explore.className="practice-action practice-action--explore";explore.href="practices/"+route;explore.innerHTML='<span>Explore practice</span><i class="fas fa-arrow-right" aria-hidden="true"></i>';explore.addEventListener("click",e=>e.stopPropagation());row.append(wa,explore);const hint=body.querySelector(".wa-hint");if(hint)hint.remove();body.appendChild(row)})})();</script>
 <script src="/assets/seo-meta.js?v=20261120" defer></script>
 <script src="/assets/homepage-experience.js?v=20261120" defer></script>
-<link rel="stylesheet" href="/assets/public-cms.css?v=20261123">
-<script src="/assets/public-cms.js?v=20261123" defer></script>
+<link rel="stylesheet" href="/assets/public-cms.css?v=20261125">
+<script src="/assets/public-cms.js?v=20261125" defer></script>
 <script>
 (function () {
   'use strict';

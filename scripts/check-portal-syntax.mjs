@@ -346,5 +346,41 @@ if (!staffAdminHtml.includes('id="editUserSendReset"')
   console.error('FAIL: staff administration must support finance role and secure password-reset requests');
 } else console.log('PASS: staff administration supports the finance role and password-reset emails');
 
+const homePage = fs.readFileSync('index.html', 'utf8');
+const navCss = fs.readFileSync('assets/navigation-gallery.css', 'utf8');
+const sharedNavCss = fs.readFileSync('assets/practice-navigation.css', 'utf8');
+const publicCms = fs.readFileSync('assets/public-cms.js', 'utf8');
+const cmsAdmin = fs.readFileSync('cms-admin.html', 'utf8');
+if (!homePage.includes('Our Firm') || !homePage.includes('Legal Services') || !homePage.includes('Knowledge Centre')
+    || !navCss.includes('@media(max-width:980px)') || !navCss.includes('#mainHeader .nav-links{display:flex!important')
+    || !sharedNavCss.includes('@media(max-width:980px)') || !sharedNavCss.includes('.nav-dropdown')) {
+  failures++;
+  console.error('FAIL: public navigation must remain visible on desktop and use grouped responsive dropdowns on smaller screens');
+} else console.log('PASS: homepage and shared public pages use grouped desktop navigation and responsive dropdown menus');
+if (!homePage.includes('href="gallery.html">View the full gallery')
+    || !homePage.includes('href="videos.html">Explore all videos')
+    || !homePage.includes('href="practices/index.html">Explore all 26 practice areas')
+    || !homePage.includes('href="team.html">Meet the full team')
+    || !fs.existsSync('gallery.html') || !fs.existsSync('videos.html') || !fs.existsSync('team.html')) {
+  failures++;
+  console.error('FAIL: featured collections must link to their full gallery, videos and practice-area pages');
+} else console.log('PASS: gallery, videos and practice areas include working full-collection destinations');
+if (!publicCms.includes('youtube-nocookie.com/embed/')
+    || !publicCms.includes('#gallery .gallery-grid')
+    || !publicCms.includes('#videos .video-grid')
+    || !cmsAdmin.includes('function moveItem')
+    || !cmsAdmin.includes('Move up')
+    || !cmsAdmin.includes('Move down')) {
+  failures++;
+  console.error('FAIL: public CMS must render managed images/videos in matching sections and provide content reordering controls');
+} else console.log('PASS: CMS media is routed by section and administrators can reorder published content');
+for (const page of ['gallery.html','videos.html','team.html']) {
+  const html = fs.readFileSync(page, 'utf8');
+  if (!html.includes('practice-navigation.js') || !html.includes('public-cms.js') || !html.includes('data-public-cms')) {
+    failures++;
+    console.error('FAIL: full collection page is missing shared navigation or public CMS integration:', page);
+  } else console.log('PASS full collection page integration:', page);
+}
+
 if (failures) process.exit(1);
 console.log('All static security/syntax checks passed.');

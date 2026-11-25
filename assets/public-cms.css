@@ -1,2 +1,8 @@
 .public-cms-content{max-width:1180px;margin:3rem auto;padding:0 1.2rem}.cms-section{margin:2.5rem 0}.cms-section h2{font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:1rem}.cms-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem}.cms-card{border:1px solid #dbe2eb;border-radius:12px;padding:1rem;background:#fff;box-shadow:0 5px 18px #10203a0a}.cms-card h3{margin:.6rem 0}.cms-card p{color:#526078}.cms-image{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px}.cms-link{display:inline-block;margin-top:.8rem;font-weight:700}
 .cms-body{white-space:pre-line;line-height:1.65}
+.cms-video{width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:#0b2038}.cms-video iframe{display:block;width:100%;height:100%;border:0}
+.cms-card .cms-summary{font-weight:600;color:#243b53}.cms-card .cms-link{color:#0d477d;text-underline-offset:3px}
+.cms-empty{padding:32px;border:1px dashed #cbd5e1;border-radius:12px;background:#fff;color:#64748b;text-align:center}
+#gallery .cms-card,#team .cms-card,#practices .cms-card,#insights .cms-card,#videos .cms-card{min-width:0}
+#videos .cms-card{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#fff}
+#videos .cms-card h3,#videos .cms-card p{color:#fff}
