@@ -121,3 +121,16 @@
 .gallery-more,.section-more{display:flex;justify-content:center;margin:28px auto 0}
 .gallery-more a,.section-more a{display:inline-flex;align-items:center;gap:10px;padding:12px 22px;border:1px solid #c39a45;border-radius:5px;background:#102a43;color:#fff;text-decoration:none;font-weight:700;transition:transform .2s ease,background .2s ease}
 .gallery-more a:hover,.section-more a:hover{background:#173b5e;transform:translateY(-2px)}
+
+/* Homepage desktop menu layout for the compact grouped navigation. */
+@media(min-width:981px){
+ #mainHeader .nav-container{min-height:86px;max-width:1480px;padding-inline:clamp(16px,2vw,30px)}
+ #mainHeader .logo{display:flex;align-items:center;gap:12px;min-width:220px}
+ #mainHeader .logo img{max-width:140px;max-height:56px;object-fit:contain}
+ #mainHeader .nav-links{min-height:86px}
+ #mainHeader .nav-group summary{font-size:clamp(.78rem,.85vw,.9rem)}
+}
+@media(max-width:980px){
+ #mainHeader .nav-container{min-height:68px}
+ #mainHeader .nav-links{top:68px}
+}
