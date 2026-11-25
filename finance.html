@@ -801,7 +801,7 @@ function handleLogin(email, password){
           return;
         }
         const role = snap.data().role;
-        if (!['admin','developer','clerk'].includes(role)) {
+        if (!['admin','developer','finance'].includes(role)) {
           await auth.signOut();
           resolve({ ok:false, msg:'This account does not have an authorised staff role.' });
           return;
