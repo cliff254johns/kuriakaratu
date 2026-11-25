@@ -360,7 +360,8 @@ if (!homePage.includes('Our Firm') || !homePage.includes('Legal Services') || !h
 if (!homePage.includes('href="gallery.html">View the full gallery')
     || !homePage.includes('href="videos.html">Explore all videos')
     || !homePage.includes('href="practices/index.html">Explore all 26 practice areas')
-    || !homePage.includes('href="team.html">Meet the full team')\n    || !fs.existsSync('gallery.html') || !fs.existsSync('videos.html') || !fs.existsSync('team.html')) {
+    || !homePage.includes('href="team.html">Meet the full team')
+    || !fs.existsSync('gallery.html') || !fs.existsSync('videos.html') || !fs.existsSync('team.html')) {
   failures++;
   console.error('FAIL: featured collections must link to their full gallery, videos and practice-area pages');
 } else console.log('PASS: gallery, videos and practice areas include working full-collection destinations');
