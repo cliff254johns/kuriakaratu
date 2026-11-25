@@ -4290,7 +4290,9 @@
     function toggleMenu() {
       const menu = document.getElementById('navLinks');
       const button = document.getElementById('hamburger');
-      const open = menu.classList.toggle('active');
+      if (!menu || !button) return;
+      const open = button.getAttribute('aria-expanded') !== 'true';
+      menu.classList.toggle('active', open);
       button.setAttribute('aria-expanded', String(open));
     }
     document.querySelectorAll('#navLinks a').forEach(function(link) {
@@ -4298,6 +4300,19 @@
         document.getElementById('navLinks')?.classList.remove('active');
         document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
       });
+    });
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        document.getElementById('navLinks')?.classList.remove('active');
+        document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('click', function(event) {
+      const header = document.getElementById('mainHeader');
+      if (header && !header.contains(event.target)) {
+        document.getElementById('navLinks')?.classList.remove('active');
+        document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
+      }
     });
 
     // ===== MOBILE APP NAV — ACTIVE STATE TRACKING =====
