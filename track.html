@@ -109,7 +109,9 @@ $('loginForm').addEventListener('submit',async e=>{e.preventDefault();const btn=
 auth.onAuthStateChanged(async user=>{
  if(!user){$('loginOverlay').style.display='grid';$('app').hidden=true;return;}
  try{
+  await user.reload();
   const profile=await db.collection('users').doc(user.uid).get();
+  if(profile.exists&&profile.data().onboardingMethod==='email-password-reset'&&user.emailVerified!==true){await auth.signOut();showError('loginError','Verify your staff email address before signing in. Use the verification link sent to your inbox.');return;}
   if(!profile.exists||!['admin','developer'].includes(profile.data().role)){await auth.signOut();showError('loginError','This tracker is restricted to authorised administrators and developers.');return;}
   $('loginOverlay').style.display='none';$('app').hidden=false;$('userLabel').textContent=user.email||'Signed in';await loadMetrics();
  }catch(err){await auth.signOut();$('loginOverlay').style.display='grid';showError('loginError',err.message||'Could not verify access.');}

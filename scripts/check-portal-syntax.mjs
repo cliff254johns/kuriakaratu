@@ -330,6 +330,12 @@ if (!adminJs.includes('crypto.getRandomValues(new Uint8Array(32))')
   failures++;
   console.error('FAIL: new staff accounts must use an undisclosed cryptographic bootstrap password and an email password-setup flow');
 } else console.log('PASS: new staff accounts receive an undisclosed random bootstrap password and password-setup email before first sign-in');
+if (!adminJs.includes("profile.onboardingMethod === 'email-password-reset' && user.emailVerified !== true")
+    || !fs.readFileSync('finance.html', 'utf8').includes("snap.data().onboardingMethod === 'email-password-reset' && cred.user.emailVerified !== true")
+    || !fs.readFileSync('track.html', 'utf8').includes("profile.data().onboardingMethod==='email-password-reset'&&user.emailVerified!==true")) {
+  failures++;
+  console.error('FAIL: newly provisioned staff must verify their email before entering staff systems');
+} else console.log('PASS: main, finance and tracker apps require verified email for newly provisioned staff');
 if (adminJs.includes('auth.currentUser.updatePassword(password)')) {
   failures++;
   console.error('FAIL: administrator must not change another staff member password through the current session');
