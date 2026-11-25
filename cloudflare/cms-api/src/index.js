@@ -37,7 +37,15 @@ function cleanImage(value) {
   if (!image) return '';
   if (image.startsWith('data:')) {
     if (image.length > MAX_INLINE_IMAGE_CHARS) throw new Error('Image is too large. Please use a compressed image under 900 KB.');
-    if (!/^data:image\/(?:webp|jpeg|png);base64,[A-Za-z0-9+/]+={0,2}$/.test(image)) throw new Error('Upload a valid WebP, JPEG or PNG image.');
+    const match = image.match(/^data:image\/(webp|jpeg|png);base64,([A-Za-z0-9+/]+={0,2})$/);
+    if (!match) throw new Error('Upload a valid WebP, JPEG or PNG image.');
+    let bytes;
+    try { bytes = atob(match[2]); } catch { throw new Error('The uploaded image data is invalid.'); }
+    const mime = match[1];
+    const isPng = mime === 'png' && bytes.length >= 8 && [137,80,78,71,13,10,26,10].every((value,index) => bytes.charCodeAt(index) === value);
+    const isJpeg = mime === 'jpeg' && bytes.length >= 3 && bytes.charCodeAt(0) === 255 && bytes.charCodeAt(1) === 216 && bytes.charCodeAt(2) === 255;
+    const isWebp = mime === 'webp' && bytes.length >= 12 && bytes.slice(0,4) === 'RIFF' && bytes.slice(8,12) === 'WEBP';
+    if (!isPng && !isJpeg && !isWebp) throw new Error('The image content does not match its declared file type.');
     return image;
   }
   if (!validPublicUrl(image)) throw new Error('Image must be an HTTPS/HTTP URL or a supported Base64 image.');
