@@ -595,6 +595,7 @@ let initializedSessionUid = null;
 // The owner account is bootstrapped only after Firebase has authenticated the
 // exact, verified owner email. No password or default account is embedded here.
 async function getStaffProfile(user) {
+    await user.reload();
     const email = (user.email || '').trim().toLowerCase();
     const isVerifiedOwner = email === OWNER_ADMIN_EMAIL && user.emailVerified === true;
 
@@ -624,6 +625,9 @@ async function getStaffProfile(user) {
     const profile = profileDoc.data() || {};
     if (!['admin', 'developer', 'clerk'].includes(profile.role)) {
         throw new Error('This account has no valid staff role. Contact the administrator.');
+    }
+    if (profile.onboardingMethod === 'email-password-reset' && user.emailVerified !== true) {
+        throw new Error('Verify your staff email address before signing in. Use the verification link sent to your inbox.');
     }
     return profile;
 }
