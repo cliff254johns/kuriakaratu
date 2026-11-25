@@ -113,6 +113,41 @@ try {
   console.error('FAIL Cloudflare CMS Worker syntax:', error.message);
 }
 
+
+const imageValidationStart = cmsWorkerSource.indexOf('function validPublicUrl');
+const imageValidationEnd = cmsWorkerSource.indexOf('\\n\\nexport default', imageValidationStart);
+if (imageValidationStart < 0 || imageValidationEnd < 0) {
+  failures++;
+  console.error('FAIL: CMS image validation helpers could not be extracted for behavior tests');
+} else {
+  const imageValidationSource = cmsWorkerSource.slice(imageValidationStart, imageValidationEnd);
+  const cleanImageForTest = vm.runInNewContext('(() => { ' + imageValidationSource + '; return cleanImage; })()', {
+    atob,
+    btoa,
+    URL
+  });
+  const accepted = value => { try { cleanImageForTest(value); return true; } catch { return false; } };
+  const png = 'data:image/png;base64,iVBORw0KGgo=';
+  const jpeg = 'data:image/jpeg;base64,/9j/';
+  const webp = 'data:image/webp;base64,' + btoa('RIFF0000WEBP');
+  const imageCases = [
+    accepted(png),
+    accepted(jpeg),
+    accepted(webp),
+    accepted('https://example.com/image.webp'),
+    accepted('http://example.com/image.jpg'),
+    !accepted('data:image/png;base64,/9j/'),
+    !accepted('data:image/jpeg;base64,iVBORw0KGgo='),
+    !accepted('data:image/png;base64,%%%'),
+    !accepted('javascript:alert(1)'),
+    !accepted('data:image/png;base64,' + 'A'.repeat(1_200_001))
+  ];
+  if (imageCases.some(result => !result)) {
+    failures++;
+    console.error('FAIL: CMS image validation accepted/rejected an unexpected image case');
+  } else console.log('PASS: CMS image validation accepts PNG/JPEG/WebP and HTTP(S), rejects mismatches, malformed data, scripts and oversized payloads');
+}
+
 const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
 const homepage = fs.readFileSync('index.html', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
