@@ -115,7 +115,7 @@ try {
 
 
 const imageValidationStart = cmsWorkerSource.indexOf('function validPublicUrl');
-const imageValidationEnd = cmsWorkerSource.indexOf('\\n\\nexport default', imageValidationStart);
+const imageValidationEnd = cmsWorkerSource.indexOf('\n\nexport default', imageValidationStart);
 if (imageValidationStart < 0 || imageValidationEnd < 0) {
   failures++;
   console.error('FAIL: CMS image validation helpers could not be extracted for behavior tests');
