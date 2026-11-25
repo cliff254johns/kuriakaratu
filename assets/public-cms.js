@@ -39,7 +39,7 @@ async function init(){
    const media=isTeam?items.filter(i=>i.type==='team'&&i.status==='published'):items.filter(i=>i.type==='media'&&i.status==='published'&&(isVideos?!!videoId(i.document_url||''):!videoId(i.document_url||'')));
    const h=document.querySelector('[data-cms-heading]');if(h)h.textContent=isTeam?'Meet the team':isGallery?'Gallery':'Videos';
    const fallback=root.querySelector('[data-gallery-fallback]');
-   if(media.length){const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
+   if(media.length){if(fallback)fallback.remove();const grid=el('div','cms-grid cms-full-grid');media.forEach(i=>grid.append(renderItem(i)));root.append(grid)}
    else if(!fallback){root.append(el('p','cms-empty',isTeam?'Team profiles will be updated here.':isGallery?'The gallery is being updated. Please check back soon.':'New videos will appear here soon.'))}
    return;
   }
@@ -54,7 +54,7 @@ async function init(){
   types.forEach(type=>{
    const group=items.filter(i=>i.type===type&&i.status==='published');if(!group.length)return;
    if(type==='page')return;
-   if(home&&type==='media'){const images=group.filter(i=>!videoId(i.document_url||''));const videos=group.filter(i=>!!videoId(i.document_url||''));const gallery=document.querySelector('#gallery .gallery-grid');const videoGrid=document.querySelector('#videos .video-grid');if(gallery)images.forEach(i=>gallery.append(renderItem(i)));if(videoGrid)videos.forEach(i=>videoGrid.append(renderItem(i)));return}
+   if(home&&type==='media'){const images=group.filter(i=>!videoId(i.document_url||''));const videos=group.filter(i=>!!videoId(i.document_url||''));const gallery=document.querySelector('#gallery .gallery-grid');const videoGrid=document.querySelector('#videos .video-grid');if(gallery&&images.length){gallery.replaceChildren();gallery.classList.add('cms-grid');images.forEach(i=>gallery.append(renderItem(i)))}if(videoGrid&&videos.length){videoGrid.replaceChildren();videoGrid.classList.add('cms-grid');videos.forEach(i=>videoGrid.append(renderItem(i)))}return}
    const target=targetFor(type);
    if(target){group.forEach(i=>target.append(renderItem(i)));return}
    if(home)return;
