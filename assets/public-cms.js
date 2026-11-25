@@ -61,10 +61,10 @@ async function init(){
      const slide=slides[index];if(!slide)return;
      const heading=slide.querySelector('.hero-content h1,.hero-content h2');
      const summary=slide.querySelector('.hero-content > p');
-     const visual=slide.querySelector('.hero-image');
+     const hero=document.querySelector('#home');
      if(heading&&item.title)heading.textContent=item.title;
      if(summary&&(item.summary||item.body))summary.textContent=item.summary||item.body;
-     if(visual&&item.image_url)visual.style.backgroundImage='linear-gradient(rgba(10,26,47,.22),rgba(10,26,47,.22)),url("'+item.image_url.replace(/["\\]/g,'')+'")';
+     if(hero&&item.image_url)hero.style.setProperty('--cms-hero-image-'+index,'url("'+item.image_url.replace(/["\\]/g,'')+'")');
     });
     return;
    }
